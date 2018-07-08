@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.w2v4</groupId>
+    <groupId>cn.net.polyglot</groupId>
     <artifactId>social-vertex</artifactId>
     <version>1.0-SNAPSHOT</version>
 
@@ -15,7 +15,7 @@
         <gmavenplus.version>1.6.1</gmavenplus.version>
         <vertx.version>3.5.2</vertx.version>
         <main.class>io.vertx.core.Launcher</main.class>
-        <main.verticle>cn/net/polyglot/MainVerticle.groovy</main.verticle>
+        <main.verticle>cn/net/polyglot/main_verticle.groovy</main.verticle>
         <jvmTarget>1.8</jvmTarget>
     </properties>
 
