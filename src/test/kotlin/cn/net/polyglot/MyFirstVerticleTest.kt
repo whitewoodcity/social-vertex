@@ -1,5 +1,6 @@
 package cn.net.polyglot
 
+import cn.net.polyglot.testframework.configPort
 import com.w2v4.MyFirstVerticle
 import io.vertx.core.Vertx
 import io.vertx.ext.unit.TestContext
@@ -17,11 +18,13 @@ import org.junit.runner.RunWith
 @RunWith(VertxUnitRunner::class)
 class MyFirstVerticleTest {
   private lateinit var vertx: Vertx
+  private val currentPort = 8080
 
   @Before
   fun setUp(context: TestContext) {
     vertx = Vertx.vertx()
-    vertx.deployVerticle(MyFirstVerticle::class.java.name, context.asyncAssertSuccess())
+    val currentOptions = configPort(currentPort)
+    vertx.deployVerticle(MyFirstVerticle::class.java.name, currentOptions, context.asyncAssertSuccess())
   }
 
   @After
@@ -32,7 +35,7 @@ class MyFirstVerticleTest {
   @Test
   fun testApplication(context: TestContext) {
     val async = context.async()
-    vertx.createHttpClient().getNow(8080, "localhost", "/") { response ->
+    vertx.createHttpClient().getNow(currentPort, "localhost", "/") { response ->
       response.handler { body ->
         println(body.toString())
         context.assertTrue(body.toString().contains("Hello"))

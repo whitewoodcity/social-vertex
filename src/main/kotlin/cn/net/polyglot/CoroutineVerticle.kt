@@ -1,5 +1,6 @@
 package cn.net.polyglot
 
+import cn.net.polyglot.config.DEFAULT_PORT
 import io.vertx.core.AbstractVerticle
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
@@ -10,9 +11,14 @@ import kotlinx.coroutines.experimental.runBlocking
  */
 class CoroutineVerticle : AbstractVerticle() {
   override fun start() {
+    val port = config().getInteger("port", DEFAULT_PORT)
+    println(this.javaClass.name + "is deployed on $port port")
     val fs = vertx.fileSystem()
     vertx.createHttpServer().requestHandler { req ->
-      val path = this::class.java.getResource("main_verticle.groovy").path
+      /**
+       * It'll find the URL form ClassLoader if it can't find in common path.
+       */
+      val path = "cn/net/polyglot/main_verticle.groovy"
       fs.readFile(path) {
         runBlocking {
           if (it.succeeded()) {
@@ -27,8 +33,8 @@ class CoroutineVerticle : AbstractVerticle() {
           }
         }
       }
-    }.listen(8080)
+    }.listen(port)
   }
 }
 
-private fun ByteArray.toKString(): String = String(this)
+fun ByteArray.toKString(): String = String(this)
