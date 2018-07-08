@@ -6,7 +6,7 @@
 
     <groupId>cn.net.polyglot</groupId>
     <artifactId>social-vertex</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.1</version>
 
     <properties>
         <kotlin.version>1.2.20</kotlin.version>
@@ -46,6 +46,12 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-unit</artifactId>
+            <version>${vertx.version}</version>
             <scope>test</scope>
         </dependency>
 
