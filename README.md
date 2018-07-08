@@ -15,8 +15,7 @@ type类型有：
 {
 "type":"search",
 "action":"request",
-"user":"zxj@polyglot.net.cn",
-"message":"请添加我为你的好友，我是哲学家"
+"user":"zxj@polyglot.net.cn"
 }
 ```
 ```json
@@ -49,7 +48,8 @@ type类型有：
 "type":"friend",
 "action":"request",
 "from":"zxj@polyglot.net.cn",
-"to":"customer@w2v4.com"
+"to":"customer@w2v4.com",
+"message":"请添加我为你的好友，我是哲学家"
 }
 ```
 删除好友  
