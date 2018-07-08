@@ -5,6 +5,8 @@
 ```json
 {
 "type":"message",
+"from":"inquiry@polyglot.net.cn",
+"to":"customer@w2v4.com",
 "body":"你好吗？"
 }
 ```
