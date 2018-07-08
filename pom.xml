@@ -15,7 +15,7 @@
         <gmavenplus.version>1.6.1</gmavenplus.version>
         <vertx.version>3.5.2</vertx.version>
         <main.class>io.vertx.core.Launcher</main.class>
-        <main.verticle>cn/net/polyglot/MainVerticle.groovy</main.verticle>
+        <main.verticle>cn/net/polyglot/main_verticle.groovy</main.verticle>
         <jvmTarget>1.8</jvmTarget>
     </properties>
 
