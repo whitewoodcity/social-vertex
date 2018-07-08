@@ -10,9 +10,13 @@
 
     <properties>
         <kotlin.version>1.2.20</kotlin.version>
-        <groovy.version>2.4.15</groovy.version>
+        <!--<kotlin.coroutines.version>0.21.2</kotlin.coroutines.version>-->
+        <!--<groovy.version>2.4.15</groovy.version>-->
+        <gmavenplus.version>1.6.1</gmavenplus.version>
         <vertx.version>3.5.2</vertx.version>
-        <main.class>com.w2v4.Main</main.class>
+        <main.class>io.vertx.core.Launcher</main.class>
+        <main.verticle>cn/net/polyglot/MainVerticle.groovy</main.verticle>
+        <jvmTarget>1.8</jvmTarget>
     </properties>
 
     <dependencies>
@@ -31,6 +35,20 @@
             <artifactId>vertx-lang-kotlin</artifactId>
             <version>${vertx.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-lang-kotlin-coroutines</artifactId>
+            <version>${vertx.version}</version>
+        </dependency>
+
+        <!--test dependencies-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -41,6 +59,7 @@
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
@@ -48,6 +67,10 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
+                <configuration>
+                    <experimentalCoroutines>enable</experimentalCoroutines>
+                    <jvmTarget>1.8</jvmTarget>
+                </configuration>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -64,7 +87,9 @@
                     </execution>
                     <execution>
                         <id>test-compile</id>
-                        <goals> <goal>test-compile</goal> </goals>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
                         <configuration>
                             <sourceDirs>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
@@ -87,20 +112,37 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>${main.class}</Main-Class>
+                                        <Main-Verticle>${main.verticle}</Main-Verticle>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>
-                            <artifactSet />
-                            <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-prod.jar</outputFile>
+                            <artifactSet/>
+                            <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-prod.jar
+                            </outputFile>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.basedir}/src/main/groovy</directory>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>${project.basedir}/src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>${project.basedir}/src/test/groovy</directory>
+            </testResource>
+        </testResources>
     </build>
-
 </project>
