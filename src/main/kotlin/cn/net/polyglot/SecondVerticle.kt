@@ -13,6 +13,6 @@ class SecondVerticle : AbstractVerticle() {
       req.response()
         .putHeader("content-type", "text/plain")
         .end("Hello World!")
-    }.listen(8082)
+    }.listen(8080)
   }
 }
