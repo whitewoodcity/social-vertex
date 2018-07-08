@@ -44,7 +44,7 @@ class CoroutineVerticleTest {
 
       response.endHandler {
         println(allContent)
-        context.assertTrue(allContent.contains("ConfigLoaderKt"))
+        context.assertTrue(allContent.contains("deployVerticles"))
         async.complete()
       }
     }

@@ -1,3 +1,4 @@
+@file:JvmName("ConfigLoader")
 package cn.net.polyglot.config
 
 import io.vertx.core.json.JsonObject

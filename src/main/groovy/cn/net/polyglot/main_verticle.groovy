@@ -1,6 +1,6 @@
 package cn.net.polyglot
 
-import cn.net.polyglot.config.ConfigLoaderKt
+import cn.net.polyglot.config.ConfigLoader
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
@@ -9,7 +9,7 @@ import io.vertx.core.json.JsonObject
 Vertx vertx = vertx
 
 // load config.json
-options = ConfigLoaderKt.options
+options = ConfigLoader.options
 
 ConfigRetriever retriever = ConfigRetriever.create(vertx, options)
 
@@ -20,7 +20,7 @@ retriever.getConfig { ar ->
   } else {
 
     JsonObject config = ar.result()
-    if (ConfigLoaderKt.checkPortValidFromConfig(config)) {
+    if (ConfigLoader.checkPortValidFromConfig(config)) {
 
       deployVerticles(config)
 
@@ -34,9 +34,14 @@ private void deployVerticles(JsonObject config) {
 
   vertx.deployVerticle(SecondVerticle.class.name, new DeploymentOptions().setConfig(config))
 
-  ConfigLoaderKt.portInc(config)
+  ConfigLoader.portInc(config)
 
   vertx.deployVerticle(CoroutineVerticle.class.name, new DeploymentOptions().setConfig(config))
+
+  ConfigLoader.portInc(config)
+
+  vertx.deployVerticle(CoroutineVerticle2.class.name, new DeploymentOptions().setConfig(config))
+
 }
 
 
@@ -44,7 +49,7 @@ private void failedDefault() {
 
   System.out.println("The configuration file: config.json does not exist or in wrong format, use default config.")
 
-  JsonObject config = ConfigLoaderKt.defaultJsonObject
+  JsonObject config = ConfigLoader.defaultJsonObject
 
   deployVerticles(config)
 }

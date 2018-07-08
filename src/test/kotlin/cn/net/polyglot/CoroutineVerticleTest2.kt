@@ -1,9 +1,7 @@
 package cn.net.polyglot
 
 import cn.net.polyglot.testframework.VertxTestBase
-import cn.net.polyglot.testframework.shouldBe
 import io.vertx.ext.unit.TestContext
-import org.junit.Before
 import org.junit.Test
 
 
@@ -11,11 +9,11 @@ import org.junit.Test
  * @author zxj5470
  * @date 2018/7/8
  */
-class SecondVerticleTest2 : VertxTestBase() {
-  override var currentPort = 8088
+class CoroutineVerticleTest2 : VertxTestBase() {
+  override var currentPort = 8083
 
   init {
-  	setVerticle<SecondVerticle>()
+  	setVerticle<CoroutineVerticle2>()
   }
 
   override fun setUp(context: TestContext) = super.bootstrap(context)
@@ -23,13 +21,17 @@ class SecondVerticleTest2 : VertxTestBase() {
   @Test
   override fun testApplication(context: TestContext) {
     val async = context.async()
+    val allContent = StringBuilder()
     vertx.createHttpClient().getNow(currentPort, "localhost", "/") { response ->
+
       response.handler { body ->
-        println("content:")
-        println(body.toString())
+        val ret = body.bytes.toKString()
+        allContent.append(ret)
+      }
 
-        body.toString().contains("Hello") shouldBe true
-
+      response.endHandler {
+        println(allContent)
+        context.assertTrue(allContent.contains("ConfigLoader"))
         async.complete()
       }
     }

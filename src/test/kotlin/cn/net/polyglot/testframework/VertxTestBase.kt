@@ -5,6 +5,7 @@ import io.vertx.core.Vertx
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.junit.After
+import org.junit.Before
 import org.junit.runner.RunWith
 
 /**
@@ -34,6 +35,7 @@ abstract class VertxTestBase {
     vertx.deployVerticle(verticle.name, currentOptions, context.asyncAssertSuccess())
   }
 
+  @Before
   abstract fun setUp(context: TestContext)
 
   @After
