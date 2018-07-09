@@ -6,14 +6,13 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
 
 /**
  * @author zxj5470
  * @date 2018/7/9
  */
 class CoroutineVerticle2 : CoroutineVerticle() {
-  override suspend fun start() = runBlocking<Unit> {
+  override suspend fun start()  {
     val port = config.getInteger("port", DEFAULT_PORT)
     println(this.javaClass.name + "is deployed on $port port")
     val fs = vertx.fileSystem()

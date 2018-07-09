@@ -42,15 +42,23 @@ abstract class VertxTestBase {
     verticle = T::class.java
   }
 
+  /**
+   * You can override it and no need to add `@Before` annotation
+   * @param context TestContext
+   */
   @Before
-  fun setUp(context: TestContext) {
+  open fun setUp(context: TestContext) {
     vertx = Vertx.vertx()
     val currentOptions = configPort(currentPort)
     vertx.deployVerticle(verticle.name, currentOptions, context.asyncAssertSuccess())
   }
 
+  /**
+   * You can override it and no need to add `@After` annotation
+   * @param context TestContext
+   */
   @After
-  fun tearDown(context: TestContext) {
+  open fun tearDown(context: TestContext) {
     vertx.close(context.asyncAssertSuccess())
   }
 
