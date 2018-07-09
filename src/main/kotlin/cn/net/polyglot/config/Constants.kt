@@ -1,4 +1,4 @@
-package cn.net.polyglot.server
+package cn.net.polyglot.config
 
 /**
  * @author zxj5470
