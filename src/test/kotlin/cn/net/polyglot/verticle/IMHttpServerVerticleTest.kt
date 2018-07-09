@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
 class IMHttpServerVerticleTest {
   private lateinit var vertx: Vertx
   private lateinit var client: WebClient
-  private val port = 8082
+  private val port = 8086
 
   @Before
   fun before(context: TestContext) {

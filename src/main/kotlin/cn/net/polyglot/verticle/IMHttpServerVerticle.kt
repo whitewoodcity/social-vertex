@@ -15,7 +15,7 @@ import kotlinx.coroutines.experimental.launch
 class IMHttpServerVerticle : CoroutineVerticle() {
   override suspend fun start() {
     val port = config.getInteger("port", DEFAULT_PORT)
-    println(this.javaClass.name + "is deployed on $port port")
+    println(this.javaClass.name + " is deployed on $port port")
 
     val fs = vertx.fileSystem()
     fs.mkdirIfNotExists()

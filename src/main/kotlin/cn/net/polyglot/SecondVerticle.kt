@@ -10,7 +10,7 @@ import io.vertx.core.AbstractVerticle
 class SecondVerticle : AbstractVerticle() {
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
-    println(this.javaClass.name +"is deployed on $port port")
+    println(this.javaClass.name +" is deployed on $port port")
     vertx.createHttpServer().requestHandler { req ->
       req.headers().forEach(::println)
       req.response()
