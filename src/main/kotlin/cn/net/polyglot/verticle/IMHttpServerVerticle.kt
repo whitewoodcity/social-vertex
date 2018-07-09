@@ -1,6 +1,8 @@
-package cn.net.polyglot.server
+package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
+import cn.net.polyglot.handler.handle
+import io.vertx.core.file.FileSystem
 import io.vertx.core.http.HttpMethod
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.dispatcher
@@ -10,12 +12,14 @@ import kotlinx.coroutines.experimental.launch
  * @author zxj5470
  * @date 2018/7/9
  */
-class InstantVerticle : CoroutineVerticle() {
+class IMHttpServerVerticle : CoroutineVerticle() {
   override suspend fun start() {
     val port = config.getInteger("port", DEFAULT_PORT)
     println(this.javaClass.name + "is deployed on $port port")
+
     val fs = vertx.fileSystem()
-//    fs.mkdir(".social-vertx")
+    mkdirIfNotExistsSocialVertex(fs)
+
     vertx.createHttpServer().requestHandler { req ->
       launch(vertx.dispatcher()) {
         req.bodyHandler {
@@ -32,5 +36,21 @@ class InstantVerticle : CoroutineVerticle() {
         }
       }
     }.listen(port)
+  }
+
+  private fun mkdirIfNotExistsSocialVertex(fs: FileSystem) {
+    fs.exists(".social-vertex") {
+      if (it.result()) {
+        println(".social-vertex directory exist")
+      } else {
+        fs.mkdir(".social-vertex") { mkr ->
+          if (mkr.succeeded()) {
+            println("mkdir .social-vertex succeed")
+          } else {
+            println("mkdir failed, please check the permission")
+          }
+        }
+      }
+    }
   }
 }

@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
  * }
  * ```
  *
- * @see [cn.net.polyglot.SecondVerticleTest2] or [cn.net.polyglot.CoroutineVerticleTest2]
+ * @see [cn.net.polyglot.SecondVerticleTest] or [cn.net.polyglot.FileSystemCoroutineVerticleTest]
  * @property verticle Class<*>
  * @property vertx Vertx
  * @property currentPort Int

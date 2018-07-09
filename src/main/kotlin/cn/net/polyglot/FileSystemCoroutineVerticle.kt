@@ -11,7 +11,7 @@ import kotlinx.coroutines.experimental.launch
  * @author zxj5470
  * @date 2018/7/9
  */
-class CoroutineVerticle2 : CoroutineVerticle() {
+class FileSystemCoroutineVerticle : CoroutineVerticle() {
   override suspend fun start()  {
     val port = config.getInteger("port", DEFAULT_PORT)
     println(this.javaClass.name + "is deployed on $port port")

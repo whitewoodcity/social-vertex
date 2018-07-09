@@ -1,4 +1,4 @@
-package cn.net.polyglot.server
+package cn.net.polyglot.handler
 
 import cn.net.polyglot.testframework.shouldBe
 import io.vertx.core.json.JsonObject
@@ -8,7 +8,7 @@ import org.junit.Test
  * @author zxj5470
  * @date 2018/7/9
  */
-class JsonTest{
+class RequestHandlerTest{
   @Test
   fun testFromString(){
     val str ="""{"type":"search"}"""
