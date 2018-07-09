@@ -3,7 +3,6 @@ package cn.net.polyglot
 import cn.net.polyglot.testframework.VertxTestBase
 import cn.net.polyglot.testframework.shouldBe
 import io.vertx.ext.unit.TestContext
-import org.junit.Before
 import org.junit.Test
 
 
@@ -17,8 +16,6 @@ class SecondVerticleTest2 : VertxTestBase() {
   init {
   	setVerticle<SecondVerticle>()
   }
-
-  override fun setUp(context: TestContext) = super.bootstrap(context)
 
   @Test
   override fun testApplication(context: TestContext) {

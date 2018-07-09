@@ -16,8 +16,6 @@ class CoroutineVerticleTest2 : VertxTestBase() {
   	setVerticle<CoroutineVerticle2>()
   }
 
-  override fun setUp(context: TestContext) = super.bootstrap(context)
-
   @Test
   override fun testApplication(context: TestContext) {
     val async = context.async()

@@ -17,10 +17,12 @@ import org.junit.runner.RunWith
 @RunWith(VertxUnitRunner::class)
 class LoadConfigTest {
   private lateinit var vertx: Vertx
+  private lateinit var retriever: ConfigRetriever
 
   @Before
   fun setUp(context: TestContext) {
     vertx = Vertx.vertx()
+    retriever = ConfigRetriever.create(vertx, options)
   }
 
   @After
@@ -30,12 +32,11 @@ class LoadConfigTest {
 
   @Test
   fun testDefault() {
-    defaultJsonObject.getInteger("port") shouldBe 8080
+    defaultJsonObject.getInteger("port") shouldBe DEFAULT_PORT
   }
 
   @Test
   fun testApplication(context: TestContext) {
-    val retriever = ConfigRetriever.create(vertx, options)
     retriever.getConfig {
       if (it.failed()) {
         System.err.println("failed")

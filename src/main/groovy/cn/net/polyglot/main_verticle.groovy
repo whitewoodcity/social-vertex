@@ -35,11 +35,6 @@ private void deployVerticles(JsonObject config) {
   vertx.deployVerticle(SecondVerticle.class.name, new DeploymentOptions().setConfig(config))
 
   ConfigLoader.portInc(config)
-
-  vertx.deployVerticle(CoroutineVerticle.class.name, new DeploymentOptions().setConfig(config))
-
-  ConfigLoader.portInc(config)
-
   vertx.deployVerticle(CoroutineVerticle2.class.name, new DeploymentOptions().setConfig(config))
 
 }

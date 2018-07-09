@@ -9,34 +9,45 @@ import org.junit.Before
 import org.junit.runner.RunWith
 
 /**
- * @author zxj5470
- * @date 2018/7/9
- */
-/**
- * @usage
- * @see [cn.net.polyglot.SecondVerticleTest2]
+ * New a TestClass extends `VertxTestBase`, then override the `currentPort`
+ *        and initialize the `vertx` in `init` block of the class. For example:
+ * ```Kotlin
+ * override var currentPort = 8088
+ * init{
+ *   setVerticle<SecondVerticle>()
+ * }
+ *
+ * @Test
+ * override fun testApplication(context: TestContext) {
+ *   val async = context.async()
+ *   // ...... test content
+ *   async.complete()
+ * }
+ * ```
+ *
+ * @see [cn.net.polyglot.SecondVerticleTest2] or [cn.net.polyglot.CoroutineVerticleTest2]
  * @property verticle Class<*>
  * @property vertx Vertx
  * @property currentPort Int
+ * @author zxj5470
+ * @date 2018/7/9
  */
 @RunWith(VertxUnitRunner::class)
 abstract class VertxTestBase {
   lateinit var verticle: Class<out Verticle>
+  lateinit var vertx: Vertx
+  abstract var currentPort: Int
+
   inline fun <reified T : Verticle> setVerticle() {
     verticle = T::class.java
   }
 
-  lateinit var vertx: Vertx
-  abstract var currentPort: Int
-
-  fun bootstrap(context: TestContext) {
+  @Before
+  fun setUp(context: TestContext) {
     vertx = Vertx.vertx()
     val currentOptions = configPort(currentPort)
     vertx.deployVerticle(verticle.name, currentOptions, context.asyncAssertSuccess())
   }
-
-  @Before
-  abstract fun setUp(context: TestContext)
 
   @After
   fun tearDown(context: TestContext) {
