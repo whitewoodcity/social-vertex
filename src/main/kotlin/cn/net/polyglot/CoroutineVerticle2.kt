@@ -1,6 +1,10 @@
 package cn.net.polyglot
 
 import cn.net.polyglot.config.DEFAULT_PORT
+import io.vertx.core.buffer.Buffer
+import io.vertx.kotlin.coroutines.awaitEvent
+import io.vertx.kotlin.coroutines.awaitResult
+import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
@@ -20,6 +24,14 @@ class CoroutineVerticle2 : VertxCoroutineVerticle() {
        * It'll find the URL form ClassLoader if it can't find in common path.
        */
       val path = "cn/net/polyglot/main_verticle.groovy"
+
+
+      //todo 用launch（dispatcher）和await result/event函数修改代码
+      launch(vertx.dispatcher()){
+        val result = awaitResult<Buffer> { fs.readFile(path,it) }
+        //todo the rest
+      }
+
       fs.readFile(path) {
         launch {
           if (it.succeeded()) {
