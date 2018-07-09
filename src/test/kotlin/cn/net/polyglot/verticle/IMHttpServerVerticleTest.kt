@@ -13,29 +13,34 @@ import org.junit.runner.RunWith
 
 
 @RunWith(VertxUnitRunner::class)
-class IMHttpServerVerticleTest{
+class IMHttpServerVerticleTest {
   private lateinit var vertx: Vertx
   private lateinit var client: WebClient
+  private val port = 8082
+
   @Before
   fun before(context: TestContext) {
-    vertx  = Vertx.vertx()
+    vertx = Vertx.vertx()
     client = WebClient.create(vertx)
-    val opt = configPort(8082)
-    vertx.deployVerticle( IMHttpServerVerticle ::class.java.name,opt)
+    val opt = configPort(port)
+    vertx.deployVerticle(IMHttpServerVerticle::class.java.name, opt)
   }
 
   @Test
   fun sendMessage(context: TestContext) {
     var async = context.async()
-    client.post(8082,"localhost","/")
+    client.post(port, "localhost", "/")
       .sendJsonObject(JsonObject()
-        .put("type","search")
-        .put("user","zxj@polyglot.net.cn")){
-        response ->
-        println(response.result().bodyAsString())
-        async.complete()
+        .put("type", "search")
+        .put("user", "zxj@polyglot.net.cn")) { response ->
+        if (response.succeeded()) {
+          println(response.result().bodyAsString())
+          async.complete()
+        } else {
+          System.err.println("failed")
+          async.complete()
+        }
       }
-
   }
 
   @After
