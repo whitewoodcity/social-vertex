@@ -18,7 +18,7 @@ class IMHttpServerVerticle : CoroutineVerticle() {
     println(this.javaClass.name + "is deployed on $port port")
 
     val fs = vertx.fileSystem()
-    mkdirIfNotExistsSocialVertex(fs)
+    fs.mkdirIfNotExists()
 
     vertx.createHttpServer().requestHandler { req ->
       launch(vertx.dispatcher()) {
@@ -38,14 +38,15 @@ class IMHttpServerVerticle : CoroutineVerticle() {
     }.listen(port)
   }
 
-  private fun mkdirIfNotExistsSocialVertex(fs: FileSystem) {
-    fs.exists(".social-vertex") {
+  private fun FileSystem.mkdirIfNotExists(dirName: String = ".social-vertex") {
+    val fs = this
+    fs.exists(dirName) {
       if (it.result()) {
-        println(".social-vertex directory exist")
+        println("$dirName directory exist")
       } else {
-        fs.mkdir(".social-vertex") { mkr ->
+        fs.mkdir(dirName) { mkr ->
           if (mkr.succeeded()) {
-            println("mkdir .social-vertex succeed")
+            println("mkdir $dirName succeed")
           } else {
             println("mkdir failed, please check the permission")
           }

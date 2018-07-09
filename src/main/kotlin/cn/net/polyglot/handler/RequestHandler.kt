@@ -8,11 +8,13 @@ import io.vertx.core.json.JsonObject
 
 fun handle(buffer: Buffer): String {
   return try {
-    handle(buffer.toJsonObject())
+    handle(String(buffer.bytes).toJsonObject())
   } catch (e: Exception) {
     """{"message":"json format error"}"""
   }
 }
+
+private fun String.toJsonObject() = JsonObject(this)
 
 fun handle(json: JsonObject): String {
   val type = json.getString("type", "")
@@ -27,7 +29,7 @@ fun handle(json: JsonObject): String {
 }
 
 fun handleMessage(json: JsonObject): String {
-  TODO()
+  return json.toString()
 }
 
 fun handleSearch(json: JsonObject): String {
@@ -37,9 +39,9 @@ fun handleSearch(json: JsonObject): String {
 }
 
 fun handleFriend(json: JsonObject): String {
-  TODO()
+  return json.toString()
 }
 
 fun defaultMessage(json: JsonObject): String {
-  return "NOTHING"
+  return json.toString()
 }

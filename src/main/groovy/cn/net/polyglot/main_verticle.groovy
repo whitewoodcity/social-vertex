@@ -1,6 +1,7 @@
 package cn.net.polyglot
 
 import cn.net.polyglot.config.ConfigLoader
+import cn.net.polyglot.verticle.IMTcpServerVerticle
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
@@ -36,6 +37,9 @@ private void deployVerticles(JsonObject config) {
 
   ConfigLoader.portInc(config)
   vertx.deployVerticle(FileSystemCoroutineVerticle.class.name, new DeploymentOptions().setConfig(config))
+
+  ConfigLoader.portInc(config)
+  vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
 }
 
