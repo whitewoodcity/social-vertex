@@ -8,6 +8,7 @@ object TypeConstants {
   const val MESSAGE = "message"
   const val SEARCH = "search"
   const val FRIEND = "friend"
+  const val LOGIN = "login"
 }
 
 object ActionConstants {
@@ -18,4 +19,10 @@ object ActionConstants {
 
 object NumberConstants {
   const val TIME_LIMIT = 30 * 1000L
+  const val CURRENT_VERSION = 0.1
+}
+
+object EventBusConstants {
+  const val HTTP_TO_MSG = "Http2Msg"
+  const val TCP_TO_MSG = "Hcp2Msg"
 }

@@ -1,9 +1,11 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
-import cn.net.polyglot.handler.handle
-import io.vertx.core.file.FileSystem
+import cn.net.polyglot.utils.mkdirIfNotExists
+import cn.net.polyglot.utils.text
+import cn.net.polyglot.utils.tryJson
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
@@ -20,38 +22,37 @@ class IMHttpServerVerticle : CoroutineVerticle() {
     val fs = vertx.fileSystem()
     fs.mkdirIfNotExists()
 
+    vertx.createNetClient().connect(port + 10, "localhost") {
+      if (it.succeeded()) {
+        val socket = it.result()
+        socket.write("")
+      }
+    }
+
     vertx.createHttpServer().requestHandler { req ->
-      launch(vertx.dispatcher()) {
-        req.bodyHandler {
-          if (req.method() == HttpMethod.POST) {
-            val ret = handle(it)
+      req.bodyHandler { buffer ->
+        if (req.method() == HttpMethod.POST) {
+          val json = buffer.text().tryJson()
+          if (json == null) {
             req.response()
               .putHeader("content-type", "text/plain")
-              .end(ret)
+              .end("""{"message":"json format error"}""")
           } else {
-            req.response()
-              .putHeader("content-type", "text/plain")
-              .end("Your request method is not POST")
+            launch(vertx.dispatcher()) {
+              vertx.eventBus().send<JsonObject>("IMHttpServer to IMMessageVerticle",
+                buffer.text()) { ar ->
+                if (ar.succeeded()) {
+                  val ret = ar.result().body()
+                  println(ret)
+                  req.response()
+                    .putHeader("content-type", "text/plain")
+                    .end(ret.toString())
+                }
+              }
+            }
           }
         }
       }
     }.listen(port)
-  }
-
-  private fun FileSystem.mkdirIfNotExists(dirName: String = ".social-vertex") {
-    val fs = this
-    fs.exists(dirName) {
-      if (it.result()) {
-        println("$dirName directory exist")
-      } else {
-        fs.mkdir(dirName) { mkr ->
-          if (mkr.succeeded()) {
-            println("mkdir $dirName succeed")
-          } else {
-            println("mkdir failed, please check the permission")
-          }
-        }
-      }
-    }
   }
 }

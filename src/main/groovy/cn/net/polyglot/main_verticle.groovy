@@ -1,6 +1,8 @@
 package cn.net.polyglot
 
 import cn.net.polyglot.config.ConfigLoader
+import cn.net.polyglot.verticle.IMHttpServerVerticle
+import cn.net.polyglot.verticle.IMMessageVerticle
 import cn.net.polyglot.verticle.IMTcpServerVerticle
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.DeploymentOptions
@@ -32,11 +34,13 @@ retriever.getConfig { ar ->
 }
 
 private void deployVerticles(JsonObject config) {
-
-  vertx.deployVerticle(SecondVerticle.class.name, new DeploymentOptions().setConfig(config))
+  vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
 
   ConfigLoader.portInc(config)
   vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
+
+  ConfigLoader.portInc(config)
+  vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
 }
 

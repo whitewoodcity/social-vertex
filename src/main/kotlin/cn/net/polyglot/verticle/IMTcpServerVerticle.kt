@@ -1,8 +1,10 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
+import cn.net.polyglot.config.EventBusConstants
 import cn.net.polyglot.config.NumberConstants.TIME_LIMIT
-import cn.net.polyglot.handler.handle
+import cn.net.polyglot.utils.mkdirIfNotExists
+import cn.net.polyglot.utils.text
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -22,13 +24,13 @@ class IMTcpServerVerticle : CoroutineVerticle() {
   }
 
   override suspend fun start() {
-    val port = config.getInteger("port", DEFAULT_PORT + 1)
-
+    val port = config.getInteger("port", DEFAULT_PORT)
     val options = NetServerOptions().apply {
       isTcpKeepAlive = true
     }
 
-//    val fs = vertx.fileSystem()
+    val fs = vertx.fileSystem()
+    fs.mkdirIfNotExists()
 
     launch(vertx.dispatcher()) {
       vertx.createNetServer(options).connectHandler { socket ->
@@ -46,10 +48,13 @@ class IMTcpServerVerticle : CoroutineVerticle() {
 
           activeMap[socketId] = System.currentTimeMillis()
 
-          System.err.println(it.bytes.let { String(it) })
-          val ret = handle(it)
-          println(ret)
-          socket.write(ret)
+          System.err.println(it.text())
+          vertx.eventBus().send<String>(EventBusConstants.TCP_TO_MSG, it.text()) { ar ->
+            if (ar.succeeded()) {
+              val ret = ar.result().body()
+              socket.write(ret)
+            }
+          }
         }
 
         // check active per 3 minutes
@@ -75,9 +80,8 @@ class IMTcpServerVerticle : CoroutineVerticle() {
         }
 
         socket.exceptionHandler { e ->
-          socket.close()
           println(e.message)
-          e.printStackTrace()
+          socket.close()
         }
       }.listen(port, "0.0.0.0") {
         if (it.succeeded()) {
