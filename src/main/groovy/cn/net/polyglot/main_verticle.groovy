@@ -36,9 +36,6 @@ private void deployVerticles(JsonObject config) {
   vertx.deployVerticle(SecondVerticle.class.name, new DeploymentOptions().setConfig(config))
 
   ConfigLoader.portInc(config)
-  vertx.deployVerticle(FileSystemCoroutineVerticle.class.name, new DeploymentOptions().setConfig(config))
-
-  ConfigLoader.portInc(config)
   vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
 }

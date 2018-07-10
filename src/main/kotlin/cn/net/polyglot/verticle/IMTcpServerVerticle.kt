@@ -3,7 +3,6 @@ package cn.net.polyglot.verticle
 import cn.net.polyglot.config.DEFAULT_PORT
 import cn.net.polyglot.config.NumberConstants.TIME_LIMIT
 import cn.net.polyglot.handler.handle
-import cn.net.polyglot.toKString
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -23,7 +22,7 @@ class IMTcpServerVerticle : CoroutineVerticle() {
   }
 
   override suspend fun start() {
-    val port = config.getInteger("port", DEFAULT_PORT+1)
+    val port = config.getInteger("port", DEFAULT_PORT + 1)
 
     val options = NetServerOptions().apply {
       isTcpKeepAlive = true
@@ -47,7 +46,7 @@ class IMTcpServerVerticle : CoroutineVerticle() {
 
           activeMap[socketId] = System.currentTimeMillis()
 
-          System.err.println(it.bytes.toKString())
+          System.err.println(it.bytes.let { String(it) })
           val ret = handle(it)
           println(ret)
           socket.write(ret)

@@ -1,7 +1,6 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.testframework.VertxTestBase
-import cn.net.polyglot.toKString
 import io.vertx.ext.unit.TestContext
 import org.junit.Test
 
@@ -24,7 +23,7 @@ class IMTcpServerVerticleTest : VertxTestBase() {
         val socket = it.result()
 
         socket.handler {
-          println(it.bytes.toKString())
+          println(it.bytes.let { String(it) })
         }
 
         var i = 0
