@@ -5,26 +5,24 @@ import cn.net.polyglot.config.EventBusConstants
 import cn.net.polyglot.config.NumberConstants.TIME_LIMIT
 import cn.net.polyglot.utils.mkdirIfNotExists
 import cn.net.polyglot.utils.text
+import io.vertx.core.AbstractVerticle
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
-import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.experimental.launch
 
 
 /**
  * @author zxj5470
  * @date 2018/7/9
  */
-class IMTcpServerVerticle : CoroutineVerticle() {
+class IMTcpServerVerticle : AbstractVerticle() {
 
   companion object {
     val socketMap = hashMapOf<String, NetSocket>()
     val activeMap = hashMapOf<String, Long>()
   }
 
-  override suspend fun start() {
-    val port = config.getInteger("port", DEFAULT_PORT)
+  override fun start() {
+    val port = config().getInteger("port", DEFAULT_PORT)
     val options = NetServerOptions().apply {
       isTcpKeepAlive = true
     }
