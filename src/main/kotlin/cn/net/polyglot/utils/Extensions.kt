@@ -1,6 +1,6 @@
 package cn.net.polyglot.utils
 
-import io.vertx.core.buffer.Buffer
+import cn.net.polyglot.config.Keys
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 
@@ -8,17 +8,29 @@ import io.vertx.core.json.JsonObject
  * @author zxj5470
  * @date 2018/7/10
  */
-fun FileSystem.mkdirIfNotExists(dirName: String = ".social-vertex") {
+
+/**
+ *
+ * @receiver FileSystem
+ * @param dirName String
+ * @param fail () -> Unit
+ * @param success () -> Unit
+ */
+fun FileSystem.mkdirIfNotExists(dirName: String = ".social-vertex", fail: () -> Unit = {}, success: () -> Unit = {}) {
   val fs = this
   fs.exists(dirName) {
     if (it.result()) {
       println("$dirName directory exist")
+      success()
     } else {
+      // if not exists, mkdir
       fs.mkdir(dirName) { mkr ->
         if (mkr.succeeded()) {
           println("mkdir $dirName succeed")
+          success()
         } else {
-          println("mkdir failed, please check the permission")
+          println("mkdir fail, please check the permission")
+          fail()
         }
       }
     }
@@ -42,17 +54,4 @@ fun JsonObject.putNullable(key: String, value: Any?): JsonObject {
   return this
 }
 
-/**
- * try to convert to JSON
- * @receiver String
- * @return JsonObject
- */
-fun String.tryJson(): JsonObject? {
-  return try {
-    JsonObject(this)
-  } catch (e: Exception) {
-    null
-  }
-}
-
-fun Buffer.text() = String(this.bytes)
+fun JsonObject.removeCrypto() = this.remove(Keys.CRYPTO)

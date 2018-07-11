@@ -3,7 +3,8 @@
 package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.ActionConstants
-import cn.net.polyglot.config.NumberConstants
+import cn.net.polyglot.config.FileSystemConstants
+import cn.net.polyglot.config.NumberConstants.CURRENT_VERSION
 import cn.net.polyglot.config.TypeConstants
 import cn.net.polyglot.utils.putNullable
 import io.vertx.core.Vertx
@@ -16,13 +17,13 @@ fun Message<JsonObject>.handleEventBus(vertx: Vertx) {
   val json = this.body()
 
   val type = json.getString("type", "")
-  val version = json.getDouble("version", NumberConstants.CURRENT_VERSION)
+  val version = json.getDouble("version", CURRENT_VERSION)
 
   when (type) {
     TypeConstants.MESSAGE -> handleMessage(fs, json)
     TypeConstants.SEARCH -> handleSearch(fs, json)
     TypeConstants.FRIEND -> handleFriend(fs, json)
-    TypeConstants.LOGIN -> handleLogin(fs, json)
+    TypeConstants.USER -> handleUser(fs, json)
     else -> {
       defaultMessage(fs, json)
     }
@@ -66,7 +67,7 @@ fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
   val to = json.getString("to")
   when (action) {
     ActionConstants.DELETE -> {
-      fs.readFile(".social-vertex/friend.json") { resBuffer ->
+      fs.readFile(FileSystemConstants.USER_DIR) { resBuffer ->
         if (resBuffer.succeeded()) {
           val ret = JsonObject()
           json.putNullable("user", ret)
@@ -74,7 +75,7 @@ fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
           json.putNull("user")
         }
       }
-      json.put("info", "删除好友 $to")
+      json.put("info", "$from 删除好友 $to")
     }
 
   // request to be friends
@@ -85,41 +86,17 @@ fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
   // reply whether to accept the request
     ActionConstants.RESPONSE -> {
       val accept = json.getBoolean("accept")
-      val info = accept.run {
-        if (this) "对方已接收您的好友请求"
+      val info =
+        if (accept) "对方已接收您的好友请求"
         else "对方拒绝了您的好友请求"
-      }
       json.put("info", info)
     }
   }
   this.reply(json)
 }
 
-fun Message<JsonObject>.handleLogin(fs: FileSystem, json: JsonObject) {
-  val id = json.getString("id")
-  val crypto = json.getString("crypto")
-  json.removeAll { it.key in arrayOf("crypto") }
-
-  fs.readFile(".social-vertex/user.json") { resBuffer ->
-    if (resBuffer.succeeded()) {
-      val resJson = resBuffer.result().toJsonObject()
-
-      val users = resJson.getJsonArray("users")
-      val ret = users.asSequence()
-        .map { it as JsonObject }
-        .find { it.getString("id") == id && it.getString("crypto") == crypto }
-      json.putNullable("user", ret?.apply { remove("crypto") })
-    } else {
-      json.putNull("user")
-    }
-    this.reply(json)
-  }
-  this.reply(json)
-}
-
-
 fun Message<JsonObject>.defaultMessage(fs: FileSystem, json: JsonObject) {
   json.removeAll { it.key !in arrayOf("version", "type") }
-  json.put("info","Default info, please check all sent value is correct.")
+  json.put("info", "Default info, please check all sent value is correct.")
   this.reply(json)
 }
