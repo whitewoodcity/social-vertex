@@ -32,63 +32,61 @@ class IMTcpServerVerticle : CoroutineVerticle() {
     val fs = vertx.fileSystem()
     fs.mkdirIfNotExists()
 
-    launch(vertx.dispatcher()) {
-      vertx.createNetServer(options).connectHandler { socket ->
-        socket.handler {
-          val socketId = socket.writeHandlerID()
-          val time = activeMap[socketId]
+    vertx.createNetServer(options).connectHandler { socket ->
+      socket.handler {
+        val socketId = socket.writeHandlerID()
+        val time = activeMap[socketId]
 
-          if (time != null) {
-            if (System.currentTimeMillis() - time > TIME_LIMIT) {
-              socketMap[socketId] = socket
-            } else {
+        if (time != null) {
+          if (System.currentTimeMillis() - time > TIME_LIMIT) {
+            socketMap[socketId] = socket
+          } else {
 
-            }
-          }
-
-          activeMap[socketId] = System.currentTimeMillis()
-
-          System.err.println(it.text())
-          vertx.eventBus().send<String>(EventBusConstants.TCP_TO_MSG, it.text()) { ar ->
-            if (ar.succeeded()) {
-              val ret = ar.result().body()
-              socket.write(ret)
-            }
           }
         }
 
-        // check active per 3 minutes
-        val time = 10 * 1000L
-        vertx.setPeriodic(time) {
-          activeMap
-            .filter { System.currentTimeMillis() - it.value > time }
-            .forEach { id, _ ->
-              println("remove $id connect")
-              activeMap.remove(id)
-              socketMap.remove(id)
-            }
-        }
+        activeMap[socketId] = System.currentTimeMillis()
 
-        socket.closeHandler {
-          activeMap.remove(socket.writeHandlerID())
-          socketMap.remove(socket.writeHandlerID())
-          println(socket.writeHandlerID())
+        System.err.println(it.text())
+        vertx.eventBus().send<String>(EventBusConstants.TCP_TO_MSG, it.text()) { ar ->
+          if (ar.succeeded()) {
+            val ret = ar.result().body()
+            socket.write(ret)
+          }
         }
+      }
 
-        socket.endHandler {
-          println("end")
-        }
+      // check active per 3 minutes
+      val time = 10 * 1000L
+      vertx.setPeriodic(time) {
+        activeMap
+          .filter { System.currentTimeMillis() - it.value > time }
+          .forEach { id, _ ->
+            println("remove $id connect")
+            activeMap.remove(id)
+            socketMap.remove(id)
+          }
+      }
 
-        socket.exceptionHandler { e ->
-          println(e.message)
-          socket.close()
-        }
-      }.listen(port, "0.0.0.0") {
-        if (it.succeeded()) {
-          println("${this@IMTcpServerVerticle::class.java.name} is deployed on port $port")
-        } else {
-          System.err.println("bind port $port failed")
-        }
+      socket.closeHandler {
+        activeMap.remove(socket.writeHandlerID())
+        socketMap.remove(socket.writeHandlerID())
+        println(socket.writeHandlerID())
+      }
+
+      socket.endHandler {
+        println("end")
+      }
+
+      socket.exceptionHandler { e ->
+        println(e.message)
+        socket.close()
+      }
+    }.listen(port, "0.0.0.0") {
+      if (it.succeeded()) {
+        println("${this@IMTcpServerVerticle::class.java.name} is deployed on port $port")
+      } else {
+        System.err.println("bind port $port failed")
       }
     }
   }
