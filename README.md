@@ -30,6 +30,7 @@ type类型有：
 "version":0.1
 }
 ```
+查询无结果
 ```json
 {
 "type":"search",
@@ -78,6 +79,27 @@ type类型有：
 "from":"zxj@polyglot.net.cn",
 "to":"customer@w2v4.com",
 "accept":true,
+"version":0.1
+}
+```
+### user - 用户类型
+用户登录
+```json
+{
+"type":"user",
+"action":"login",
+"user":"zxj5470",
+"crypto":"${crypto(password)}",
+"version":0.1
+}
+```
+用户注册
+```json
+{
+"type":"user",
+"action":"registry",
+"user":"zxj5470",
+"crypto":"${crypto(password)}",
 "version":0.1
 }
 ```
