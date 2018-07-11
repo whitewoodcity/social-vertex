@@ -1,6 +1,9 @@
 @file:JvmName("ConfigLoader")
+
 package cn.net.polyglot.config
 
+import cn.net.polyglot.config.FileSystemConstants.USER_DIR
+import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.config.ConfigRetrieverOptions
 import io.vertx.kotlin.config.ConfigStoreOptions
@@ -48,4 +51,23 @@ fun checkPortValidFromConfig(config: JsonObject): Boolean {
 fun portInc(config: JsonObject) {
   val port = config.getInteger("port", DEFAULT_PORT) + 1
   config.put("port", port)
+}
+
+fun makeAppDirs(vertx: Vertx) {
+  val fs = vertx.fileSystem()
+  fs.mkdirs(USER_DIR) {
+    if (it.succeeded()) {
+      println("create $USER_DIR success")
+    } else {
+      fs.exists(USER_DIR) {
+        if (it.succeeded()) {
+          if (it.result()) {
+            println("$USER_DIR already exists")
+          } else {
+            println("cannot create $USER_DIR")
+          }
+        }
+      }
+    }
+  }
 }

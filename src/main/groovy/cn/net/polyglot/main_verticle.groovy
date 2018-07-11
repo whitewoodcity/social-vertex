@@ -17,6 +17,7 @@ Vertx vertx = vertx
  * or the file is in a wrong json format.
  */
 options = ConfigLoader.options
+ConfigLoader.makeAppDirs(vertx)
 
 ConfigRetriever retriever = ConfigRetriever.create(vertx, options)
 
