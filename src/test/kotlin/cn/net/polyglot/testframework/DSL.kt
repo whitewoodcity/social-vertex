@@ -9,9 +9,11 @@ import io.vertx.kotlin.core.DeploymentOptions
  */
 infix fun Any.shouldBe(other: Any) = (this == other).also { result ->
   if (!result) {
-    System.err.println("It should be \n$other\nBut actually it is \n$other")
+    System.err.println("It should be \n$other\nBut actually it is \n$this")
   }
   assert(result)
 }
 
 fun configPort(port: Int = 8080) = DeploymentOptions(config = defaultJsonObject.apply { put("port", port) })
+
+fun Any.printlnErr(any: Any) = System.err.println(any)

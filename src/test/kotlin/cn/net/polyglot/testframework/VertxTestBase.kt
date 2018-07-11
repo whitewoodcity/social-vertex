@@ -25,7 +25,7 @@ import org.junit.runner.RunWith
  * }
  * ```
  *
- * @see [cn.net.polyglot.SecondVerticleTest] or [cn.net.polyglot.FileSystemCoroutineVerticleTest]
+ * @see [cn.net.polyglot.verticle.IMTcpServerVerticleTest]
  * @property verticle Class<*>
  * @property vertx Vertx
  * @property currentPort Int
@@ -36,7 +36,7 @@ import org.junit.runner.RunWith
 abstract class VertxTestBase {
   lateinit var verticle: Class<out Verticle>
   lateinit var vertx: Vertx
-  abstract var currentPort: Int
+  abstract val currentPort: Int
 
   inline fun <reified T : Verticle> setVerticle() {
     verticle = T::class.java
@@ -62,5 +62,5 @@ abstract class VertxTestBase {
     vertx.close(context.asyncAssertSuccess())
   }
 
-  abstract fun testApplication(context: TestContext)
+  open fun testApplication(context: TestContext) = Unit
 }

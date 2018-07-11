@@ -1,6 +1,7 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.testframework.configPort
+import cn.net.polyglot.utils.text
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -21,6 +22,7 @@ class IMHttpServerVerticleTest {
   @Before
   fun before(context: TestContext) {
     vertx = Vertx.vertx()
+    vertx.deployVerticle(IMMessageVerticle::class.java.name)
     client = WebClient.create(vertx)
     val opt = configPort(port)
     vertx.deployVerticle(IMHttpServerVerticle::class.java.name, opt)
@@ -28,13 +30,13 @@ class IMHttpServerVerticleTest {
 
   @Test
   fun sendMessage(context: TestContext) {
-    var async = context.async()
+    val async = context.async()
     client.post(port, "localhost", "/")
       .sendJsonObject(JsonObject()
         .put("type", "search")
         .put("user", "zxj@polyglot.net.cn")) { response ->
         if (response.succeeded()) {
-          println(response.result().bodyAsString())
+          println(response.result().body().text())
           async.complete()
         } else {
           System.err.println("failed")
@@ -47,6 +49,5 @@ class IMHttpServerVerticleTest {
   fun after(context: TestContext) {
     vertx.close()
   }
-
 
 }
