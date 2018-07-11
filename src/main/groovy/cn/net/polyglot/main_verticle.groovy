@@ -11,7 +11,11 @@ import io.vertx.core.json.JsonObject
 
 Vertx vertx = vertx
 
-// load config.json
+/**
+ * load `config.json` at the place where in the same directory as the jar file ,
+ * and it'll load inner file if `config.json` not exists
+ * or the file is in a wrong json format.
+ */
 options = ConfigLoader.options
 
 ConfigRetriever retriever = ConfigRetriever.create(vertx, options)
@@ -36,14 +40,12 @@ retriever.getConfig { ar ->
 private void deployVerticles(JsonObject config) {
   vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
 
+  vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
+
   ConfigLoader.portInc(config)
   vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
-  ConfigLoader.portInc(config)
-  vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
-
 }
-
 
 private void failedDefault() {
 

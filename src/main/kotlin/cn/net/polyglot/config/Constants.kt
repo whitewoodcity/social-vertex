@@ -37,6 +37,7 @@ object Keys{
 }
 
 object FileSystemConstants {
+  const val MAIN_VERTICLE = "cn/net/polyglot/main_verticle.groovy"
   const val APP_DATA_DIR_NAME = ".social-vertex"
   val USER_DIR = "$APP_DATA_DIR_NAME${separator}user"
   const val USER_FILE = "user.json"
