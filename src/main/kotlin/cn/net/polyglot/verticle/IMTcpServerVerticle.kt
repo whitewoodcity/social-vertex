@@ -1,11 +1,12 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
-import cn.net.polyglot.config.EventBusConstants
+import cn.net.polyglot.config.EventBusConstants.TCP_TO_MSG
 import cn.net.polyglot.config.NumberConstants.TIME_LIMIT
-import cn.net.polyglot.utils.mkdirIfNotExists
 import cn.net.polyglot.utils.text
+import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
+import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 
@@ -27,9 +28,6 @@ class IMTcpServerVerticle : AbstractVerticle() {
       isTcpKeepAlive = true
     }
 
-    val fs = vertx.fileSystem()
-    fs.mkdirIfNotExists()
-
     vertx.createNetServer(options).connectHandler { socket ->
       socket.handler {
         val socketId = socket.writeHandlerID()
@@ -46,10 +44,17 @@ class IMTcpServerVerticle : AbstractVerticle() {
         activeMap[socketId] = System.currentTimeMillis()
 
         System.err.println(it.text())
-        vertx.eventBus().send<String>(EventBusConstants.TCP_TO_MSG, it.text()) { ar ->
-          if (ar.succeeded()) {
-            val ret = ar.result().body()
-            socket.write(ret)
+
+        val json = it.text().tryJson()
+        System.err.println(json)
+        if (json == null) {
+          socket.write("""{"info":"json format error"}""")
+        } else {
+          vertx.eventBus().send<JsonObject>(TCP_TO_MSG, json) { ar ->
+            if (ar.succeeded()) {
+              val ret = ar.result().body()
+              socket.write(ret.toString())
+            }
           }
         }
       }

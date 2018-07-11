@@ -21,9 +21,3 @@ fun String.tryJson(): JsonObject? {
 }
 
 fun Buffer.text() = String(this.bytes)
-
-fun String.checkValid(): Boolean {
-  if (this.length < 4) return false
-  if(this[0].isDigit()) return false
-  return this.all { it.isLetterOrDigit()}
-}

@@ -1,6 +1,6 @@
 package cn.net.polyglot.utils
 
-import cn.net.polyglot.config.Keys
+import cn.net.polyglot.config.JsonKeys.CRYPTO
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 
@@ -54,4 +54,4 @@ fun JsonObject.putNullable(key: String, value: Any?): JsonObject {
   return this
 }
 
-fun JsonObject.removeCrypto() = this.remove(Keys.CRYPTO)
+fun JsonObject.removeCrypto() = this.remove(CRYPTO)

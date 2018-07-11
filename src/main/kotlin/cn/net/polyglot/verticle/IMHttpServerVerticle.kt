@@ -1,7 +1,7 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
-import cn.net.polyglot.utils.mkdirIfNotExists
+import cn.net.polyglot.config.EventBusConstants.HTTP_TO_MSG
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
@@ -15,17 +15,6 @@ import io.vertx.core.json.JsonObject
 class IMHttpServerVerticle : AbstractVerticle() {
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
-    println(this.javaClass.name + " is deployed on $port port")
-
-    val fs = vertx.fileSystem()
-    fs.mkdirIfNotExists()
-
-    vertx.createNetClient().connect(port + 10, "localhost") {
-      if (it.succeeded()) {
-        val socket = it.result()
-        socket.write("")
-      }
-    }
 
     vertx.createHttpServer().requestHandler { req ->
       req.bodyHandler { buffer ->
@@ -34,10 +23,9 @@ class IMHttpServerVerticle : AbstractVerticle() {
           if (json == null) {
             req.response()
               .putHeader("content-type", "text/plain")
-              .end("""{"message":"json format error"}""")
+              .end("""{"info":"json format error"}""")
           } else {
-            vertx.eventBus().send<JsonObject>("IMHttpServer to IMMessageVerticle",
-              buffer.text()) { ar ->
+            vertx.eventBus().send<JsonObject>(HTTP_TO_MSG, json) { ar ->
               if (ar.succeeded()) {
                 val ret = ar.result().body()
                 println(ret)
@@ -48,7 +36,16 @@ class IMHttpServerVerticle : AbstractVerticle() {
             }
           }
         }
+        else{
+          req.response().end("""{"info":"request method is not POST"}""")
+        }
       }
-    }.listen(port)
+    }.listen(port){
+      if(it.succeeded()){
+        println(this.javaClass.name + " is deployed on $port port")
+      }else{
+        println("deploy on $port failed")
+      }
+    }
   }
 }
