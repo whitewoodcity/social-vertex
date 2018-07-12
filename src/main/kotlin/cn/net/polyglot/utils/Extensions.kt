@@ -57,7 +57,7 @@ fun JsonObject.putNullable(key: String, value: Any?): JsonObject {
   return this
 }
 
-fun JsonObject.removeCrypto(): Any = this.remove(CRYPTO)
+fun JsonObject.removeCrypto() = this.remove(CRYPTO)
 
 fun getDirAndFile(id: String?): Pair<String, String> {
   val userDir = "$USER_DIR$separator$id"

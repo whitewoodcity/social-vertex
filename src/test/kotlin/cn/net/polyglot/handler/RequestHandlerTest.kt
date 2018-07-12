@@ -11,9 +11,9 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.*
 
 typealias JsonMessage = Message<JsonObject>
 
@@ -25,8 +25,7 @@ class RequestHandlerTest {
   private lateinit var client: WebClient
   private val port = 8083
 
-  @Before
-  fun before(context: TestContext) {
+  init {
     vertx = Vertx.vertx()
     client = WebClient.create(vertx)
     val opt = configPort(port)
@@ -52,10 +51,12 @@ class RequestHandlerTest {
   fun testHandleUserRegistry(context: TestContext) {
     vertx.deployAnonymousHandlerVerticle(JsonMessage::handleUser)
     val async = context.async()
+    val randomString = Random().ints(5).map { Math.abs(it) % 25 + 97 }.toArray().map { it.toChar() }.joinToString("")
+    println(randomString)
     val json = JsonObject("""{
 "type":"user",
 "action":"registry",
-"user":"zxj5470",
+"user":"$randomString",
 "crypto":"431fe828b9b8e8094235dee515562247",
 "version":0.1
 }

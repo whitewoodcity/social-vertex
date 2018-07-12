@@ -34,10 +34,7 @@ private fun Message<JsonObject>.handleFriendDelete(fs: FileSystem, json: JsonObj
       } else {
         json.put("info", "$to 用户不存在")
         json.putNull("user")
-
-        println(json.toString())
-        val ret = JsonObject(json.toString())
-        this.reply(ret)
+        this.reply(json)
       }
     }else{
       json.put("info","failed")
