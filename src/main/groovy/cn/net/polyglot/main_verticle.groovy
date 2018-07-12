@@ -41,8 +41,11 @@ retriever.getConfig { ar ->
 private void deployVerticles(JsonObject config) {
   vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
 
+//   8081
+  ConfigLoader.portInc(config)
   vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
+//  8082
   ConfigLoader.portInc(config)
   vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
