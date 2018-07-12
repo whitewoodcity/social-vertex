@@ -1,9 +1,8 @@
 package cn.net.polyglot.handler
 
-import cn.net.polyglot.config.EventBusConstants
 import cn.net.polyglot.testframework.configPort
+import cn.net.polyglot.testframework.deployAnonymousHandlerVerticle
 import cn.net.polyglot.verticle.IMHttpServerVerticle
-import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -31,15 +30,17 @@ class RequestHandlerTest {
 
   @Test
   fun testHandleMessage(context: TestContext) {
-    vertx.deployVerticle(TestHandleMessageVerticle::class.java.name)
+    vertx.deployAnonymousHandlerVerticle { fs, jsonObject ->
+      handleMessage(fs, jsonObject)
+    }
     val async = context.async()
-    val json = JsonObject(mapOf(
-      "type" to "message",
-      "from" to "inquiry@polyglot.net.cn",
-      "to" to "customer@w2v4.com",
-      "body" to "你好吗？",
-      "version" to 0.1
-    ))
+    val json = JsonObject("""{
+"type":"message",
+"from":"inquiry@polyglot.net.cn",
+"to":"customer@w2v4.com",
+"body":"你好吗？",
+"version":0.1}
+""")
     println(json)
     client.post(port, "localhost", "/")
       .sendJsonObject(json) { response ->
@@ -55,7 +56,9 @@ class RequestHandlerTest {
 
   @Test
   fun testHandleUserRegistry(context: TestContext) {
-    vertx.deployVerticle(TestHandleUserVerticle::class.java.name)
+    vertx.deployAnonymousHandlerVerticle { fs, jsonObject ->
+      handleUser(fs, jsonObject)
+    }
     val async = context.async()
     val json = JsonObject("""{
 "type":"user",
@@ -81,27 +84,5 @@ class RequestHandlerTest {
   @After
   fun after(context: TestContext) {
     vertx.close()
-  }
-}
-
-class TestHandleMessageVerticle : AbstractVerticle() {
-  override fun start() {
-    println(this.javaClass.name + " is deployed.")
-    val eventBus = vertx.eventBus()
-    val httpConsumer = eventBus.localConsumer<JsonObject>(EventBusConstants.HTTP_TO_MSG)
-    httpConsumer.handler { msg ->
-      msg.handleMessage(vertx.fileSystem(), msg.body())
-    }
-  }
-}
-
-class TestHandleUserVerticle : AbstractVerticle() {
-  override fun start() {
-    println(this.javaClass.name + " is deployed.")
-    val eventBus = vertx.eventBus()
-    val httpConsumer = eventBus.localConsumer<JsonObject>(EventBusConstants.HTTP_TO_MSG)
-    httpConsumer.handler { msg ->
-      msg.handleUser(vertx.fileSystem(), msg.body())
-    }
   }
 }
