@@ -1,7 +1,7 @@
 package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.ActionConstants.*
-import cn.net.polyglot.utils.getUser
+import cn.net.polyglot.utils.getDirAndFile
 import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
@@ -25,7 +25,7 @@ fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
 }
 
 private fun Message<JsonObject>.handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: String?) {
-  val (userDir, _) = getUser(to)
+  val (userDir, _) = getDirAndFile(to)
   fs.exists(userDir) { it ->
     if (it.succeeded()) {
       if (it.result()) {

@@ -1,13 +1,12 @@
 package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.ActionConstants
-import cn.net.polyglot.config.FileSystemConstants
+import cn.net.polyglot.utils.getDirAndFile
 import cn.net.polyglot.utils.mkdirIfNotExists
 import cn.net.polyglot.utils.removeCrypto
 import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
-import java.io.File
 
 /**
  * @author zxj5470
@@ -27,8 +26,7 @@ fun Message<JsonObject>.handleUser(fs: FileSystem, json: JsonObject) {
   val crypto = json.getString("crypto")
   handleUserCheckIdAndCrypto(id, json, crypto)
 
-  val userDir = "${FileSystemConstants.USER_DIR}${File.separator}$id"
-  val userFile = "${FileSystemConstants.USER_DIR}${File.separator}$id${File.separator}${FileSystemConstants.USER_FILE}"
+  val (userDir, userFile) = getDirAndFile(id)
   when (action) {
     ActionConstants.LOGIN -> handleUserLogin(fs, userFile, id, crypto, json)
     ActionConstants.REGISTRY -> handleUserRegistry(fs, userFile, json, id, userDir)
