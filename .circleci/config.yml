@@ -38,4 +38,7 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # run tests!
-      - run: mvn integration-test
+      - run: mvn package
+
+      - store_artifacts:
+          path: target/social-vertex-0.1-prod.jar
