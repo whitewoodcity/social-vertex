@@ -53,8 +53,6 @@ class RequestUserHandlerTest {
   fun testHandleUserLogin(context: TestContext) {
     vertx.deployAnonymousHandlerVerticle(JsonMessage::handleUser)
     val async = context.async()
-    val randomString = Random().ints(5).map { Math.abs(it) % 25 + 97 }.toArray().map { it.toChar() }.joinToString("")
-    println(randomString)
     val json = JsonObject("""{
 "type":"user",
 "action":"login",

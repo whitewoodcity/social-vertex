@@ -50,7 +50,7 @@ type类型有：
 }
 ```
 ### friend - 好友类型  
-添加好友  
+#### 添加好友  
 ```json
 {
 "type":"friend",
@@ -61,7 +61,7 @@ type类型有：
 "version":0.1
 }
 ```
-删除好友  
+#### 删除好友  
 ```json
 {
 "type":"friend",
@@ -71,7 +71,7 @@ type类型有：
 "version":0.1
 }
 ```
-答复好友请求
+#### 答复好友请求
 ```json
 {
 "type":"friend",
@@ -82,26 +82,63 @@ type类型有：
 "version":0.1
 }
 ```
+
 ### user - 用户类型
 > 传输时密码为 `crypto` 使用加密后的内容，默认使用 `MD5` 进行加密
+> 示例中的 `crypto` 为 `zxj5470` 的 MD5 加密后的内容
 
-用户登录
+#### 用户登录
 ```json
 {
 "type":"user",
 "action":"login",
 "user":"zxj5470",
-"crypto":"${crypto(password)}",
+"crypto":"431fe828b9b8e8094235dee515562247",
 "version":0.1
 }
 ```
-用户注册
+登录返回结果  
+```json
+{
+"type":"user",
+"action":"login",
+"user":{
+  "id":"zxj5470"
+  },
+"version":0.1,
+"login":true
+}
+```
+
+#### 用户注册
 ```json
 {
 "type":"user",
 "action":"registry",
 "user":"zxj5470",
-"crypto":"${crypto(password)}",
+"crypto":"431fe828b9b8e8094235dee515562247",
 "version":0.1
+}
+```
+返回结果  
+```json
+{
+"type":"user",
+"action":"registry",
+"user":"zxj5470",
+"version":0.1,
+"info":"succeed."
+}
+```
+错误结果  
+- 用户名长度小于 4 或其他错误。（如有客户端则在验证，但在提供 Web API 服务时会在此处再次验证。）  
+```json
+{
+  "type": "user",
+  "action": "login",
+  "user": " ",
+  "version": 0.1,
+  "info": "用户名格式错误",
+  "registry": false
 }
 ```

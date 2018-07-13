@@ -43,9 +43,11 @@ fun Message<JsonObject>.handleUser(fs: FileSystem, json: JsonObject) {
 fun Message<JsonObject>.handleUserCheckIdAndCrypto(id: String, json: JsonObject, crypto: String) {
   if (!id.checkIdValid()) {
     // TODO 客户端检查。如果提供 Service API 则此处验证返回失败
+    json.put("info","用户名格式错误")
     defaultFailedWithCrypto(json)
   }
   if (!crypto.checkCryptoValid()) {
+    json.put("info","秘钥错误")
     defaultFailedWithCrypto(json)
   }
 }
