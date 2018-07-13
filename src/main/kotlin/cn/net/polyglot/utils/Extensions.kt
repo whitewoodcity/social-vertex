@@ -1,8 +1,11 @@
 package cn.net.polyglot.utils
 
+import cn.net.polyglot.config.FileSystemConstants.USER_DIR
+import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.config.JsonKeys.CRYPTO
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
+import java.io.File.separator
 
 /**
  * @author zxj5470
@@ -55,3 +58,9 @@ fun JsonObject.putNullable(key: String, value: Any?): JsonObject {
 }
 
 fun JsonObject.removeCrypto() = this.remove(CRYPTO)
+
+fun getDirAndFile(id: String?): Pair<String, String> {
+  val userDir = "$USER_DIR$separator$id"
+  val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
+  return Pair(userDir, userFile)
+}

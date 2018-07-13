@@ -10,7 +10,7 @@ import org.junit.Test
  * @date 2018/7/9
  */
 class IMTcpServerVerticleTest : VertxTestBase() {
-  override var currentPort = 8085
+  override var currentPort = 8081
 
   init {
     setVerticle<IMTcpServerVerticle>()
