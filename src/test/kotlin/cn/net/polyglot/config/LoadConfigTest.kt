@@ -1,6 +1,5 @@
 package cn.net.polyglot.config
 
-import cn.net.polyglot.testframework.shouldBe
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.Vertx
 import io.vertx.ext.unit.TestContext
@@ -28,11 +27,6 @@ class LoadConfigTest {
   @After
   fun tearDown(context: TestContext) {
     vertx.close(context.asyncAssertSuccess())
-  }
-
-  @Test
-  fun testDefault() {
-    defaultJsonObject.getInteger("port") shouldBe DEFAULT_PORT
   }
 
   @Test
