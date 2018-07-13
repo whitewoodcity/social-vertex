@@ -56,14 +56,18 @@ fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String, id: St
       val resJson = it.result().toJsonObject()
       if (resJson.getString("user") == id &&
         resJson.getString("crypto") == crypto) {
-        resJson.removeCrypto()
-        json.put("user", resJson)
+        val userJson = JsonObject(mapOf(
+          "id" to id
+        ))
+        json.put("user", userJson)
         json.put("login", true)
       } else {
         json.put("login", false)
       }
     } else {
+      // not succeed means the file not exists
       json.putNull("user")
+      json.put("info","the user $id not exists")
     }
     json.removeCrypto()
     this.reply(json)
@@ -87,6 +91,7 @@ fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, jso
           fs.createFile(userFile) {
             if (it.succeeded()) {
               System.err.println(json)
+//              json.removeAll {  }
               fs.writeFile(userFile, json.toBuffer()) {
                 if (it.succeeded()) {
                   json.removeCrypto()

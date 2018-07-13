@@ -71,3 +71,8 @@ fun makeAppDirs(vertx: Vertx) {
     }
   }
 }
+
+fun makeDirsBlocking(vertx: Vertx){
+  val fs =  vertx.fileSystem()
+  fs.mkdirsBlocking(USER_DIR)
+}
