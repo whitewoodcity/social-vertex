@@ -33,25 +33,6 @@ fun Message<JsonObject>.handleUser(fs: FileSystem, json: JsonObject) {
   }
 }
 
-/**
- * if it is necessary
- * @receiver Message<JsonObject>
- * @param id String json["user"]
- * @param json JsonObject
- * @param crypto String
- */
-fun Message<JsonObject>.handleUserCheckIdAndCrypto(id: String, json: JsonObject, crypto: String) {
-  if (!id.checkIdValid()) {
-    // TODO 客户端检查。如果提供 Service API 则此处验证返回失败
-    json.put("info","用户名格式错误")
-    defaultFailedWithCrypto(json)
-  }
-  if (!crypto.checkCryptoValid()) {
-    json.put("info","秘钥错误")
-    defaultFailedWithCrypto(json)
-  }
-}
-
 fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String, id: String?, crypto: String?, json: JsonObject) {
   fs.readFile(userFile) {
     if (it.succeeded()) {
@@ -69,7 +50,7 @@ fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String, id: St
     } else {
       // not succeed means the file not exists
       json.putNull("user")
-      json.put("info","the user $id not exists")
+      json.put("info", "the user $id not exists")
     }
     json.removeCrypto()
     this.reply(json)
@@ -81,13 +62,13 @@ fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, jso
     // if exists then failed
     if (it.result()) {
       json.put("info", "user $id already exists")
-      defaultFailedWithCrypto(json)
+      registryDefaultFailed(json)
     } else {
       fs.mkdirIfNotExists(userDir,
         fail = {
           println("cannot mkdir $userDir")
           json.put("info", "cannot mkdir")
-          defaultFailedWithCrypto(json)
+          registryDefaultFailed(json)
         },
         success = {
           fs.createFile(userFile) {
@@ -102,7 +83,7 @@ fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, jso
                 }
               }
             } else {
-              defaultFailedWithCrypto(json)
+              registryDefaultFailed(json)
             }
           }
         })
@@ -110,7 +91,7 @@ fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, jso
   }
 }
 
-fun Message<JsonObject>.defaultFailedWithCrypto(json: JsonObject) {
+fun Message<JsonObject>.registryDefaultFailed(json: JsonObject) {
   json.removeCrypto()
   json.put(ActionConstants.REGISTRY, false)
   this.reply(json)
@@ -124,4 +105,23 @@ fun String.checkIdValid(): Boolean {
 
 fun String.checkCryptoValid(): Boolean {
   return this.length == 32
+}
+
+/**
+ * if it is necessary
+ * @receiver Message<JsonObject>
+ * @param id String json.getString("user")
+ * @param json JsonObject
+ * @param crypto String
+ */
+fun Message<JsonObject>.handleUserCheckIdAndCrypto(id: String, json: JsonObject, crypto: String) {
+  if (!id.checkIdValid()) {
+    // TODO 客户端检查。如果提供 Service API 则此处验证返回失败
+    json.put("info", "用户名格式错误")
+    registryDefaultFailed(json)
+  }
+  if (!crypto.checkCryptoValid()) {
+    json.put("info", "秘钥错误")
+    registryDefaultFailed(json)
+  }
 }
