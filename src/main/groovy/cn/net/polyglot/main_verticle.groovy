@@ -17,6 +17,7 @@ Vertx vertx = vertx
  * or the file is in a wrong json format.
  */
 options = ConfigLoader.options
+ConfigLoader.makeAppDirs(vertx)
 
 ConfigRetriever retriever = ConfigRetriever.create(vertx, options)
 
@@ -40,8 +41,11 @@ retriever.getConfig { ar ->
 private void deployVerticles(JsonObject config) {
   vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
 
+//   8081
+  ConfigLoader.portInc(config)
   vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
+//  8082
   ConfigLoader.portInc(config)
   vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 

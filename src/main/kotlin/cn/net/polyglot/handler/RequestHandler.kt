@@ -2,15 +2,15 @@
 
 package cn.net.polyglot.handler
 
-import cn.net.polyglot.config.ActionConstants
-import cn.net.polyglot.config.FileSystemConstants
+import cn.net.polyglot.config.FileSystemConstants.USER_DIR
+import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.config.NumberConstants.CURRENT_VERSION
-import cn.net.polyglot.config.TypeConstants
-import cn.net.polyglot.utils.putNullable
+import cn.net.polyglot.config.TypeConstants.*
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
+import java.io.File.separator
 
 fun Message<JsonObject>.handleEventBus(vertx: Vertx) {
   val fs = vertx.fileSystem()
@@ -20,13 +20,11 @@ fun Message<JsonObject>.handleEventBus(vertx: Vertx) {
   val version = json.getDouble("version", CURRENT_VERSION)
 
   when (type) {
-    TypeConstants.MESSAGE -> handleMessage(fs, json)
-    TypeConstants.SEARCH -> handleSearch(fs, json)
-    TypeConstants.FRIEND -> handleFriend(fs, json)
-    TypeConstants.USER -> handleUser(fs, json)
-    else -> {
-      defaultMessage(fs, json)
-    }
+    MESSAGE -> handleMessage(fs, json)
+    SEARCH -> handleSearch(fs, json)
+    FRIEND -> handleFriend(fs, json)
+    USER -> handleUser(fs, json)
+    else -> defaultMessage(fs, json)
   }
 }
 
@@ -34,65 +32,34 @@ fun Message<JsonObject>.handleMessage(fs: FileSystem, json: JsonObject) {
   val from = json.getString("from")
   val to = json.getString("to")
   val body = json.getString("body")
-//    fs.readFile(".social-vertex/message.json") { resBuffer ->
-//      if (resBuffer.succeeded()) {
-//        // TODO
-//      } else {
-//        json.putNull("user")
-//      }
+
+  val userDir = "$USER_DIR$separator$to"
+  fs.exists(userDir){
+    if (it.succeeded()){
+      if(it.result()){
+        json.put("info", "OK")
+      }else{
+        json.put("info","no such user $to")
+      }
+    }
+  }
   this.reply(json)
-//    }
 }
 
 fun Message<JsonObject>.handleSearch(fs: FileSystem, json: JsonObject) {
-  fs.readFile(".social-vertex/user.json") { resBuffer ->
+  val id = json.getString("id")
+  val userDir = "$USER_DIR$separator$id"
+  val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
+
+  fs.readFile(USER_DIR) { resBuffer ->
     if (resBuffer.succeeded()) {
       val resJson = resBuffer.result().toJsonObject()
-      val user = json.getString("user")
-      val users = resJson.getJsonArray("users")
-      val ret = users.asSequence()
-        .map { it as JsonObject }
-        .find { it.getString("id") == user }
-      json.putNullable("user", ret)
+      json.put("user", resJson)
     } else {
       json.putNull("user")
     }
     this.reply(json)
   }
-}
-
-fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
-  val action = json.getString("action")
-  val from = json.getString("from")
-  val to = json.getString("to")
-  when (action) {
-    ActionConstants.DELETE -> {
-      fs.readFile(FileSystemConstants.USER_DIR) { resBuffer ->
-        if (resBuffer.succeeded()) {
-          val ret = JsonObject()
-          json.putNullable("user", ret)
-        } else {
-          json.putNull("user")
-        }
-      }
-      json.put("info", "$from 删除好友 $to")
-    }
-
-  // request to be friends
-    ActionConstants.REQUEST -> {
-      json.put("info", "请求信息已发送")
-    }
-
-  // reply whether to accept the request
-    ActionConstants.RESPONSE -> {
-      val accept = json.getBoolean("accept")
-      val info =
-        if (accept) "对方已接收您的好友请求"
-        else "对方拒绝了您的好友请求"
-      json.put("info", info)
-    }
-  }
-  this.reply(json)
 }
 
 fun Message<JsonObject>.defaultMessage(fs: FileSystem, json: JsonObject) {

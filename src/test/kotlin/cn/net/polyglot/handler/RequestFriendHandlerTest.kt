@@ -6,21 +6,19 @@ import cn.net.polyglot.testframework.deployAnonymousHandlerVerticle
 import cn.net.polyglot.verticle.IMHttpServerVerticle
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.unit.Async
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.*
 
 @RunWith(VertxUnitRunner::class)
-class RequestHandlerTest {
+class RequestFriendHandlerTest {
 
   private var vertx: Vertx = Vertx.vertx()
   private var client: WebClient
-  private val port = 8084
+  private val port = 8083
 
   // use `init` instead of before because these file contains many tests.
   init {
@@ -30,38 +28,6 @@ class RequestHandlerTest {
     makeDirsBlocking(vertx)
   }
 
-  @Test
-  fun testHandleMessage(context: TestContext) {
-    vertx.deployAnonymousHandlerVerticle(JsonMessage::handleMessage)
-    val async = context.async()
-    val json = JsonObject("""{
-"type":"message",
-"from":"inquiry@polyglot.net.cn",
-"to":"customer@w2v4.com",
-"body":"你好吗？",
-"version":0.1}
-""")
-    println(json)
-    post(json, async)
-  }
-
-  @Test
-  fun testHandleUserRegistry(context: TestContext) {
-    vertx.deployAnonymousHandlerVerticle(JsonMessage::handleUser)
-    val async = context.async()
-    val randomString = Random().ints(5).map { Math.abs(it) % 25 + 97 }.toArray().map { it.toChar() }.joinToString("")
-    println(randomString)
-    val json = JsonObject("""{
-"type":"user",
-"action":"registry",
-"user":"$randomString",
-"crypto":"431fe828b9b8e8094235dee515562247",
-"version":0.1
-}
-""")
-    println(json)
-    post(json, async)
-  }
 
   @Test
   fun testHandleFriendRequest(context: TestContext) {
@@ -77,7 +43,7 @@ class RequestHandlerTest {
 }""")
     println("input")
     System.err.println(json)
-    post(json, async)
+    client.post(json, async,port)
   }
 
   @Test
@@ -94,7 +60,7 @@ class RequestHandlerTest {
 }""")
     println("input")
     System.err.println(json)
-    post(json, async)
+    client.post(json, async,port)
   }
 
   @Test
@@ -110,20 +76,7 @@ class RequestHandlerTest {
 }""")
     println("input")
     System.err.println(json)
-    post(json, async)
-  }
-
-  private fun post(json: JsonObject, async: Async) {
-    client.post(port, "localhost", "/")
-      .sendJsonObject(json) { response ->
-        if (response.succeeded()) {
-          println(response.result().bodyAsJsonObject())
-          async.complete()
-        } else {
-          System.err.println("failed")
-          async.complete()
-        }
-      }
+    client.post(json, async,port)
   }
 
   @After
