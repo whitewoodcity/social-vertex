@@ -17,10 +17,12 @@ fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
   val to = json.getString("to")
   when (action) {
     DELETE -> handleFriendDelete(fs, json, from, to)
-  // request to be friends
+//   request to be friends
     REQUEST -> handleFriendRequest(json)
-  // reply whether to accept the request
+//   reply whether to accept the request
     RESPONSE -> handleFriendResponse(json)
+//    list friends
+    LIST -> handleFriendList(fs, json)
   }
 }
 
@@ -36,8 +38,8 @@ private fun Message<JsonObject>.handleFriendDelete(fs: FileSystem, json: JsonObj
         json.putNull("user")
         this.reply(json)
       }
-    }else{
-      json.put("info","failed")
+    } else {
+      json.put("info", "failed")
       this.reply(json)
     }
   }
@@ -57,3 +59,20 @@ private fun Message<JsonObject>.handleFriendResponse(json: JsonObject) {
   json.put("info", info)
   this.reply(json)
 }
+
+private fun Message<JsonObject>.handleFriendList(fs: FileSystem, json: JsonObject) {
+  fun getFiles(): Iterable<Any> {
+    TODO()
+  }
+
+  fun Any.readToJson() {
+    TODO()
+  }
+  getFiles().forEach {
+    it.readToJson()
+  }
+
+  this.reply(json)
+}
+
+

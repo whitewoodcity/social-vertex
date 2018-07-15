@@ -2,6 +2,7 @@
 
 服务器与服务器之间通信协议使用http协议传输，服务器端与客户端使用tcp协议，内容放在http的body中，以json形式予以存放，以下是一个服务器间消息实例：  
 ![sample](https://user-images.githubusercontent.com/5525436/42436872-f00af064-838d-11e8-8445-4f197b88508b.png)
+
 ```json
 {
 "type":"message",
@@ -40,6 +41,7 @@ type类型有：
 }
 ```
 ### message - 消息类型
+发送消息
 ```json
 {
 "type":"message",
@@ -49,6 +51,7 @@ type类型有：
 "version":0.1
 }
 ```
+
 ### friend - 好友类型  
 #### 添加好友  
 ```json
@@ -82,10 +85,41 @@ type类型有：
 "version":0.1
 }
 ```
+#### 获取好友列表
+请求以响应
+```json
+{
+"type":"friend",
+"action":"list",
+"from":"zxj@polyglot.net.cn",
+"version":0.1
+}
+```
+结果
+> results 结果为每个用户的数组，  
+每个元素对应一个人物信息。`group` 为对应的分组。
+
+```json
+{
+"type":"friend",
+"action":"list",
+"from":"zxj@polyglot.net.cn",
+"results":[{
+	"id":"xiaoyong",
+	"name":"小勇",
+	"group":"朋友"
+},{
+  	"id":"father",
+  	"name":"父亲",
+  	"group":"家人"
+  }]
+}
+```
+#### 返回
 
 ### user - 用户类型
-> 传输时密码为 `crypto` 使用加密后的内容，默认使用 `MD5` 进行加密
-> 示例中的 `crypto` 为 `zxj5470` 的 MD5 加密后的内容
+> - 传输时 `crypto` 为加密后的密码内容，使用 `MD5` 进行加密。如有需要请酌情增加加密选项。  
+> - 示例中的 `crypto` 的值为 `zxj5470` 的 MD5 加密后的内容
 
 #### 用户登录
 ```json
@@ -130,8 +164,12 @@ type类型有：
 "info":"succeed."
 }
 ```
-错误结果  
-- 用户名长度小于 4 或其他错误。（如有客户端则在验证，但在提供 Web API 服务时会在此处再次验证。）  
+
+#### 错误样例：   
+- 用户名长度小于 4。
+- 密码格式不正确（验证 MD5 长度为 32）
+相关说明  
+- 有对应通信客户端时建议直接在客户端部分做好验证。但若提供 Web Service API 则提示如下信息。  
 ```json
 {
   "type": "user",
