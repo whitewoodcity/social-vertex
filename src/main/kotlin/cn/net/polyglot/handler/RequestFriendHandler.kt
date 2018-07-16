@@ -120,45 +120,33 @@ private fun Message<JsonObject>.handleFriendList(fs: FileSystem, json: JsonObjec
   val (userDir, _) = getUserDirAndFile(from)
   val friendDir = userDir + File.separator + FRIENDS
 
-  fun getFiles(): Iterable<Any> {
-//    val friendList = Collections.synchronizedList(emptyList<String>())
-    fs.readDir(friendDir) {
-      if (it.succeeded()) {
-        val files = it.result()
-        val friendUserFiles = files.map { it + File.separator + USER_FILE }
-        val buffers = friendUserFiles.map { Future.future<Buffer>() }
-        friendUserFiles.forEachIndexed { index, s ->
-          fs.readFile(s, buffers[index].completer())
-        }
-        CompositeFuture.all(buffers).setHandler { ar ->
-          if (ar.succeeded()) {
-            val res = ar.result()
-            val results = res.list<Buffer>()
-              .asSequence()
-              .map { it.toJsonObject() }
-              .map {
-                JsonObject(mapOf(
-                  "id" to it.getString("to"),
-                  "name" to (it.getString("name") ?: it.getString("id")),
-                  "group" to it.getString("group")
-                ))
-              }.toList().toTypedArray()
-            json.put("results", JsonArray(*results))
-            this.reply(json)
-          }
+  fs.readDir(friendDir) {
+    if (it.succeeded()) {
+      val files = it.result()
+      val friendUserFiles = files.map { it + File.separator + USER_FILE }
+      val buffers = friendUserFiles.map { Future.future<Buffer>() }
+      friendUserFiles.forEachIndexed { index, s ->
+        fs.readFile(s, buffers[index].completer())
+      }
+      CompositeFuture.all(buffers).setHandler { ar ->
+        if (ar.succeeded()) {
+          val res = ar.result()
+          val results = res.list<Buffer>()
+            .asSequence()
+            .map { it.toJsonObject() }
+            .map {
+              JsonObject(mapOf(
+                "id" to it.getString("to"),
+                "name" to (it.getString("name") ?: it.getString("id")),
+                "group" to it.getString("group")
+              ))
+            }.toList().toTypedArray()
+          json.put("results", JsonArray(*results))
+          this.reply(json)
         }
       }
     }
-    return emptyList()
   }
-
-  fun Any.readToJson() {
-    TODO()
-  }
-  getFiles().forEach {
-    it.readToJson()
-  }
-
 }
 
 private fun getFriendsDir(from: String?, to: String?): String {
