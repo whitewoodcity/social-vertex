@@ -22,7 +22,7 @@ class IMHttpServerVerticle : AbstractVerticle() {
           val json = buffer.text().tryJson()
           if (json == null) {
             req.response()
-              .putHeader("content-type", "text/plain")
+              .putHeader("content-type", "application/json")
               .end("""{"info":"json format error"}""")
           } else {
             vertx.eventBus().send<JsonObject>(HTTP_TO_MSG, json) { ar ->
@@ -30,7 +30,7 @@ class IMHttpServerVerticle : AbstractVerticle() {
                 val ret = ar.result().body()
                 println(ret)
                 req.response()
-                  .putHeader("content-type", "text/plain")
+                  .putHeader("content-type", "application/json")
                   .end(ret.toString())
               }
             }
