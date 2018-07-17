@@ -6,13 +6,13 @@ import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.utils.contains
 import cn.net.polyglot.utils.getUserDirAndFile
 import cn.net.polyglot.utils.mkdirsIfNotExists
+import cn.net.polyglot.utils.toJsonArray
 import io.vertx.core.CompositeFuture
 import io.vertx.core.Future
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.json.JsonArray
 import java.io.File
 
 
@@ -131,20 +131,24 @@ private fun Message<JsonObject>.handleFriendList(fs: FileSystem, json: JsonObjec
       CompositeFuture.all(buffers).setHandler { ar ->
         if (ar.succeeded()) {
           val res = ar.result()
-          val results = res.list<Buffer>()
+          val groupByToJsonArray = res.list<Buffer>()
             .asSequence()
             .map { it.toJsonObject() }
+            .groupBy { it.getString("group") }
             .map {
-              JsonObject(mapOf(
-                "id" to it.getString("to"),
-                "name" to (it.getString("name") ?: it.getString("id")),
-                "group" to it.getString("group")
-              ))
-            }.toList().toTypedArray()
-          json.put("results", JsonArray(*results))
+              JsonObject().apply {
+                put("group", it.key)
+                it.value.forEach { it.remove("group") }
+                put("lists", it.value)
+              }
+            }.toJsonArray()
+          json.put("results", groupByToJsonArray)
           this.reply(json)
         }
       }
+    } else {
+      json.put("info", "failed")
+      this.reply(json)
     }
   }
 }

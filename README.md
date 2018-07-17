@@ -87,7 +87,7 @@ type类型有：
 }
 ```
 #### 获取好友列表
-请求以响应
+请求以响应  
 ```json
 {
 "type":"friend",
@@ -96,28 +96,47 @@ type类型有：
 "version":0.1
 }
 ```
-结果
-> results 结果为每个用户的数组，  
-每个元素对应一个人物信息。`group` 为对应的分组。
-
+结果  
 ```json
 {
-"type":"friend",
-"action":"list",
-"from":"zxj@polyglot.net.cn",
-"results":[{
-	"id":"xiaoyong",
-	"name":"小勇",
-	"group":"朋友"
-},{
-  	"id":"father",
-  	"name":"父亲",
-  	"group":"家人"
-  }],
-"version":0.1
+"type": "friend",
+"action": "list",
+"from": "zxj@polyglot.net.cn",
+"version": 0.1,
+"results": [
+  {
+    "group": "我的好友",
+    "lists": [
+    {
+      "id": "test123@polyglot.net.cn",
+      "nickname": "test123@polyglot.net.cn"
+    },
+    {
+      "id": "test233@polyglot.net.cn",
+      "nickname": "test233@polyglot.net.cn"
+    }
+    ]
+  }]
 }
 ```
-#### 返回
+json 结果 `d.ts` 描述。
+```typescript
+class RootObject {
+  type: string;
+  action: string;
+  from: string;
+  version: number;
+  results: Result[];
+}
+class Result {
+  group: string;
+  lists: User[];
+}
+class User {
+  id: string;
+  nickname: string;
+}
+```
 
 ### user - 用户类型
 > - 传输时 `crypto` 为加密后的密码内容，使用 `MD5` 进行加密。如有需要请酌情增加加密选项。  
