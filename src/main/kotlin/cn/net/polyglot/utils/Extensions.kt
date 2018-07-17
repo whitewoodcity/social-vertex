@@ -2,9 +2,7 @@ package cn.net.polyglot.utils
 
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
-import cn.net.polyglot.config.JsonKeys.CRYPTO
 import io.vertx.core.file.FileSystem
-import io.vertx.core.json.JsonObject
 import java.io.File.separator
 
 /**
@@ -19,7 +17,7 @@ import java.io.File.separator
  * @param fail () -> Unit
  * @param success () -> Unit
  */
-fun FileSystem.mkdirIfNotExists(dirName: String = ".social-vertex", fail: () -> Unit = {}, success: () -> Unit = {}) {
+fun FileSystem.mkdirsIfNotExists(dirName: String = ".social-vertex", fail: () -> Unit = {}, success: () -> Unit = {}) {
   val fs = this
   fs.exists(dirName) {
     if (it.result()) {
@@ -27,7 +25,7 @@ fun FileSystem.mkdirIfNotExists(dirName: String = ".social-vertex", fail: () -> 
       success()
     } else {
       // if not exists, mkdir
-      fs.mkdir(dirName) { mkr ->
+      fs.mkdirs(dirName) { mkr ->
         if (mkr.succeeded()) {
           println("mkdir $dirName succeed")
           success()
@@ -41,25 +39,11 @@ fun FileSystem.mkdirIfNotExists(dirName: String = ".social-vertex", fail: () -> 
 }
 
 /**
- *
- * @receiver JsonObject
- * @param key String
- * @param value Any?
- * @return JsonObject this
+ * return ".social-vertex/user/yourID"
+ * @param id String?
+ * @return Pair<String, String>
  */
-fun JsonObject.putNullable(key: String, value: Any?): JsonObject {
-  if (value == null) {
-    if (this.getValue(key) != null) {
-      this.remove(key)
-    }
-    this.putNull(key)
-  } else this.put(key, value)
-  return this
-}
-
-fun JsonObject.removeCrypto() = this.remove(CRYPTO)
-
-fun getDirAndFile(id: String?): Pair<String, String> {
+fun getUserDirAndFile(id: String?): Pair<String, String> {
   val userDir = "$USER_DIR$separator$id"
   val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
   return Pair(userDir, userFile)

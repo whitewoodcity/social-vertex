@@ -6,6 +6,7 @@ import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.config.NumberConstants.CURRENT_VERSION
 import cn.net.polyglot.config.TypeConstants.*
+import cn.net.polyglot.utils.removeCrypto
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
@@ -41,19 +42,19 @@ fun Message<JsonObject>.handleMessage(fs: FileSystem, json: JsonObject) {
       }else{
         json.put("info","no such user $to")
       }
+      this.reply(json)
     }
   }
-  this.reply(json)
 }
 
 fun Message<JsonObject>.handleSearch(fs: FileSystem, json: JsonObject) {
-  val id = json.getString("id")
-  val userDir = "$USER_DIR$separator$id"
+  val id = json.getString("user")
   val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
 
-  fs.readFile(USER_DIR) { resBuffer ->
+  fs.readFile(userFile) { resBuffer ->
     if (resBuffer.succeeded()) {
       val resJson = resBuffer.result().toJsonObject()
+      resJson.removeCrypto()
       json.put("user", resJson)
     } else {
       json.putNull("user")
