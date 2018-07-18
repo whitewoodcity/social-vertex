@@ -1,6 +1,7 @@
 package cn.net.polyglot.testframework
 
 import cn.net.polyglot.config.defaultJsonObject
+import cn.net.polyglot.verticle.IMMessageVerticle
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.Message
@@ -26,7 +27,7 @@ fun generateVerticle(function: Message<JsonObject>.(fs: FileSystem, jsonObject: 
     override fun start() {
       println("function is deployed.")
       val eventBus = vertx.eventBus()
-      val httpConsumer = eventBus.localConsumer<JsonObject>(EventBusConstants.HTTP_TO_MSG)
+      val httpConsumer = eventBus.localConsumer<JsonObject>(IMMessageVerticle::class.java.name)
       httpConsumer.handler { msg ->
         function(msg, vertx.fileSystem(), msg.body())
       }

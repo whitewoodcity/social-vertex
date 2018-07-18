@@ -2,6 +2,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.testframework.configPort
 import cn.net.polyglot.utils.text
+import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -12,7 +13,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-
 @RunWith(VertxUnitRunner::class)
 class IMHttpServerVerticleTest {
   private lateinit var vertx: Vertx
@@ -22,10 +22,10 @@ class IMHttpServerVerticleTest {
   @Before
   fun before(context: TestContext) {
     vertx = Vertx.vertx()
-    vertx.deployVerticle(IMMessageVerticle::class.java.name)
+    vertx.deployVerticle(IMMessageVerticle::class.java.name,context.asyncAssertSuccess())
     client = WebClient.create(vertx)
     val opt = configPort(port)
-    vertx.deployVerticle(IMHttpServerVerticle::class.java.name, opt)
+    vertx.deployVerticle(IMHttpServerVerticle::class.java.name, opt,context.asyncAssertSuccess())
   }
 
   @Test
@@ -47,7 +47,7 @@ class IMHttpServerVerticleTest {
 
   @After
   fun after(context: TestContext) {
-    vertx.close()
+    vertx.close(context.asyncAssertSuccess())
   }
 
 }

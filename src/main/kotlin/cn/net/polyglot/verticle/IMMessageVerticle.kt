@@ -17,5 +17,4 @@ class IMMessageVerticle : AbstractVerticle() {
       it.handleEventBus(vertx)
     }
   }
-
 }
