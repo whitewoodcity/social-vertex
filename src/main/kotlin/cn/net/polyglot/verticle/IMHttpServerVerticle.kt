@@ -1,7 +1,6 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
-import cn.net.polyglot.config.EventBusConstants.HTTP_TO_MSG
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
@@ -25,7 +24,7 @@ class IMHttpServerVerticle : AbstractVerticle() {
               .putHeader("content-type", "application/json")
               .end("""{"info":"json format error"}""")
           } else {
-            vertx.eventBus().send<JsonObject>(HTTP_TO_MSG, json) { ar ->
+            vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) { ar ->
               if (ar.succeeded()) {
                 val ret = ar.result().body()
                 println(ret)

@@ -1,7 +1,6 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
-import cn.net.polyglot.config.EventBusConstants.TCP_TO_MSG
 import cn.net.polyglot.config.NumberConstants.TIME_LIMIT
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
@@ -10,17 +9,14 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 
-
 /**
  * @author zxj5470
  * @date 2018/7/9
  */
 class IMTcpServerVerticle : AbstractVerticle() {
 
-  companion object {
-    val socketMap = hashMapOf<String, NetSocket>()
-    val activeMap = hashMapOf<String, Long>()
-  }
+  private val socketMap = hashMapOf<String, NetSocket>()
+  private val activeMap = hashMapOf<String, Long>()
 
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
@@ -50,7 +46,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         if (json == null) {
           socket.write("""{"info":"json format error"}""")
         } else {
-          vertx.eventBus().send<JsonObject>(TCP_TO_MSG, json) { ar ->
+          vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) { ar ->
             if (ar.succeeded()) {
               val ret = ar.result().body()
               socket.write(ret.toString())
