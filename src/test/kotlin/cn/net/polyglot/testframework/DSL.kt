@@ -26,7 +26,7 @@ fun generateVerticle(function: Message<JsonObject>.(fs: FileSystem, jsonObject: 
     override fun start() {
       println("function is deployed.")
       val eventBus = vertx.eventBus()
-      val httpConsumer = eventBus.localConsumer<JsonObject>(EventBusConstants.HTTP_TO_MSG)
+      val httpConsumer = eventBus.localConsumer<JsonObject>("VerticleName")
       httpConsumer.handler { msg ->
         function(msg, vertx.fileSystem(), msg.body())
       }

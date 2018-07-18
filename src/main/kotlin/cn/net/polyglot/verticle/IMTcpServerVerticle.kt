@@ -38,23 +38,17 @@ class IMTcpServerVerticle : AbstractVerticle() {
         if (json == null) {
           socket.write("""{"info":"json format error"}""")
         } else {
-          vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) { ar ->
-            if (ar.succeeded()) {
-              val ret = ar.result().body()
-              socket.write(ret.toString())
-            }
-          }
 
           val fs = vertx.fileSystem()
           val type = json.getString("type", "")
           val version = json.getDouble("version", CURRENT_VERSION)
+
           val ret = when (type) {
             MESSAGE -> {
               message(fs, json, directlySend = { to ->
                 val id = idMap[to] ?: return@message
                 val toSocket = socketMap[id] ?: return@message
                 val activeSocketTime = activeMap[id] ?: return@message
-                // isActive
                 if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
                   toSocket.write(json.toBuffer())
                 }
@@ -73,6 +67,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
             })
             else -> defaultMessage(fs, json)
           }
+
           socket.write(ret.toString())
         }
       }
@@ -104,7 +99,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
 
       socket.exceptionHandler { e ->
         e.printStackTrace()
-//        socket.close()
+        socket.close()
       }
     }.listen(port, "0.0.0.0") {
       if (it.succeeded()) {
