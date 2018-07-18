@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonObject
  * @author zxj5470
  * @date 2018/7/10
  */
+@Deprecated("")
 class IMMessageVerticle : AbstractVerticle() {
   override fun start() {
     println(this.javaClass.name + " is deployed.")
