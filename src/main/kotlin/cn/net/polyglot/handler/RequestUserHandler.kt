@@ -34,7 +34,7 @@ fun Message<JsonObject>.handleUser(fs: FileSystem, json: JsonObject) {
   }
 }
 
-fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String, id: String?, crypto: String?, json: JsonObject) {
+private fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String, id: String?, crypto: String?, json: JsonObject) {
   fs.readFile(userFile) {
     if (it.succeeded()) {
       val resJson = it.result().toJsonObject()
@@ -58,7 +58,7 @@ fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String, id: St
   }
 }
 
-fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, json: JsonObject, id: String?, userDir: String) {
+private fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, json: JsonObject, id: String?, userDir: String) {
   fs.exists(userFile) {
     // if exists then failed
     if (it.result()) {
@@ -92,9 +92,13 @@ fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, jso
 }
 
 fun Message<JsonObject>.registryDefaultFailed(json: JsonObject) {
+  registryDefaultFailedJson(json)
+  this.reply(json)
+}
+
+private fun registryDefaultFailedJson(json: JsonObject) {
   json.removeCrypto()
   json.put(ActionConstants.REGISTRY, false)
-  this.reply(json)
 }
 
 fun String.checkIdValid(): Boolean {
@@ -123,4 +127,47 @@ fun Message<JsonObject>.handleUserCheckIdAndCrypto(id: String, json: JsonObject,
     json.put("info", "秘钥错误")
     registryDefaultFailed(json)
   }
+}
+
+
+fun handleUserLogin(fs: FileSystem, userFile: String, id: String?, crypto: String?, json: JsonObject): JsonObject {
+  try {
+    val resJson = fs.readFileBlocking(userFile).toJsonObject()
+    if (resJson.getString("user") == id &&
+      resJson.getString("crypto") == crypto) {
+      val userJson = JsonObject(mapOf(
+        "id" to id
+      ))
+      json.put("user", userJson)
+      json.put("login", true)
+    } else {
+      json.put("login", false)
+    }
+  } catch (e: Exception) {
+    json.putNull("user")
+    json.put("info", "the user $id not exists")
+  } finally {
+    return json
+  }
+}
+
+fun handleUserRegistry(fs: FileSystem, userFile: String, json: JsonObject, id: String?, userDir: String): JsonObject {
+  if (fs.existsBlocking(userFile)) {
+    registryDefaultFailedJson(json)
+  } else {
+    try {
+      fs.mkdirsBlocking(userDir)
+      fs.writeFileBlocking(userFile, json.toBuffer())
+      // after write
+      json.removeCrypto()
+      val friendDir = userDir + File.separator + FRIENDS
+      fs.mkdirBlocking(friendDir)
+      json.put("info", "注册成功")
+      json.put(ActionConstants.REGISTRY, true)
+    } catch (e: Exception) {
+      println("cannot mkdir $userDir")
+      json.put("info", "cannot mkdir")
+    }
+  }
+  return json
 }
