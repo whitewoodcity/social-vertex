@@ -1,4 +1,5 @@
 # 服务器与服务器的即时通信协议 V0.1
+![https://circleci.com/gh/whitewoodcity/social-vertex-flutter](https://circleci.com/gh/zxj5470/social-vertex.svg?style=svg)
 
 服务器与服务器之间通信协议使用http协议传输，服务器端与客户端使用tcp协议，内容放在http的body中，以json形式予以存放，以下是一个服务器间消息实例：  
 ![sample](https://user-images.githubusercontent.com/5525436/42436872-f00af064-838d-11e8-8445-4f197b88508b.png)
