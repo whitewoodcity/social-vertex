@@ -1,6 +1,5 @@
 package cn.net.polyglot.testframework
 
-import cn.net.polyglot.config.EventBusConstants
 import cn.net.polyglot.config.defaultJsonObject
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx
