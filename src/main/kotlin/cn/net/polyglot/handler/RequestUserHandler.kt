@@ -1,12 +1,14 @@
 package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.ActionConstants
-import cn.net.polyglot.utils.getDirAndFile
-import cn.net.polyglot.utils.mkdirIfNotExists
+import cn.net.polyglot.config.FileSystemConstants.FRIENDS
+import cn.net.polyglot.utils.getUserDirAndFile
+import cn.net.polyglot.utils.mkdirsIfNotExists
 import cn.net.polyglot.utils.removeCrypto
 import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
+import java.io.File
 
 /**
  * @author zxj5470
@@ -14,7 +16,6 @@ import io.vertx.core.json.JsonObject
  */
 
 /**
- * registry
  * @receiver Message<JsonObject>
  * @param fs FileSystem
  * @param json JsonObject
@@ -26,7 +27,7 @@ fun Message<JsonObject>.handleUser(fs: FileSystem, json: JsonObject) {
   val crypto = json.getString("crypto")
   handleUserCheckIdAndCrypto(id, json, crypto)
 
-  val (userDir, userFile) = getDirAndFile(id)
+  val (userDir, userFile) = getUserDirAndFile(id)
   when (action) {
     ActionConstants.LOGIN -> handleUserLogin(fs, userFile, id, crypto, json)
     ActionConstants.REGISTRY -> handleUserRegistry(fs, userFile, json, id, userDir)
@@ -64,29 +65,27 @@ fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, jso
       json.put("info", "user $id already exists")
       registryDefaultFailed(json)
     } else {
-      fs.mkdirIfNotExists(userDir,
+      fs.mkdirsIfNotExists(userDir,
         fail = {
           println("cannot mkdir $userDir")
           json.put("info", "cannot mkdir")
           registryDefaultFailed(json)
         },
         success = {
-          fs.createFile(userFile) {
+          fs.writeFile(userFile, json.toBuffer()) {
             if (it.succeeded()) {
-              System.err.println(json)
-//              json.removeAll {  }
-              fs.writeFile(userFile, json.toBuffer()) {
+              json.removeCrypto()
+              val friendDir = userDir + File.separator + FRIENDS
+              fs.mkdir(friendDir) {
                 if (it.succeeded()) {
-                  json.removeCrypto()
                   json.put("info", "succeed.")
                   this.reply(json)
                 }
               }
-            } else {
-              registryDefaultFailed(json)
             }
           }
-        })
+        }
+      )
     }
   }
 }
@@ -100,7 +99,7 @@ fun Message<JsonObject>.registryDefaultFailed(json: JsonObject) {
 fun String.checkIdValid(): Boolean {
   if (this.length < 4) return false
   if (this[0].isDigit()) return false
-  return this.all { it.isLetterOrDigit() }
+  return this.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) }
 }
 
 fun String.checkCryptoValid(): Boolean {
@@ -109,14 +108,13 @@ fun String.checkCryptoValid(): Boolean {
 
 /**
  * if it is necessary
- * @receiver Message<JsonObject>
+ * @receiver Message<JsonObject> ...
  * @param id String json.getString("user")
  * @param json JsonObject
  * @param crypto String
  */
 fun Message<JsonObject>.handleUserCheckIdAndCrypto(id: String, json: JsonObject, crypto: String) {
   if (!id.checkIdValid()) {
-    // TODO 客户端检查。如果提供 Service API 则此处验证返回失败
     json.put("info", "用户名格式错误")
     registryDefaultFailed(json)
   }
