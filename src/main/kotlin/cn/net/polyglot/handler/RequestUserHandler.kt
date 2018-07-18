@@ -78,7 +78,8 @@ fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, jso
               val friendDir = userDir + File.separator + FRIENDS
               fs.mkdir(friendDir) {
                 if (it.succeeded()) {
-                  json.put("info", "succeed.")
+                  json.put("info", "注册成功")
+                  json.put(ActionConstants.REGISTRY, true)
                   this.reply(json)
                 }
               }
