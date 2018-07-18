@@ -1,9 +1,13 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
+import cn.net.polyglot.config.NumberConstants
+import cn.net.polyglot.config.TypeConstants.*
+import cn.net.polyglot.handler.*
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
+import io.vertx.core.file.FileSystem
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 
@@ -24,25 +28,32 @@ class IMHttpServerVerticle : AbstractVerticle() {
               .putHeader("content-type", "application/json")
               .end("""{"info":"json format error"}""")
           } else {
-            vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) { ar ->
-              if (ar.succeeded()) {
-                val ret = ar.result().body()
-                println(ret)
-                req.response()
-                  .putHeader("content-type", "application/json")
-                  .end(ret.toString())
+
+            fun handleTypes(fs: FileSystem, json: JsonObject): JsonObject {
+              val type = json.getString("type", "")
+              val version = json.getDouble("version", NumberConstants.CURRENT_VERSION)
+              return when (type) {
+                MESSAGE -> message(fs, json, directlySend = {}, indirectlySend = {})
+                SEARCH -> searchUser(fs, json)
+                FRIEND -> friend(fs, json)
+                USER -> userAuthorize(fs, json)
+                else -> defaultMessage(fs, json)
               }
             }
+
+            val ret = handleTypes(vertx.fileSystem(), json)
+            req.response()
+              .putHeader("content-type", "application/json")
+              .end(ret.toString())
           }
-        }
-        else{
+        } else {
           req.response().end("""{"info":"request method is not POST"}""")
         }
       }
-    }.listen(port){
-      if(it.succeeded()){
+    }.listen(port) {
+      if (it.succeeded()) {
         println(this.javaClass.name + " is deployed on $port port")
-      }else{
+      } else {
         println("deploy on $port failed")
       }
     }

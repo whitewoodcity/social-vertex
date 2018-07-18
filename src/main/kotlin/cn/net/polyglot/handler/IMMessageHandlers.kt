@@ -1,26 +1,16 @@
 package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.ActionConstants.*
-import cn.net.polyglot.config.NumberConstants
-import cn.net.polyglot.config.TypeConstants.*
+import cn.net.polyglot.config.FileSystemConstants.USER_DIR
+import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.utils.contains
 import cn.net.polyglot.utils.getUserDirAndFile
+import cn.net.polyglot.utils.removeCrypto
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
+import java.io.File.separator
 
-fun handleTypes(fs: FileSystem, json: JsonObject): JsonObject {
-  val type = json.getString("type", "")
-  val version = json.getDouble("version", NumberConstants.CURRENT_VERSION)
-  return when (type) {
-    MESSAGE -> message(fs, json)// TODO
-    SEARCH -> searchUser(fs, json)// TODO
-    FRIEND -> friend(fs, json)
-    USER -> userAuthorize(fs, json)
-    else -> defaultMessage(fs, json)
-  }
-}
-
-fun userAuthorize(fs: FileSystem, json: JsonObject): JsonObject {
+fun userAuthorize(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): JsonObject {
   val action = json.getString("action")
 
   val id = json.getString("user")
@@ -41,22 +31,68 @@ fun userAuthorize(fs: FileSystem, json: JsonObject): JsonObject {
 
   val (userDir, userFile) = getUserDirAndFile(id)
   return when (action) {
-    LOGIN -> handleUserLogin(fs, userFile, id, crypto, json)
-    REGISTRY -> handleUserRegistry(fs, userFile, json, id, userDir)
+    LOGIN -> handleUserLogin(fs, json, userFile, id, crypto, loginTcpAction)
+    REGISTRY -> handleUserRegistry(fs, json, userFile, id, userDir)
     else -> defaultMessage(fs, json)
   }
 }
 
 
 fun searchUser(fs: FileSystem, json: JsonObject): JsonObject {
-  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  val id = json.getString("user")
+  val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
+
+  try {
+    val buffer = fs.readFileBlocking(userFile)
+    val resJson = buffer.toJsonObject()
+    resJson.removeCrypto()
+    json.put("user", resJson)
+  } catch (e: Exception) {
+    json.putNull("user")
+  } finally {
+    return json
+  }
 }
 
-fun message(fs: FileSystem, json: JsonObject): JsonObject {
-  TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+/**
+ *
+ * @param fs FileSystem
+ * @param json JsonObject
+ * @param directlySend () -> Unit 直接发送
+ * @param indirectlySend () -> Unit 非直接发送。适用于不同域名以及对方不在线时的场景
+ * @return JsonObject
+ */
+fun message(fs: FileSystem, json: JsonObject,
+            directlySend: (to: String) -> Unit = {},
+            indirectlySend: () -> Unit = {}): JsonObject {
+  val from = json.getString("from")
+  val to = json.getString("to")
+  val body = json.getString("body")
+
+  if (isSameDomain(from, to)) {
+    val userDir = "$USER_DIR$separator$to"
+    val receiverExist = fs.existsBlocking(userDir)
+    if (receiverExist) {
+      json.put("info", "OK")
+      directlySend(to)
+    } else {
+      json.put("info", "no such user $to")
+      indirectlySend()
+    }
+  } else {
+    indirectlySend()
+  }
+  return json
 }
 
-fun friend(fs: FileSystem, json: JsonObject): JsonObject {
+fun isSameDomain(from: String?, to: String?): Boolean {
+  if (from == null || to == null) return false
+  return from.substringAfterLast("@") == to.substringAfterLast("@")
+}
+
+fun friend(fs: FileSystem, json: JsonObject,
+           directlySend: () -> Unit = {},
+           indirectlySend: () -> Unit = {}): JsonObject {
   val action = json.getString("action")
   val from = json.getString("from")
   val to = json.getString("to")

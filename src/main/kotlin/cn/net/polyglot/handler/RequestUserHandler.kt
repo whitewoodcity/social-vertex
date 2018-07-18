@@ -20,6 +20,7 @@ import java.io.File
  * @param fs FileSystem
  * @param json JsonObject
  */
+@Deprecated("")
 fun Message<JsonObject>.handleUser(fs: FileSystem, json: JsonObject) {
   val action = json.getString("action")
 
@@ -34,12 +35,12 @@ fun Message<JsonObject>.handleUser(fs: FileSystem, json: JsonObject) {
   }
 }
 
+@Deprecated("")
 private fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String, id: String?, crypto: String?, json: JsonObject) {
   fs.readFile(userFile) {
     if (it.succeeded()) {
       val resJson = it.result().toJsonObject()
-      if (resJson.getString("user") == id &&
-        resJson.getString("crypto") == crypto) {
+      if (authorizeLogin(resJson, id, crypto)) {
         val userJson = JsonObject(mapOf(
           "id" to id
         ))
@@ -52,12 +53,14 @@ private fun Message<JsonObject>.handleUserLogin(fs: FileSystem, userFile: String
       // not succeed means the file not exists
       json.putNull("user")
       json.put("info", "the user $id not exists")
+      json.put("login", false)
     }
     json.removeCrypto()
     this.reply(json)
   }
 }
 
+@Deprecated("")
 private fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: String, json: JsonObject, id: String?, userDir: String) {
   fs.exists(userFile) {
     // if exists then failed
@@ -91,6 +94,7 @@ private fun Message<JsonObject>.handleUserRegistry(fs: FileSystem, userFile: Str
   }
 }
 
+@Deprecated("")
 fun Message<JsonObject>.registryDefaultFailed(json: JsonObject) {
   registryDefaultFailedJson(json)
   this.reply(json)
@@ -118,6 +122,7 @@ fun String.checkCryptoValid(): Boolean {
  * @param json JsonObject
  * @param crypto String
  */
+@Deprecated("")
 fun Message<JsonObject>.handleUserCheckIdAndCrypto(id: String, json: JsonObject, crypto: String) {
   if (!id.checkIdValid()) {
     json.put("info", "用户名格式错误")
@@ -130,28 +135,42 @@ fun Message<JsonObject>.handleUserCheckIdAndCrypto(id: String, json: JsonObject,
 }
 
 
-fun handleUserLogin(fs: FileSystem, userFile: String, id: String?, crypto: String?, json: JsonObject): JsonObject {
+fun handleUserLogin(fs: FileSystem, json: JsonObject, userFile: String, id: String?, crypto: String?, loginTcpAction: () -> Unit): JsonObject {
   try {
     val resJson = fs.readFileBlocking(userFile).toJsonObject()
-    if (resJson.getString("user") == id &&
-      resJson.getString("crypto") == crypto) {
+    if (authorizeLogin(resJson, id, crypto)) {
       val userJson = JsonObject(mapOf(
         "id" to id
       ))
       json.put("user", userJson)
       json.put("login", true)
+      loginTcpAction()
     } else {
+      json.put("info", "密码不正确")
       json.put("login", false)
     }
   } catch (e: Exception) {
+    e.printStackTrace()
     json.putNull("user")
     json.put("info", "the user $id not exists")
+    json.put("login", false)
   } finally {
     return json
   }
 }
 
-fun handleUserRegistry(fs: FileSystem, userFile: String, json: JsonObject, id: String?, userDir: String): JsonObject {
+/**
+ *
+ * @param resJson JsonObject
+ * @param id String?
+ * @param crypto String?
+ * @return Boolean
+ */
+private fun authorizeLogin(resJson: JsonObject, id: String?, crypto: String?) =
+  resJson.getString("user") == id &&
+    resJson.getString("crypto") == crypto
+
+fun handleUserRegistry(fs: FileSystem, json: JsonObject, userFile: String, id: String?, userDir: String): JsonObject {
   if (fs.existsBlocking(userFile)) {
     registryDefaultFailedJson(json)
   } else {

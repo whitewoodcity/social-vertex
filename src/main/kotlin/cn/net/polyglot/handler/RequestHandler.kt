@@ -13,6 +13,7 @@ import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import java.io.File.separator
 
+@Deprecated("")
 fun Message<JsonObject>.handleEventBus(vertx: Vertx) {
   val fs = vertx.fileSystem()
   val json = this.body()
@@ -29,6 +30,7 @@ fun Message<JsonObject>.handleEventBus(vertx: Vertx) {
   }
 }
 
+@Deprecated("")
 fun Message<JsonObject>.handleMessage(fs: FileSystem, json: JsonObject) {
   val from = json.getString("from")
   val to = json.getString("to")
@@ -47,6 +49,7 @@ fun Message<JsonObject>.handleMessage(fs: FileSystem, json: JsonObject) {
   }
 }
 
+@Deprecated("")
 fun Message<JsonObject>.handleSearch(fs: FileSystem, json: JsonObject) {
   val id = json.getString("user")
   val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
@@ -63,6 +66,7 @@ fun Message<JsonObject>.handleSearch(fs: FileSystem, json: JsonObject) {
   }
 }
 
+@Deprecated("")
 fun Message<JsonObject>.defaultMessage(fs: FileSystem, json: JsonObject) {
   json.removeAll { it.key !in arrayOf("version", "type") }
   json.put("info", "Default info, please check all sent value is correct.")
