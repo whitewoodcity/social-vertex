@@ -2,7 +2,6 @@ package cn.net.polyglot
 
 import cn.net.polyglot.config.ConfigLoader
 import cn.net.polyglot.verticle.IMHttpServerVerticle
-import cn.net.polyglot.verticle.IMMessageVerticle
 import cn.net.polyglot.verticle.IMTcpServerVerticle
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.DeploymentOptions
@@ -39,8 +38,6 @@ retriever.getConfig { ar ->
 }
 
 private void deployVerticles(JsonObject config) {
-  vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
-
 //   8081
   ConfigLoader.portInc(config)
   vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))

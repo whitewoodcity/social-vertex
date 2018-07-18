@@ -3,10 +3,7 @@ package cn.net.polyglot.handler
 import cn.net.polyglot.config.ActionConstants.*
 import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
-import cn.net.polyglot.utils.contains
-import cn.net.polyglot.utils.getUserDirAndFile
-import cn.net.polyglot.utils.mkdirsIfNotExists
-import cn.net.polyglot.utils.toJsonArray
+import cn.net.polyglot.utils.*
 import io.vertx.core.CompositeFuture
 import io.vertx.core.Future
 import io.vertx.core.buffer.Buffer
@@ -20,7 +17,7 @@ import java.io.File
  * @author zxj5470
  * @date 2018/7/11
  */
-
+@Deprecated("")
 fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
   val action = json.getString("action")
   val from = json.getString("from")
@@ -37,6 +34,7 @@ fun Message<JsonObject>.handleFriend(fs: FileSystem, json: JsonObject) {
   }
 }
 
+@Deprecated("")
 private fun Message<JsonObject>.checkFromValid(json: JsonObject) {
   if ("from" !in json) {
     json.put("info", "failed for lack of key `from` ")
@@ -44,6 +42,7 @@ private fun Message<JsonObject>.checkFromValid(json: JsonObject) {
   }
 }
 
+@Deprecated("")
 private fun Message<JsonObject>.handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: String?) {
   val (userDir, _) = getUserDirAndFile(to)
   fs.exists(userDir) { it ->
@@ -61,9 +60,9 @@ private fun Message<JsonObject>.handleFriendDelete(fs: FileSystem, json: JsonObj
       this.reply(json)
     }
   }
-
 }
 
+@Deprecated("")
 private fun Message<JsonObject>.handleFriendRequest(json: JsonObject) {
   json.put("info", "请求信息已发送")
   this.reply(json)
@@ -75,6 +74,7 @@ private fun Message<JsonObject>.handleFriendRequest(json: JsonObject) {
  * @param fs FileSystem
  * @param json JsonObject
  */
+@Deprecated("")
 private fun Message<JsonObject>.handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: String?) {
   val accept = json.getBoolean("accept")
   checkAcceptKey(accept, json)
@@ -108,14 +108,7 @@ private fun Message<JsonObject>.handleFriendResponse(fs: FileSystem, json: JsonO
   }
 }
 
-private fun Message<JsonObject>.checkAcceptKey(accept: Boolean?, json: JsonObject) {
-  if (accept == null) {
-    json.put("info", "参数格式错误")
-    this.reply(json)
-  }
-}
-
-
+@Deprecated("")
 private fun Message<JsonObject>.handleFriendList(fs: FileSystem, json: JsonObject, from: String?, to: String?) {
   val (userDir, _) = getUserDirAndFile(from)
   val friendDir = userDir + File.separator + FRIENDS
@@ -159,5 +152,88 @@ private fun getFriendsDir(from: String?, to: String?): String {
   return friendDir + File.separator + to
 }
 
+@Deprecated("")
+private fun Message<JsonObject>.checkAcceptKey(accept: Boolean?, json: JsonObject) {
+  if (accept == null) {
+    json.put("info", "参数格式错误")
+    this.reply(json)
+  }
+}
 
+fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: String?): JsonObject {
+  val (userDir, _) = getUserDirAndFile(to)
+  val exist = fs.existsBlocking(userDir)
+  if (exist) {
+    json.put("info", "$from 删除好友 $to")
+    return json
+  } else {
+    json.put("info", "$to 用户不存在")
+    json.putNull("user")
+    return json
+  }
+}
 
+fun handleFriendRequest(fs: FileSystem, json: JsonObject): JsonObject {
+  json.put("info", "请求信息已发送")
+  return json
+}
+
+fun handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: String?): JsonObject {
+  val accept = json.getBoolean("accept")
+  if (accept == null) {
+    json.put("info", "参数格式错误")
+    return json
+  }
+
+  val group = json.getString("group") ?: "我的好友"
+  val info =
+    if (accept) "对方已接受您的好友请求"
+    else "对方拒绝了您的好友请求"
+  json.put("info", info)
+  // 添加接受者的好友
+  val friendDirFromTo = getFriendsDir(from, to)
+  if (accept) {
+    try {
+      fs.mkdirsBlocking(friendDirFromTo)
+      val filePath = friendDirFromTo + File.separator + USER_FILE
+      val writeJson = JsonObject().apply {
+        put("id", to)
+        put("nickname", to)
+        put("group", group)
+      }
+      fs.writeFileBlocking(filePath, writeJson.toBuffer())
+      json.put("status", 0)
+    } catch (e: Exception) {
+      json.put("status", 1)
+      return json
+    }
+  }
+  return json
+}
+
+fun handleFriendList(fs: FileSystem, json: JsonObject, from: String?, to: String?): JsonObject {
+  val (userDir, _) = getUserDirAndFile(from)
+  val friendDir = userDir + File.separator + FRIENDS
+
+  try {
+    val files = fs.readDirBlocking(friendDir)
+    val friendUserFiles = files.map { it + File.separator + USER_FILE }
+    val groupByToJsonArray = friendUserFiles.map {
+      fs.readFileBlocking(it).toJsonObject()
+    }.groupBy {
+      it.getString("group")
+    }.map {
+      JsonObject().apply {
+        put("group", it.key)
+        it.value.forEach { it.remove("group") }
+        put("lists", it.value)
+      }
+    }.toJsonArray()
+    json.put("results", groupByToJsonArray)
+    return json
+  } catch (e: Exception) {
+    e.printStackTrace()
+    json.putNullable("info", e.message)
+    return json
+  }
+}

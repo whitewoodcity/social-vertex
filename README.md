@@ -182,7 +182,8 @@ class User {
 "action":"registry",
 "user":"zxj5470",
 "version":0.1,
-"info":"succeed."
+"info":"注册成功",
+"registry":true
 }
 ```
 
