@@ -6,6 +6,7 @@ import cn.net.polyglot.config.ActionConstants.LOGIN
 import cn.net.polyglot.config.ActionConstants.REGISTRY
 import cn.net.polyglot.config.ActionConstants.REQUEST
 import cn.net.polyglot.config.ActionConstants.RESPONSE
+import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.config.TypeConstants.FRIEND
@@ -93,21 +94,25 @@ fun message(fs: FileSystem, json: JsonObject,
       else -> from.substringAfterLast("@") == to.substringAfterLast("@")
     }
 
-  if (isSameDomain) {
-    val userDir = "$USER_DIR$separator$to"
-    val receiverExist = fs.existsBlocking(userDir)
-    if (receiverExist) {
-      outputJson.put("info", "OK")
-      directlySend(to)
+  val userDir = "$USER_DIR$separator$from$separator$FRIENDS$separator$to"
+  try {
+    if (isSameDomain) {
+      val receiverExist = fs.existsBlocking(userDir)
+      if (receiverExist) {
+        outputJson.put("info", "OK")
+        directlySend(to)
+      } else {
+        outputJson.put("info", "no such user $to")
+      }
     } else {
-      outputJson.put("info", "no such user $to")
+      outputJson.put("info", "send message to other domain")
       indirectlySend(to)
     }
-  } else {
-    outputJson.put("info", "send message to other domain")
-    indirectlySend(to)
+  } catch (e: Exception) {
+    outputJson.put("info", "no such friend $to")
+  } finally {
+    return outputJson
   }
-  return outputJson
 }
 
 fun friend(fs: FileSystem, json: JsonObject): JsonObject {

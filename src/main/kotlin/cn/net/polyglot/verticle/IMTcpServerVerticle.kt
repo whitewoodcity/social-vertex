@@ -17,6 +17,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 import io.vertx.ext.web.client.WebClient
+import java.util.*
 
 /**
  * @author zxj5470
@@ -27,7 +28,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private val socketMap = hashMapOf<String, NetSocket>()
   private val activeMap = hashMapOf<String, Long>()
   // trigger NPE in unit test if initialize by ClassLoader
-  lateinit var webClient: WebClient
+  private lateinit var webClient: WebClient
 
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
@@ -56,7 +57,9 @@ class IMTcpServerVerticle : AbstractVerticle() {
         activeMap[socketId] = System.currentTimeMillis()
         socketMap[socketId] = socket
 
-        System.err.println("$socketId\n${it.text()}")
+        val time = Calendar.getInstance().time
+        System.err.println("$time $socketId\n${it.text()}")
+
         val json = it.text().tryJson()
 
         if (json == null) {
@@ -67,7 +70,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
           val version = json.getDouble("version", CURRENT_VERSION)
 
           if (type == MESSAGE) {
-            handleMessage(fs, json, port, socket)
+            handleMessage(fs, json, socket)
           } else {
             val ret = when (type) {
               SEARCH -> searchUser(fs, json)
@@ -128,25 +131,30 @@ class IMTcpServerVerticle : AbstractVerticle() {
     socketMap[socketId] = socket
   }
 
-  private fun handleMessage(fs: FileSystem, json: JsonObject, port: Int, socket: NetSocket) {
-    val ret = message(fs, json, directlySend = { toUser ->
-      val id = idMap[toUser] ?: return@message
-      val toSocket = socketMap[id] ?: return@message
-      val activeSocketTime = activeMap[id] ?: return@message
-      if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
-        toSocket.write(json.toBuffer())
-      }
-    }, indirectlySend = { toUser ->
-      // 发送至跨域名的服务器，使用 WebClient
-      val host = toUser.substringAfter('@')
-      val p = getHttpPortFromDomain(host)
-      webClient.post(p, host, "/").sendJsonObject(json) {
-        if (it.succeeded()) {
-//          val webClientJsonObject = it.result().bodyAsJsonObject()
-//          socket.write(webClientJsonObject.toBuffer())
+  private fun handleMessage(fs: FileSystem, json: JsonObject, socket: NetSocket) {
+    val ret = message(fs, json,
+
+      directlySend = { toUser ->
+        val id = idMap[toUser] ?: return@message
+        val toSocket = socketMap[id] ?: return@message
+        val activeSocketTime = activeMap[id] ?: return@message
+        if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
+          toSocket.write(json.toBuffer())
+          println(json)
         }
-      }
-    })
+      },
+
+      indirectlySend = { toUser ->
+        // 发送至跨域名的服务器，使用 WebClient
+        val host = toUser.substringAfter('@')
+        val p = getHttpPortFromDomain(host)
+        webClient.post(p, host, "/").sendJsonObject(json) {
+          if (it.succeeded()) {
+            val webClientJsonObject = it.result().bodyAsJsonObject()
+            socket.write(webClientJsonObject.toBuffer())
+          }
+        }
+      })
     socket.write(ret.toBuffer())
   }
 }
