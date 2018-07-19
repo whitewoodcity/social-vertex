@@ -5,7 +5,10 @@ package cn.net.polyglot.handler
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.config.NumberConstants.CURRENT_VERSION
-import cn.net.polyglot.config.TypeConstants.*
+import cn.net.polyglot.config.TypeConstants.FRIEND
+import cn.net.polyglot.config.TypeConstants.MESSAGE
+import cn.net.polyglot.config.TypeConstants.SEARCH
+import cn.net.polyglot.config.TypeConstants.USER
 import cn.net.polyglot.utils.removeCrypto
 import io.vertx.core.Vertx
 import io.vertx.core.eventbus.Message

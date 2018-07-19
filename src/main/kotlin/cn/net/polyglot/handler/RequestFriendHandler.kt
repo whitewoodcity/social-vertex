@@ -1,6 +1,9 @@
 package cn.net.polyglot.handler
 
-import cn.net.polyglot.config.ActionConstants.*
+import cn.net.polyglot.config.ActionConstants.DELETE
+import cn.net.polyglot.config.ActionConstants.LIST
+import cn.net.polyglot.config.ActionConstants.REQUEST
+import cn.net.polyglot.config.ActionConstants.RESPONSE
 import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.utils.*

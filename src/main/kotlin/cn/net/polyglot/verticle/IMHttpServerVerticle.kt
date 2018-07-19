@@ -2,7 +2,10 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
 import cn.net.polyglot.config.NumberConstants
-import cn.net.polyglot.config.TypeConstants.*
+import cn.net.polyglot.config.TypeConstants.FRIEND
+import cn.net.polyglot.config.TypeConstants.MESSAGE
+import cn.net.polyglot.config.TypeConstants.SEARCH
+import cn.net.polyglot.config.TypeConstants.USER
 import cn.net.polyglot.handler.*
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
