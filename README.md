@@ -121,7 +121,7 @@ type类型有：
 ```
 json 结果 `d.ts` 描述。
 ```typescript
-class RootObject {
+class ListObject {
   type: string;
   action: string;
   from: string;
@@ -155,15 +155,27 @@ class User {
 登录返回结果  
 ```json
 {
-"type":"user",
-"action":"login",
-"user":{
-  "id":"zxj5470"
+  "type": "user",
+  "action": "login",
+  "user": {
+    "id": "zxj@polyglot.net.cn"
   },
-"version":0.1,
-"login":true
+  "version": 0.1,
+  "results": [
+    {
+      "group": "我的好友",
+      "lists": [
+        {
+          "id": "customer@w2v4.com",
+          "nickname": "customer@w2v4.com"
+        }
+      ]
+    }
+  ],
+  "login": true
 }
 ```
+`results` 结构见 `friend-list`
 
 #### 用户注册
 ```json
