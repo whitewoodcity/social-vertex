@@ -1,6 +1,11 @@
 package cn.net.polyglot.handler
 
-import cn.net.polyglot.config.ActionConstants.*
+import cn.net.polyglot.config.ActionConstants.DELETE
+import cn.net.polyglot.config.ActionConstants.LIST
+import cn.net.polyglot.config.ActionConstants.LOGIN
+import cn.net.polyglot.config.ActionConstants.REGISTRY
+import cn.net.polyglot.config.ActionConstants.REQUEST
+import cn.net.polyglot.config.ActionConstants.RESPONSE
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.utils.contains
@@ -87,6 +92,7 @@ fun message(fs: FileSystem, json: JsonObject,
 
 fun isSameDomain(from: String?, to: String?): Boolean {
   if (from == null || to == null) return false
+  if ('@' !in from || '@' !in to) return true
   return from.substringAfterLast("@") == to.substringAfterLast("@")
 }
 
