@@ -2,7 +2,6 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.testframework.configPort
 import cn.net.polyglot.utils.text
-import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -22,7 +21,6 @@ class IMHttpServerVerticleTest {
   @Before
   fun before(context: TestContext) {
     vertx = Vertx.vertx()
-    vertx.deployVerticle(IMMessageVerticle::class.java.name,context.asyncAssertSuccess())
     client = WebClient.create(vertx)
     val opt = configPort(port)
     vertx.deployVerticle(IMHttpServerVerticle::class.java.name, opt,context.asyncAssertSuccess())

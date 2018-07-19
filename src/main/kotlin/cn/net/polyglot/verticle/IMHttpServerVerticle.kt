@@ -2,15 +2,11 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.DEFAULT_PORT
 import cn.net.polyglot.config.NumberConstants
-import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
-import cn.net.polyglot.config.TypeConstants.SEARCH
-import cn.net.polyglot.config.TypeConstants.USER
-import cn.net.polyglot.handler.*
+import cn.net.polyglot.handler.handleRequests
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.file.FileSystem
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 
@@ -32,25 +28,32 @@ class IMHttpServerVerticle : AbstractVerticle() {
               .end("""{"info":"json format error"}""")
           } else {
 
-            fun handleTypes(fs: FileSystem, json: JsonObject): JsonObject {
-              val type = json.getString("type", "")
-              val version = json.getDouble("version", NumberConstants.CURRENT_VERSION)
-              return when (type) {
-                MESSAGE -> message(fs, json, directlySend = {}, indirectlySend = {})
-                SEARCH -> searchUser(fs, json)
-                FRIEND -> friend(fs, json)
-                USER -> userAuthorize(fs, json)
-                else -> defaultMessage(fs, json)
-              }
-            }
+            val fs = vertx.fileSystem()
+            val type = json.getString("type", "")
+            val version = json.getDouble("version", NumberConstants.CURRENT_VERSION)
 
-            val ret = handleTypes(vertx.fileSystem(), json)
-            req.response()
-              .putHeader("content-type", "application/json")
-              .end(ret.toString())
+            if (type == MESSAGE) {
+              // Message 为 接收到 TcpVerticle 发送出的 HTTP 请求
+              vertx.eventBus().send<JsonObject>(IMHttpServerVerticle::class.java.name, json) {
+                if (it.succeeded()) {
+                  val msg = it.result().body()
+                  req.response()
+                    .putHeader("content-type", "application/json")
+                    .end(msg.toString())
+                }
+              }
+            } else {
+              val ret = handleRequests(fs, json, type)
+              println(ret)
+              req.response()
+                .putHeader("content-type", "application/json")
+                .end(ret.toString())
+            }
           }
         } else {
-          req.response().end("""{"info":"request method is not POST"}""")
+          req.response()
+            .putHeader("content-type", "application/json")
+            .end("""{"info":"request method is not POST"}""")
         }
       }
     }.listen(port) {

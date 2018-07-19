@@ -167,8 +167,15 @@ fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: Stri
   val (userDir, _) = getUserDirAndFile(to)
   val exist = fs.existsBlocking(userDir)
   if (exist) {
-    json.put("info", "$from 删除好友 $to")
-    return json
+    try {
+      fs.deleteBlocking(userDir)
+      json.put("info", "$from 删除好友 $to")
+    } catch (e: Exception) {
+      json.put("info", "failed")
+      json.putNull("user")
+    } finally {
+      return json
+    }
   } else {
     json.put("info", "$to 用户不存在")
     json.putNull("user")
@@ -178,6 +185,7 @@ fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: Stri
 
 fun handleFriendRequest(fs: FileSystem, json: JsonObject): JsonObject {
   json.put("info", "请求信息已发送")
+  // TODO: send request to receiver
   return json
 }
 
@@ -214,7 +222,21 @@ fun handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: St
   return json
 }
 
-fun handleFriendList(fs: FileSystem, json: JsonObject, from: String?, to: String?): JsonObject {
+/**
+ * get the result when send json include
+ * ```
+ * {
+ * "type":"friend",
+ * "action":"list"
+ * }
+ * ```
+ * or get the result when `login`
+ * @param fs FileSystem
+ * @param json JsonObject
+ * @param from String?
+ * @return JsonObject
+ */
+fun handleFriendList(fs: FileSystem, json: JsonObject, from: String?): JsonObject {
   val (userDir, _) = getUserDirAndFile(from)
   val friendDir = userDir + File.separator + FRIENDS
 

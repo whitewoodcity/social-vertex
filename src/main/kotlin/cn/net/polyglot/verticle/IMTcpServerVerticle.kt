@@ -7,10 +7,13 @@ import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
+import cn.net.polyglot.config.getHttpPortFromDomain
 import cn.net.polyglot.handler.*
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
+import io.vertx.core.file.FileSystem
+import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 import io.vertx.ext.web.client.WebClient
@@ -23,11 +26,29 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private val idMap = hashMapOf<String, String>()
   private val socketMap = hashMapOf<String, NetSocket>()
   private val activeMap = hashMapOf<String, Long>()
-  private val webClient = WebClient.create(vertx)
+  // trigger NPE in unit test if initialize by ClassLoader
+  lateinit var webClient: WebClient
 
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
     val options = NetServerOptions().setTcpKeepAlive(true)
+    val fs = vertx.fileSystem()
+    webClient = WebClient.create(vertx)
+
+    // get message from IMHttpServerVerticle eventBus
+    vertx.eventBus().localConsumer<JsonObject>(IMHttpServerVerticle::class.java.name) {
+      val json = it.body()
+      val type = json.getString("type")
+      val toUser = json.getString("to")
+      if (type == MESSAGE) {
+        val id = idMap[toUser] ?: return@localConsumer
+        val toSocket = socketMap[id] ?: return@localConsumer
+        val activeSocketTime = activeMap[id] ?: return@localConsumer
+        if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
+          toSocket.write(json.toBuffer())
+        }
+      }
+    }
 
     vertx.createNetServer(options).connectHandler { socket ->
       socket.handler {
@@ -35,43 +56,29 @@ class IMTcpServerVerticle : AbstractVerticle() {
         activeMap[socketId] = System.currentTimeMillis()
         socketMap[socketId] = socket
 
-        System.err.println(socketId + it.text())
+        System.err.println("$socketId\n${it.text()}")
         val json = it.text().tryJson()
 
         if (json == null) {
           socket.write("""{"info":"json format error"}""")
         } else {
 
-          val fs = vertx.fileSystem()
           val type = json.getString("type", "")
           val version = json.getDouble("version", CURRENT_VERSION)
 
-          val ret = when (type) {
-            MESSAGE -> {
-              message(fs, json, directlySend = { to ->
-                val id = idMap[to] ?: return@message
-                val toSocket = socketMap[id] ?: return@message
-                val activeSocketTime = activeMap[id] ?: return@message
-                if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
-                  toSocket.write(json.toBuffer())
-                }
-              }, indirectlySend = {
-                // TODO
+          if (type == MESSAGE) {
+            handleMessage(fs, json, port, socket)
+          } else {
+            val ret = when (type) {
+              SEARCH -> searchUser(fs, json)
+              FRIEND -> friend(fs, json)
+              USER -> userAuthorize(fs, json, loginTcpAction = {
+                loginTcpAction(json, socketId, socket)
               })
+              else -> defaultMessage(fs, json)
             }
-            SEARCH -> searchUser(fs, json)
-            FRIEND -> friend(fs, json)
-            USER -> userAuthorize(fs, json, loginTcpAction = {
-              val user = json.getJsonObject("user").getString("id")
-              // map user to socketId
-              idMap[user] = socketId
-              activeMap[socketId] = System.currentTimeMillis()
-              socketMap[socketId] = socket
-            })
-            else -> defaultMessage(fs, json)
+            socket.write(ret.toString())
           }
-
-          socket.write(ret.toString())
         }
       }
 
@@ -111,5 +118,35 @@ class IMTcpServerVerticle : AbstractVerticle() {
         System.err.println("bind port $port failed")
       }
     }
+  }
+
+  private fun loginTcpAction(json: JsonObject, socketId: String, socket: NetSocket) {
+    val user = json.getJsonObject("user").getString("id")
+    // map user to socketId
+    idMap[user] = socketId
+    activeMap[socketId] = System.currentTimeMillis()
+    socketMap[socketId] = socket
+  }
+
+  private fun handleMessage(fs: FileSystem, json: JsonObject, port: Int, socket: NetSocket) {
+    val ret = message(fs, json, directlySend = { toUser ->
+      val id = idMap[toUser] ?: return@message
+      val toSocket = socketMap[id] ?: return@message
+      val activeSocketTime = activeMap[id] ?: return@message
+      if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
+        toSocket.write(json.toBuffer())
+      }
+    }, indirectlySend = { toUser ->
+      // 发送至跨域名的服务器，使用 WebClient
+      val host = toUser.substringAfter('@')
+      val p = getHttpPortFromDomain(host)
+      webClient.post(p, host, "/").sendJsonObject(json) {
+        if (it.succeeded()) {
+//          val webClientJsonObject = it.result().bodyAsJsonObject()
+//          socket.write(webClientJsonObject.toBuffer())
+        }
+      }
+    })
+    socket.write(ret.toBuffer())
   }
 }

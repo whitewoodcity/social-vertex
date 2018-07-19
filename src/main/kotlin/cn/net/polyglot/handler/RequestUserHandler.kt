@@ -143,6 +143,8 @@ fun handleUserLogin(fs: FileSystem, json: JsonObject, userFile: String, id: Stri
         "id" to id
       ))
       json.put("user", userJson)
+//      json.put("")
+      handleFriendList(fs, json, id)
       json.put("login", true)
       loginTcpAction()
     } else {
@@ -155,6 +157,7 @@ fun handleUserLogin(fs: FileSystem, json: JsonObject, userFile: String, id: Stri
     json.put("info", "the user $id not exists")
     json.put("login", false)
   } finally {
+    json.removeCrypto()
     return json
   }
 }

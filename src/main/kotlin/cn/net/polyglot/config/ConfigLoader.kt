@@ -72,7 +72,19 @@ fun makeAppDirs(vertx: Vertx) {
   }
 }
 
-fun makeDirsBlocking(vertx: Vertx){
-  val fs =  vertx.fileSystem()
+fun makeDirsBlocking(vertx: Vertx) {
+  val fs = vertx.fileSystem()
   fs.mkdirsBlocking(USER_DIR)
+}
+
+/**
+ * temporary API. It should be write on
+ * @param domain String
+ * @return Int
+ */
+fun getHttpPortFromDomain(domain: String): Int {
+  return when (domain) {
+    "polyzxj2.net.cn" -> 8086
+    else -> 8081
+  }
 }

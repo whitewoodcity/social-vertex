@@ -8,12 +8,24 @@ import cn.net.polyglot.config.ActionConstants.REQUEST
 import cn.net.polyglot.config.ActionConstants.RESPONSE
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
+import cn.net.polyglot.config.TypeConstants.FRIEND
+import cn.net.polyglot.config.TypeConstants.SEARCH
+import cn.net.polyglot.config.TypeConstants.USER
 import cn.net.polyglot.utils.contains
 import cn.net.polyglot.utils.getUserDirAndFile
 import cn.net.polyglot.utils.removeCrypto
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import java.io.File.separator
+
+fun handleRequests(fs: FileSystem, json: JsonObject, type: String): JsonObject {
+  return when (type) {
+    SEARCH -> searchUser(fs, json)
+    FRIEND -> friend(fs, json)
+    USER -> userAuthorize(fs, json)
+    else -> defaultMessage(fs, json)
+  }
+}
 
 fun userAuthorize(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): JsonObject {
   val action = json.getString("action")
@@ -69,36 +81,36 @@ fun searchUser(fs: FileSystem, json: JsonObject): JsonObject {
  */
 fun message(fs: FileSystem, json: JsonObject,
             directlySend: (to: String) -> Unit = {},
-            indirectlySend: () -> Unit = {}): JsonObject {
-  val from = json.getString("from")
-  val to = json.getString("to")
-  val body = json.getString("body")
+            indirectlySend: (to: String) -> Unit = { }): JsonObject {
+  val outputJson = json.copy()
+  val from = outputJson.getString("from")
+  val to = outputJson.getString("to")
 
-  if (isSameDomain(from, to)) {
+  val isSameDomain =
+    when {
+      from == null || to == null -> false
+      '@' !in from || '@' !in to -> true
+      else -> from.substringAfterLast("@") == to.substringAfterLast("@")
+    }
+
+  if (isSameDomain) {
     val userDir = "$USER_DIR$separator$to"
     val receiverExist = fs.existsBlocking(userDir)
     if (receiverExist) {
-      json.put("info", "OK")
+      outputJson.put("info", "OK")
       directlySend(to)
     } else {
-      json.put("info", "no such user $to")
-      indirectlySend()
+      outputJson.put("info", "no such user $to")
+      indirectlySend(to)
     }
   } else {
-    indirectlySend()
+    outputJson.put("info", "send message to other domain")
+    indirectlySend(to)
   }
-  return json
+  return outputJson
 }
 
-fun isSameDomain(from: String?, to: String?): Boolean {
-  if (from == null || to == null) return false
-  if ('@' !in from || '@' !in to) return true
-  return from.substringAfterLast("@") == to.substringAfterLast("@")
-}
-
-fun friend(fs: FileSystem, json: JsonObject,
-           directlySend: () -> Unit = {},
-           indirectlySend: () -> Unit = {}): JsonObject {
+fun friend(fs: FileSystem, json: JsonObject): JsonObject {
   val action = json.getString("action")
   val from = json.getString("from")
   val to = json.getString("to")
@@ -117,7 +129,7 @@ fun friend(fs: FileSystem, json: JsonObject,
 //   reply whether to accept the request
     RESPONSE -> handleFriendResponse(fs, json, from, to)
 //    list friends
-    LIST -> handleFriendList(fs, json, from, to)
+    LIST -> handleFriendList(fs, json, from)
     else -> defaultMessage(fs, json)
   }
 }

@@ -12,7 +12,7 @@ import io.vertx.kotlin.core.DeploymentOptions
  * @author zxj5470
  * @date 2018/7/8
  */
-infix fun Any.shouldBe(other: Any) = (this == other).also { result ->
+infix fun Any.shouldBe(other: Any) = (this.toString() == other.toString()).also { result ->
   if (!result) {
     System.err.println("It should be \n$other\nBut actually it is \n$this")
   }

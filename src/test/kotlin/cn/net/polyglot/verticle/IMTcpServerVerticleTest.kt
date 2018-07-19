@@ -25,7 +25,6 @@ class IMTcpServerVerticleTest {
   @Before
   fun before(context: TestContext) {
     vertx = Vertx.vertx()
-    vertx.deployVerticle(IMMessageVerticle::class.java.name, context.asyncAssertSuccess())
     client = vertx.createNetClient()
     val opt = configPort(port)
     vertx.deployVerticle(IMTcpServerVerticle::class.java.name, opt,context.asyncAssertSuccess())
@@ -33,8 +32,6 @@ class IMTcpServerVerticleTest {
 
   @Test
   fun testApplication(context: TestContext) {
-    vertx.deployVerticle(IMMessageVerticle::class.java.name)
-
     val async = context.async()
     vertx.createNetClient().connect(port, "localhost") {
       if (it.succeeded()) {

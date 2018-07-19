@@ -14,7 +14,7 @@ class IMMessageVerticle : AbstractVerticle() {
   override fun start() {
     println(this.javaClass.name + " is deployed.")
 
-    vertx.eventBus().consumer<JsonObject>(IMMessageVerticle::class.java.name){
+    vertx.eventBus().consumer<JsonObject>(IMHttpServerVerticle::class.java.name) {
       it.handleEventBus(vertx)
     }
   }
