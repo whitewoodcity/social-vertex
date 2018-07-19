@@ -10,6 +10,7 @@ import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
+import io.vertx.ext.web.client.WebClient
 
 /**
  * @author zxj5470
@@ -19,6 +20,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private val idMap = hashMapOf<String, String>()
   private val socketMap = hashMapOf<String, NetSocket>()
   private val activeMap = hashMapOf<String, Long>()
+  private val webClient = WebClient.create(vertx)
 
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
