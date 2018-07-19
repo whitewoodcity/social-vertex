@@ -1,27 +1,42 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.testframework.VertxTestBase
+import cn.net.polyglot.testframework.configPort
 import cn.net.polyglot.utils.text
+import io.vertx.core.Vertx
+import io.vertx.core.net.NetClient
 import io.vertx.ext.unit.TestContext
+import io.vertx.ext.unit.junit.VertxUnitRunner
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
  * @author zxj5470
  * @date 2018/7/9
  */
-class IMTcpServerVerticleTest : VertxTestBase() {
-  override var currentPort = 8081
 
-  init {
-    setVerticle<IMTcpServerVerticle>()
+@RunWith(VertxUnitRunner::class)
+class IMTcpServerVerticleTest {
+  private lateinit var vertx: Vertx
+  private lateinit var client: NetClient
+  private val port = 8081
+
+  @Before
+  fun before(context: TestContext) {
+    vertx = Vertx.vertx()
+    vertx.deployVerticle(IMMessageVerticle::class.java.name, context.asyncAssertSuccess())
+    client = vertx.createNetClient()
+    val opt = configPort(port)
+    vertx.deployVerticle(IMTcpServerVerticle::class.java.name, opt,context.asyncAssertSuccess())
   }
 
   @Test
-  override fun testApplication(context: TestContext) {
+  fun testApplication(context: TestContext) {
     vertx.deployVerticle(IMMessageVerticle::class.java.name)
 
     val async = context.async()
-    vertx.createNetClient().connect(currentPort, "localhost") {
+    vertx.createNetClient().connect(port, "localhost") {
       if (it.succeeded()) {
         val socket = it.result()
 
@@ -37,5 +52,10 @@ class IMTcpServerVerticleTest : VertxTestBase() {
         }
       }
     }
+  }
+
+  @After
+  fun after(context: TestContext) {
+    vertx.close(context.asyncAssertSuccess())
   }
 }

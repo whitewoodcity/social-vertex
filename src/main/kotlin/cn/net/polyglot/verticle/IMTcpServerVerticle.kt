@@ -25,9 +25,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
 
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
-    val options = NetServerOptions().apply {
-      isTcpKeepAlive = true
-    }
+    val options = NetServerOptions().setTcpKeepAlive(true)
 
     vertx.createNetServer(options).connectHandler { socket ->
       socket.handler {
