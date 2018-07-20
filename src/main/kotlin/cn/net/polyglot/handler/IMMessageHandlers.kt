@@ -29,24 +29,27 @@ fun handleRequests(fs: FileSystem, json: JsonObject, type: String): JsonObject {
 }
 
 fun userAuthorize(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): JsonObject {
-  val action = json.getString("action")
-
   val id = json.getString("user")
   val crypto = json.getString("crypto")
-  fun handleUserCheckIdAndCrypto(id: String?, json: JsonObject, crypto: String?): Boolean {
-    if (id == null || crypto == null) return false
-    if (!id.checkIdValid()) {
-      json.put("info", "用户名格式错误")
-      return false
-    }
-    if (!crypto.checkCryptoValid()) {
-      json.put("info", "秘钥错误")
-      return false
-    }
-    return true
-  }
-  if (!handleUserCheckIdAndCrypto(id, json, crypto)) return json
 
+  val prior = when {
+    id == null || crypto == null -> {
+      json.put("info", "no id or no crypto")
+      false
+    }
+    !id.checkIdValid() -> {
+      json.put("info", "用户名格式错误")
+      false
+    }
+    !crypto.checkCryptoValid() -> {
+      json.put("info", "秘钥格式错误")
+      false
+    }
+    else -> true
+  }
+  if (!prior) return json
+
+  val action = json.getString("action")
   val (userDir, userFile) = getUserDirAndFile(id)
   return when (action) {
     LOGIN -> handleUserLogin(fs, json, userFile, id, crypto, loginTcpAction)
@@ -119,14 +122,15 @@ fun friend(fs: FileSystem, json: JsonObject): JsonObject {
   val action = json.getString("action")
   val from = json.getString("from")
   val to = json.getString("to")
-  fun checkFromValid(json: JsonObject): Boolean {
+
+  val checkValid =
     if ("from" !in json) {
       json.put("info", "failed on account of key")
-      return false
-    }
-    return true
-  }
-  if (!checkFromValid(json)) return json
+      false
+    } else true
+
+  if (!checkValid) return json
+
   return when (action) {
     DELETE -> handleFriendDelete(fs, json, from, to)
 //   request to be friends

@@ -10,11 +10,6 @@ import io.vertx.core.json.JsonObject
 
 Vertx vertx = vertx
 
-/**
- * load `config.json` at the place where in the same directory as the jar file ,
- * and it'll load inner file if `config.json` not exists
- * or the file is in a wrong json format.
- */
 options = ConfigLoader.options
 ConfigLoader.makeAppDirs(vertx)
 

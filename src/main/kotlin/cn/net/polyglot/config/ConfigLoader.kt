@@ -20,6 +20,11 @@ val fileStore = ConfigStoreOptions(
     "path" to "config.json"
   ))
 
+/**
+ * load `config.json` at the place where in the same directory as the jar file ,
+ * and it'll load inner file if `config.json` not exists
+ * or the file is in a wrong json format.
+ */
 val options = ConfigRetrieverOptions(stores = arrayListOf(fileStore))
 
 const val DEFAULT_PORT = 8080
@@ -70,11 +75,6 @@ fun makeAppDirs(vertx: Vertx) {
       }
     }
   }
-}
-
-fun makeDirsBlocking(vertx: Vertx) {
-  val fs = vertx.fileSystem()
-  fs.mkdirsBlocking(USER_DIR)
 }
 
 /**
