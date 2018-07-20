@@ -1,9 +1,11 @@
 package cn.net.polyglot.utils
 
+import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import io.vertx.core.file.FileSystem
-import java.io.File.separator
+import io.vertx.core.net.NetSocket
+import java.io.File.separator as slash
 
 /**
  * @author zxj5470
@@ -44,7 +46,25 @@ fun FileSystem.mkdirsIfNotExists(dirName: String = ".social-vertex", fail: () ->
  * @return Pair<String, String>
  */
 fun getUserDirAndFile(id: String?): Pair<String, String> {
-  val userDir = "$USER_DIR$separator$id"
-  val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
+  val userDir = "$USER_DIR$slash$id"
+  val userFile = "$USER_DIR$slash$id$slash$USER_FILE"
   return Pair(userDir, userFile)
+}
+
+/**
+ * @param from String
+ * @param to String
+ * @return String ".social-vertex/user/$from/friends/$to"
+ */
+fun getDistFromUserToDist(from: String, to: String): String {
+  return USER_DIR + slash + from + slash + FRIENDS + slash + to
+}
+
+/**
+ * avoid sticking packages, and `\r\n` should be handled at the client-side.
+ * @receiver NetSocket
+ * @param str String
+ */
+fun NetSocket.writeln(str: String) {
+  this.write(str + "\r\n")
 }

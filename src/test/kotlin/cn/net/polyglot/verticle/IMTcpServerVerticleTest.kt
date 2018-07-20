@@ -2,6 +2,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.testframework.configPort
 import cn.net.polyglot.utils.text
+import cn.net.polyglot.utils.writeln
 import io.vertx.core.Vertx
 import io.vertx.core.net.NetClient
 import io.vertx.ext.unit.TestContext
@@ -43,7 +44,7 @@ class IMTcpServerVerticleTest {
 
         var i = 0
         vertx.setPeriodic(2333L) {
-          socket.write("""{"type":"search","id":"zxj5470"}""")
+          socket.writeln("""{"type":"search","id":"zxj5470"}""")
           if (i < 3) i++
           else async.complete()
         }

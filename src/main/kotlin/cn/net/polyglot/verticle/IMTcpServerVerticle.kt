@@ -11,6 +11,7 @@ import cn.net.polyglot.config.getHttpPortFromDomain
 import cn.net.polyglot.handler.*
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
+import cn.net.polyglot.utils.writeln
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
@@ -46,7 +47,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         val toSocket = socketMap[id] ?: return@localConsumer
         val activeSocketTime = activeMap[id] ?: return@localConsumer
         if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
-          toSocket.write(json.toBuffer())
+          toSocket.writeln(json.toString())
         }
       }
     }
@@ -63,7 +64,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         val json = it.text().tryJson()
 
         if (json == null) {
-          socket.write("""{"info":"json format error"}""")
+          socket.writeln("""{"info":"json format error"}""")
         } else {
 
           val type = json.getString("type", "")
@@ -80,7 +81,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
               })
               else -> defaultMessage(fs, json)
             }
-            socket.write(ret.toString())
+            socket.writeln(ret.toString())
           }
         }
       }
@@ -139,7 +140,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         val toSocket = socketMap[id] ?: return@message
         val activeSocketTime = activeMap[id] ?: return@message
         if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
-          toSocket.write(json.toBuffer())
+          toSocket.writeln(json.toString())
           println(json)
         }
       },
@@ -151,10 +152,10 @@ class IMTcpServerVerticle : AbstractVerticle() {
         webClient.post(p, host, "/").sendJsonObject(json) {
           if (it.succeeded()) {
             val webClientJsonObject = it.result().bodyAsJsonObject()
-            socket.write(webClientJsonObject.toBuffer())
+            socket.writeln(webClientJsonObject.toString())
           }
         }
       })
-    socket.write(ret.toBuffer())
+    socket.writeln(ret.toString())
   }
 }

@@ -8,6 +8,7 @@ import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.http.HttpServerRequest
 import io.vertx.core.json.JsonObject
 
 /**
@@ -34,14 +35,7 @@ class IMHttpServerVerticle : AbstractVerticle() {
 
             if (type == MESSAGE) {
               // Message 为 接收到 TcpVerticle 发送出的 HTTP 请求
-              vertx.eventBus().send<JsonObject>(IMHttpServerVerticle::class.java.name, json) {
-                if (it.succeeded()) {
-                  val msg = it.result().body()
-                  req.response()
-                    .putHeader("content-type", "application/json")
-                    .end(msg.toString())
-                }
-              }
+              crossDomainMessage(json, req)
             } else {
               val ret = handleRequests(fs, json, type)
               println(ret)
@@ -61,6 +55,17 @@ class IMHttpServerVerticle : AbstractVerticle() {
         println(this.javaClass.name + " is deployed on $port port")
       } else {
         println("deploy on $port failed")
+      }
+    }
+  }
+
+  private fun crossDomainMessage(json: JsonObject?, req: HttpServerRequest) {
+    vertx.eventBus().send<JsonObject>(IMHttpServerVerticle::class.java.name, json) {
+      if (it.succeeded()) {
+        val msg = it.result().body()
+        req.response()
+          .putHeader("content-type", "application/json")
+          .end(msg.toString())
       }
     }
   }
