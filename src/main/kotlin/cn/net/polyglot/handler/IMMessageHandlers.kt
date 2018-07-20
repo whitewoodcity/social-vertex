@@ -123,13 +123,11 @@ fun friend(fs: FileSystem, json: JsonObject): JsonObject {
   val from = json.getString("from")
   val to = json.getString("to")
 
-  val checkValid =
-    if ("from" !in json) {
-      json.put("info", "failed on account of key")
-      false
-    } else true
-
-  if (!checkValid) return json
+  val checkValid = "from" in json
+  if (!checkValid) {
+    json.put("info", "lack json key `from`")
+    return json
+  }
 
   return when (action) {
     DELETE -> handleFriendDelete(fs, json, from, to)
