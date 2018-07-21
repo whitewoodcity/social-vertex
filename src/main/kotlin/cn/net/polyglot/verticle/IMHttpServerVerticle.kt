@@ -3,6 +3,7 @@ package cn.net.polyglot.verticle
 import cn.net.polyglot.config.DEFAULT_PORT
 import cn.net.polyglot.config.NumberConstants
 import cn.net.polyglot.config.TypeConstants.MESSAGE
+import cn.net.polyglot.config.makeAppDirs
 import cn.net.polyglot.handler.handleRequests
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
@@ -18,6 +19,7 @@ import io.vertx.core.json.JsonObject
 class IMHttpServerVerticle : AbstractVerticle() {
   override fun start() {
     val port = config().getInteger("port", DEFAULT_PORT)
+    makeAppDirs(vertx)
 
     vertx.createHttpServer().requestHandler { req ->
       req.bodyHandler { buffer ->

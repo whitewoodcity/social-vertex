@@ -2,7 +2,7 @@ package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
-import cn.net.polyglot.utils.getDistFromUserToDist
+import cn.net.polyglot.utils.getDirFromUserToFriendDIr
 import cn.net.polyglot.utils.getUserDirAndFile
 import cn.net.polyglot.utils.putNullable
 import cn.net.polyglot.utils.toJsonArray
@@ -21,7 +21,7 @@ fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: Stri
     json.put("info", "failed")
     return json
   }
-  val toUserDir = getDistFromUserToDist(from, to)
+  val toUserDir = getDirFromUserToFriendDIr(from, to)
   val exist = fs.existsBlocking(toUserDir)
   println(toUserDir)
   if (exist) {
@@ -61,18 +61,19 @@ fun handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: St
     else "对方拒绝了您的好友请求"
   json.put("info", info)
 
-  val friendDirFromTo = getDistFromUserToDist(from, to)
+  val fromUserDirToFriendDir = getDirFromUserToFriendDIr(from, to)
   if (accept) {
     try {
       // if `from` user doesn't exist, it will be failed.
-      if (!fs.existsBlocking(getUserDirAndFile(from).first)) {
+      val fromDir = getUserDirAndFile(from).first
+      if (!fs.existsBlocking(fromDir)) {
         json.put("info", "$from user doesn't exist.")
         json.put("status", 1)
         return json
       }
 
-      fs.mkdirsBlocking(friendDirFromTo)
-      val filePath = friendDirFromTo + File.separator + USER_FILE
+      fs.mkdirsBlocking(fromUserDirToFriendDir)
+      val filePath = fromUserDirToFriendDir + File.separator + USER_FILE
       val writeJson = JsonObject().apply {
         put("id", to)
         put("nickname", to)
@@ -109,17 +110,20 @@ fun handleFriendList(fs: FileSystem, json: JsonObject, from: String?): JsonObjec
   try {
     val files = fs.readDirBlocking(friendDir)
     val friendUserFiles = files.map { it + File.separator + USER_FILE }
-    val groupByToJsonArray = friendUserFiles.map {
-      fs.readFileBlocking(it).toJsonObject()
-    }.groupBy {
-      it.getString("group")
-    }.map {
-      JsonObject().apply {
-        put("group", it.key)
-        it.value.forEach { it.remove("group") }
-        put("lists", it.value)
-      }
-    }.toJsonArray()
+    val groupByToJsonArray =
+      friendUserFiles
+        .map {
+          fs.readFileBlocking(it).toJsonObject()
+        }.groupBy {
+          it.getString("group", "我的好友")
+        }.map {
+          JsonObject().apply {
+            put("group", it.key)
+            it.value.forEach { it.remove("group") }
+            put("lists", it.value)
+          }
+        }.toJsonArray()
+
     json.put("results", groupByToJsonArray)
     return json
   } catch (e: Exception) {

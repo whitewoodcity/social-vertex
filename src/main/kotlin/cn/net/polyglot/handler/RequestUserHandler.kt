@@ -2,7 +2,7 @@ package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.ActionConstants
 import cn.net.polyglot.config.FileSystemConstants.FRIENDS
-import cn.net.polyglot.utils.removeCrypto
+import cn.net.polyglot.config.JsonKeys
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -43,7 +43,7 @@ fun handleUserLogin(fs: FileSystem, json: JsonObject, userFile: String, id: Stri
     json.put("info", "the user $id not exists")
     json.put("login", false)
   } finally {
-    json.removeCrypto()
+    json.remove(JsonKeys.CRYPTO)
     return json
   }
 }
@@ -56,7 +56,7 @@ fun handleUserRegistry(fs: FileSystem, json: JsonObject, userFile: String, id: S
       fs.mkdirsBlocking(userDir)
       fs.writeFileBlocking(userFile, json.toBuffer())
       // after write
-      json.removeCrypto()
+      json.remove(JsonKeys.CRYPTO)
       val friendDir = userDir + File.separator + FRIENDS
       fs.mkdirBlocking(friendDir)
       json.put("info", "注册成功")
@@ -96,6 +96,6 @@ private fun authorizeLogin(resJson: JsonObject, id: String?, crypto: String?) =
     resJson.getString("crypto") == crypto
 
 private fun registryDefaultFailedJson(json: JsonObject) {
-  json.removeCrypto()
+  json.remove(JsonKeys.CRYPTO)
   json.put(ActionConstants.REGISTRY, false)
 }

@@ -1,12 +1,13 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.testframework.configPort
+import cn.net.polyglot.config.defaultJsonObject
 import cn.net.polyglot.utils.text
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
+import io.vertx.kotlin.core.DeploymentOptions
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -22,7 +23,7 @@ class IMHttpServerVerticleTest {
   fun before(context: TestContext) {
     vertx = Vertx.vertx()
     client = WebClient.create(vertx)
-    val opt = configPort(port)
+    val opt = DeploymentOptions(config = defaultJsonObject.apply { put("port", port) })
     vertx.deployVerticle(IMHttpServerVerticle::class.java.name, opt,context.asyncAssertSuccess())
   }
 

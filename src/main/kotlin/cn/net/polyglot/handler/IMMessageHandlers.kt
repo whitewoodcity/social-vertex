@@ -9,12 +9,11 @@ import cn.net.polyglot.config.ActionConstants.RESPONSE
 import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
+import cn.net.polyglot.config.JsonKeys
 import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
-import cn.net.polyglot.utils.contains
 import cn.net.polyglot.utils.getUserDirAndFile
-import cn.net.polyglot.utils.removeCrypto
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import java.io.File.separator
@@ -66,7 +65,7 @@ fun searchUser(fs: FileSystem, json: JsonObject): JsonObject {
   try {
     val buffer = fs.readFileBlocking(userFile)
     val resJson = buffer.toJsonObject()
-    resJson.removeCrypto()
+    resJson.remove(JsonKeys.CRYPTO)
     json.put("user", resJson)
   } catch (e: Exception) {
     json.putNull("user")
@@ -123,7 +122,7 @@ fun friend(fs: FileSystem, json: JsonObject): JsonObject {
   val from = json.getString("from")
   val to = json.getString("to")
 
-  val checkValid = "from" in json
+  val checkValid = json.containsKey("from")
   if (!checkValid) {
     json.put("info", "lack json key `from`")
     return json

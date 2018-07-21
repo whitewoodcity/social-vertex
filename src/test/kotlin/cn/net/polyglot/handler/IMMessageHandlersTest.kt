@@ -1,6 +1,5 @@
 package cn.net.polyglot.handler
 
-import cn.net.polyglot.testframework.shouldBe
 import io.vertx.core.Vertx
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
@@ -33,7 +32,7 @@ class IMMessageHandlersTest {
 "version":0.1}
 """)
     val ret = message(fs, json)
-    ret shouldBe """{"type":"message","from":"inquiry@polyglot.net.cn","to":"customer@w2v4.com","body":"你好吗？","version":0.1,"info":"send message to other domain"}"""
+    assert(ret.toString() == """{"type":"message","from":"inquiry@polyglot.net.cn","to":"customer@w2v4.com","body":"你好吗？","version":0.1,"info":"send message to other domain"}""")
   }
 
   @Test
