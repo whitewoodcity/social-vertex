@@ -3,7 +3,6 @@ package cn.net.polyglot.verticle
 import cn.net.polyglot.utils.writeln
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.core.net.NetClient
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.kotlin.core.DeploymentOptions
@@ -17,23 +16,31 @@ import org.junit.runner.RunWith
 
 @RunWith(VertxUnitRunner::class)
 class IMTcpServerVerticleTest {
-  private lateinit var vertx: Vertx
-  private lateinit var client: NetClient
-  private val config = JsonObject().put("port",8080)
+  private val client = Vertx.vertx().createNetClient()
 
-  @BeforeClass
-  fun beforeClass(context: TestContext) {
-    vertx = Vertx.vertx()
-    client = vertx.createNetClient()
-    val option = DeploymentOptions(config = config)
-    vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
+  companion object {
+    private val config = JsonObject().put("port", 8080)
+    val vertx = Vertx.vertx()
+
+    @BeforeClass
+    @JvmStatic
+    fun beforeClass(context: TestContext) {
+      val option = DeploymentOptions(config = config)
+      vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
+    }
+
+    @AfterClass
+    @JvmStatic
+    fun afterClass(context: TestContext) {
+      vertx.close(context.asyncAssertSuccess())
+    }
   }
 
   @Test
   fun testApplication(context: TestContext) {
     //todo need to assert some response not just println debug info.
     val async = context.async()
-    vertx.createNetClient().connect(config.getInteger("port"), "localhost") {
+    client.connect(config.getInteger("port"), "localhost") {
       if (it.succeeded()) {
         val socket = it.result()
 
@@ -49,10 +56,5 @@ class IMTcpServerVerticleTest {
         }
       }
     }
-  }
-
-  @AfterClass
-  fun afterClass(context: TestContext) {
-    vertx.close(context.asyncAssertSuccess())
   }
 }
