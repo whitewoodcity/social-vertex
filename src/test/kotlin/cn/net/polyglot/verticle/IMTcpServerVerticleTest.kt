@@ -16,8 +16,7 @@ import org.junit.runner.RunWith
 
 @RunWith(VertxUnitRunner::class)
 class IMTcpServerVerticleTest {
-  private val client = Vertx.vertx().createNetClient()
-
+  //init test, deploy verticles and close vert.x instance after running tests
   companion object {
     private val config = JsonObject().put("port", 8080)
     private val vertx = Vertx.vertx()
@@ -35,6 +34,8 @@ class IMTcpServerVerticleTest {
       vertx.close(context.asyncAssertSuccess())
     }
   }
+
+  private val client = Vertx.vertx().createNetClient()
 
   @Test
   fun testApplication(context: TestContext) {
