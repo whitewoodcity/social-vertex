@@ -20,7 +20,7 @@ class IMTcpServerVerticleTest {
 
   companion object {
     private val config = JsonObject().put("port", 8080)
-    val vertx = Vertx.vertx()
+    private val vertx = Vertx.vertx()
 
     @BeforeClass
     @JvmStatic
