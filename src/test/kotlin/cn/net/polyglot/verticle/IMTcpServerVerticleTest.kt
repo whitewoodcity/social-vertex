@@ -35,7 +35,7 @@ class IMTcpServerVerticleTest {
     }
   }
 
-  private val client = Vertx.vertx().createNetClient()
+  private val client = vertx.createNetClient()
 
   @Test
   fun testApplication(context: TestContext) {
