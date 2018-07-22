@@ -12,11 +12,15 @@ import io.vertx.core.json.JsonObject
 
 Vertx vertx = vertx
 
+JsonObject tcpVerticleConfig = new JsonObject().put("port", 7373)
+
+JsonObject httpVerticleConfig = new JsonObject().put("port", 7575)
+
 JsonObject config = new JsonObject()
-  .put("port", 8080)
   .put("dir", new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + File.separator + "data")
 
-println config
+config.put("tcp-verticle", tcpVerticleConfig)
+  .put("http-verticle", httpVerticleConfig)
 
 ConfigStoreOptions fileStore = new ConfigStoreOptions()
   .setType("file")
@@ -42,21 +46,11 @@ retriever.getConfig { ar ->
       vertx.fileSystem().mkdirBlocking(config.getString("dir"))
     }
 
-    deployVerticles(config)
+    vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config.getJsonObject("http-verticle")))
+    vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config.getJsonObject("tcp-verticle")))
 
   } catch (Exception e) {
     e.printStackTrace()
   }
-
-}
-
-private void deployVerticles(JsonObject config) {
-//   8081
-  config.put("port", config.getInteger("port") + 1)
-  vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
-
-//  8082
-  config.put("port", config.getInteger("port") + 1)
-  vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
 
 }
