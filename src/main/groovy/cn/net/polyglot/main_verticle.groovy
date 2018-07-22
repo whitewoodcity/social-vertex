@@ -14,7 +14,7 @@ Vertx vertx = vertx
 
 JsonObject config = new JsonObject()
   .put("port", 8080)
-  .put("dir", new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent())
+  .put("dir", new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + File.separator + "data")
 
 println config
 
@@ -28,13 +28,25 @@ ConfigRetriever retriever = ConfigRetriever.create(vertx, options)
 
 retriever.getConfig { ar ->
 
-  if(ar.succeeded()){
-    config.mergeIn(ar.result())
-  }else{
-    System.out.println("The configuration file: config.json does not exist or in wrong format, use default config.")
-  }
+  try {
 
-  deployVerticles(config)
+    if (ar.succeeded()) {
+      config.mergeIn(JsonObject.mapFrom(ar.result()))
+    } else {
+      System.out.println("The configuration file: config.json does not exist or in wrong format, use default config.")
+    }
+
+    retriever.close()
+
+    if (!vertx.fileSystem().existsBlocking(config.getString("dir"))) {
+      vertx.fileSystem().mkdirBlocking(config.getString("dir"))
+    }
+
+    deployVerticles(config)
+
+  } catch (Exception e) {
+    e.printStackTrace()
+  }
 
 }
 
