@@ -3,7 +3,7 @@ package cn.net.polyglot.handler
 import cn.net.polyglot.config.ActionConstants.DELETE
 import cn.net.polyglot.config.ActionConstants.LIST
 import cn.net.polyglot.config.ActionConstants.LOGIN
-import cn.net.polyglot.config.ActionConstants.REGISTRY
+import cn.net.polyglot.config.ActionConstants.REGISTER
 import cn.net.polyglot.config.ActionConstants.REQUEST
 import cn.net.polyglot.config.ActionConstants.RESPONSE
 import cn.net.polyglot.config.FileSystemConstants.FRIENDS
@@ -20,14 +20,14 @@ import java.io.File.separator
 
 fun handleRequests(fs: FileSystem, json: JsonObject, type: String): JsonObject {
   return when (type) {
-    SEARCH -> searchUser(fs, json)
+    SEARCH -> search(fs, json)
     FRIEND -> friend(fs, json)
-    USER -> userAuthorize(fs, json)
+    USER -> user(fs, json)
     else -> defaultMessage(fs, json)
   }
 }
 
-fun userAuthorize(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): JsonObject {
+fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): JsonObject {
   val id = json.getString("user")
   val crypto = json.getString("crypto")
 
@@ -52,13 +52,13 @@ fun userAuthorize(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit =
   val (userDir, userFile) = getUserDirAndFile(id)
   return when (action) {
     LOGIN -> handleUserLogin(fs, json, userFile, id, crypto, loginTcpAction)
-    REGISTRY -> handleUserRegistry(fs, json, userFile, id, userDir)
+    REGISTER -> handleUserRegistry(fs, json, userFile, id, userDir)
     else -> defaultMessage(fs, json)
   }
 }
 
 
-fun searchUser(fs: FileSystem, json: JsonObject): JsonObject {
+fun search(fs: FileSystem, json: JsonObject): JsonObject {
   val id = json.getString("user")
   val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
   val action = json.getString("action")

@@ -28,7 +28,7 @@ object ActionConstants {
 
   // user
   const val LOGIN = "login"
-  const val REGISTRY = "registry"
+  const val REGISTER = "register"
 }
 
 object FileSystemConstants {

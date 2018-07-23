@@ -74,9 +74,9 @@ class IMTcpServerVerticle : AbstractVerticle() {
             handleMessage(fs, json, socket)
           } else {
             val ret = when (type) {
-              SEARCH -> searchUser(fs, json)
+              SEARCH -> search(fs, json)
               FRIEND -> friend(fs, json)
-              USER -> userAuthorize(fs, json, loginTcpAction = {
+              USER -> user(fs, json, loginTcpAction = {
                 loginTcpAction(json, socketId, socket)
               })
               else -> defaultMessage(fs, json)
