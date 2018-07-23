@@ -67,8 +67,11 @@ class IMMessageVerticle : AbstractVerticle() {
           return result.put(action,true)
         }
         else -> {//login as default action
-          //todo implement login action
-          return result.put(action,true)
+          if(!vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")){
+            return result.put(action, false)
+          }
+          val userJson = vertx.fileSystem().readFileBlocking(dir + File.separator + "user.json").toJsonObject()
+          return result.put(action, userJson.getString("crypto") == json.getString("crypto"))
         }
       }
     }catch (e:Exception){
