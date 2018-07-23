@@ -28,7 +28,8 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   private fun user(json: JsonObject) :JsonObject{
-    val result = JsonObject().put("register", false)
+    val action = json.getString("action")
+    val result = JsonObject().put(action, false)
 
     if(!json.containsKey("user")||!json.containsKey("crypto")){
       return result
@@ -53,11 +54,23 @@ class IMMessageVerticle : AbstractVerticle() {
       }
 
       val dir = config().getString("dir") + File.separator + user
-      vertx.fileSystem().mkdirsBlocking(dir)
-      vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
-      vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
 
-      return result.put("register",true)
+      when(action){
+        "register" -> {
+          if(vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")){
+            return result.put("info","用户已存在")
+          }
+          vertx.fileSystem().mkdirsBlocking(dir)
+          vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
+          vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
+
+          return result.put(action,true)
+        }
+        else -> {//login as default action
+          //todo implement login action
+          return result.put(action,true)
+        }
+      }
     }catch (e:Exception){
       return result.put("info",e.message)
     }

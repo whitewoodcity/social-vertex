@@ -7,17 +7,19 @@ import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.kotlin.core.DeploymentOptions
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
 import java.io.File
 import java.nio.file.Paths
 
 @RunWith(VertxUnitRunner::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class IMMessageVerticleTest {
 
   companion object {
     private val config = JsonObject()
-      .put("version",0.1)
       .put("dir", Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
     private val vertx = Vertx.vertx()
 
@@ -47,6 +49,7 @@ class IMMessageVerticleTest {
         .put("action","register")
         .put("user", "zxj2017")
         .put("crypto","abcd")){
+      println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(!it.result().body().getBoolean("register"))
       async.complete()
@@ -62,8 +65,25 @@ class IMMessageVerticleTest {
         .put("action","register")
         .put("user", "zxj2017")
         .put("crypto","431fe828b9b8e8094235dee515562127")){
+      println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(it.result().body().getBoolean("register"))
+      async.complete()
+    }
+  }
+
+  @Test
+  fun testUserCreation2(context: TestContext){
+    val async = context.async()
+    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
+      JsonObject()
+        .put("type", "user")
+        .put("action","register")
+        .put("user", "zxj2017")
+        .put("crypto","431fe828b9b8e8094235dee515562127")){
+      println(it.result().body())
+      context.assertTrue(it.result().body().containsKey("register"))
+      context.assertTrue(!it.result().body().getBoolean("register"))
       async.complete()
     }
   }
