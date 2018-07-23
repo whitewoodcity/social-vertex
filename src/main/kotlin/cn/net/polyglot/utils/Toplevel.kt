@@ -12,7 +12,8 @@ import java.io.File.separator
 /**
  * return ".social-vertex/user/yourID"
  * @param id String?
- * @return Pair<String, String>
+ * @return  first: userDir ".social-vertex/user/$id"
+ *          second: userFile ".social-vertex/user/$id/user.json"
  */
 fun getUserDirAndFile(id: String?): Pair<String, String> {
   val userDir = "$USER_DIR$separator$id"

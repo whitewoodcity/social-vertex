@@ -9,7 +9,7 @@ import io.vertx.kotlin.core.json.array
  * @date 2018/7/16
  */
 /**
- *
+ * Because Vert.x JsonObject can't put a nullable value directly.
  * @receiver JsonObject
  * @param key String
  * @param value Any?
@@ -26,7 +26,7 @@ fun JsonObject.putNullable(key: String, value: Any?): JsonObject {
 }
 
 /**
- * just a wrap
+ * just a wrapper for converting a series of JsonObjects to JsonArray
  * @receiver Iterable<JsonObject>
  * @return JsonArray
  */
