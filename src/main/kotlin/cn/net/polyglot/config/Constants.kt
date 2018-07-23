@@ -42,6 +42,8 @@ object FileSystemConstants {
 
 object JsonKeys {
   const val CRYPTO = "crypto"
+  const val ACTION = "action"
+  const val VERSION = "version"
 }
 
 object NumberConstants {

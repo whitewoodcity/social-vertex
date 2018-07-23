@@ -1,6 +1,5 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.config.DEFAULT_PORT
 import cn.net.polyglot.config.NumberConstants.CURRENT_VERSION
 import cn.net.polyglot.config.NumberConstants.TIME_LIMIT
 import cn.net.polyglot.config.TypeConstants.FRIEND

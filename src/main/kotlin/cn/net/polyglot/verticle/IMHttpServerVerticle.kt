@@ -1,11 +1,8 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.config.NumberConstants
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.makeAppDirs
 import cn.net.polyglot.handler.handleRequests
-import cn.net.polyglot.utils.text
-import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerRequest
@@ -54,7 +51,7 @@ class IMHttpServerVerticle : AbstractVerticle() {
       }
     }.listen(port) {
       if (it.succeeded()) {
-        println(this.javaClass.name + " is deployed on port:$port")
+        println(this.javaClass.name + " is deployed on port $port")
       } else {
         println("deploy on $port failed")
       }
