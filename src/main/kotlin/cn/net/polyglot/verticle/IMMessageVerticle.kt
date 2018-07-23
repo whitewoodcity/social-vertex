@@ -42,7 +42,7 @@ class IMMessageVerticle : AbstractVerticle() {
       val validUser = when {
         user.length < 4 || user.length > 20 -> false
         user[0].isDigit() -> false
-        else -> user.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) }
+        else -> user.all { it.isLetterOrDigit() }
       }
 
       if(!validUser)
