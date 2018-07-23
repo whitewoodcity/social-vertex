@@ -32,9 +32,6 @@ class IMServerTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
-
-      println(config)
-
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
       vertx.deployVerticle(IMHttpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
