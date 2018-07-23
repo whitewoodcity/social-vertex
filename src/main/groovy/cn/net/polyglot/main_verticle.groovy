@@ -1,6 +1,7 @@
 package cn.net.polyglot
 
 import cn.net.polyglot.verticle.IMHttpServerVerticle
+import cn.net.polyglot.verticle.IMMessageVerticle
 import cn.net.polyglot.verticle.IMTcpServerVerticle
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
@@ -44,6 +45,7 @@ retriever.getConfig { ar ->
 
     vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
     vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
+    vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
 
   } catch (Exception e) {
     e.printStackTrace()
