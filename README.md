@@ -95,7 +95,7 @@ type类型有：
   "login": true
 }
 ```
-`results` 结构见 `friend-list`
+`results` 结构见 [获取好友列表_结果](#获取好友列表)
 
 <h3 id=2> search - 搜索类型</h3>  
 
