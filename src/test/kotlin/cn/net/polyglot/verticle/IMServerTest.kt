@@ -1,6 +1,5 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.writeln
 import io.vertx.core.Launcher
 import io.vertx.core.Vertx
@@ -48,7 +47,7 @@ class IMServerTest {
   private val netClient = vertx.createNetClient()
 
   @Test
-  fun testAccountRegister(context: TestContext){
+  fun testAccountRegister(context: TestContext) {
     val async = context.async()
     webClient.post(config.getInteger("http-port"), "localhost", "/")
       .sendJsonObject(JsonObject()
@@ -65,29 +64,29 @@ class IMServerTest {
   }
 
   @Test
-  fun testSearch(context: TestContext){
-
-  }
-
-  @Test
-  fun testApplication(context: TestContext) {
-    //todo need to assert some response not just println debug info.
+  fun testSearch(context: TestContext) {
     val async = context.async()
     netClient.connect(config.getInteger("tcp-port"), "localhost") {
       if (it.succeeded()) {
         val socket = it.result()
 
         socket.handler {
-          println(it.toString())
+          // avoid sticking packages
+          val buffers = it.toString().split("\r\n").filter { it.isNotEmpty() }
+          buffers.forEach {
+            val ret = it.contains("response")
+            println(it)
+            assert(ret)
+          }
+          async.complete()
         }
-
-        var i = 0
-        vertx.setPeriodic(2333L) {
-          socket.writeln("""{"type":"search","id":"zxj5470"}""")
-          if (i < 3) i++
-          else async.complete()
-        }
+        socket.writeln("""{"type":"search","action":"request","user":"zxj@polyglot.net.cn","version":0.1}""")
       }
     }
+  }
+
+  @Test
+  fun testApplication(context: TestContext) {
+    //todo need to assert some response not just println debug info.
   }
 }

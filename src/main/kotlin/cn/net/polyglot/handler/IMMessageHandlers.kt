@@ -61,13 +61,19 @@ fun userAuthorize(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit =
 fun searchUser(fs: FileSystem, json: JsonObject): JsonObject {
   val id = json.getString("user")
   val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
+  val action = json.getString("action")
+  if (action == "request") {
+    json.put("action", "response")
+  }
 
   try {
     val buffer = fs.readFileBlocking(userFile)
     val resJson = buffer.toJsonObject()
-    resJson.remove(JsonKeys.CRYPTO)
+    resJson.removeAll { it.key in arrayOf(JsonKeys.CRYPTO, JsonKeys.ACTION, JsonKeys.VERSION) }
     json.put("user", resJson)
+
   } catch (e: Exception) {
+    e.printStackTrace()
     json.putNull("user")
   } finally {
     return json
