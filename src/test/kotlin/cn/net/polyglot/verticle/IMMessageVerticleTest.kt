@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.kotlin.core.DeploymentOptions
+import io.vertx.kotlin.core.json.get
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -34,9 +35,40 @@ class IMMessageVerticleTest {
     @JvmStatic
     fun afterClass(context: TestContext) {
       //clean the directory
-      vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
+      if(vertx.fileSystem().existsBlocking(config.getString("dir")))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
 
       vertx.close(context.asyncAssertSuccess())
+    }
+  }
+
+  @Test
+  fun testJsonFormat(context: TestContext){
+    val async1 = context.async()
+    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
+      JsonObject()){
+      println(it.result().body())
+      context.assertTrue(it.result().body().containsKey("type"))
+      context.assertTrue(it.result().body().getValue("type")==null)
+      async1.complete()
+    }
+
+    val async2 = context.async()
+    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
+      JsonObject().put("type","user")){
+      println(it.result().body())
+      context.assertTrue(it.result().body().containsKey("action"))
+      context.assertTrue(it.result().body().getValue("action")==null)
+      async2.complete()
+    }
+
+    val async3 = context.async()
+    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
+      JsonObject().put("type",123)){
+      println(it.result().body())
+      context.assertTrue(it.result().body().getValue("type")==null)
+      context.assertTrue(it.result().body().getValue("action")==null)
+      async3.complete()
     }
   }
 

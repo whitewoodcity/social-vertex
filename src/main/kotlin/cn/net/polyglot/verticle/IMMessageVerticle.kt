@@ -14,12 +14,33 @@ class IMMessageVerticle : AbstractVerticle() {
 
   override fun start() {
     vertx.eventBus().consumer<JsonObject>(IMMessageVerticle::class.java.name) {
+      val json = it.body()
+      try{
+        val type = json.getString("type")
+        val action = json.getString("action")
+
+        if(type==null){
+          it.reply(JsonObject().putNull("type"))
+          return@consumer
+        }
+
+        if(action==null) {
+          it.reply(JsonObject().putNull("action"))
+          return@consumer
+        }
+      }catch (e:Exception){
+        it.reply(JsonObject()
+          .putNull("type").putNull("action")
+          .put("info",e.message))
+        return@consumer
+      }
+
       launch(vertx.dispatcher()) {
         when (it.body().getString("type")) {
-          USER -> it.reply(user(it.body()))
-          SEARCH -> search((it.body()))
-          FRIEND -> friend((it.body()))
-          MESSAGE -> message((it.body()))
+          USER -> it.reply(user(json))
+          SEARCH -> search(json)
+          FRIEND -> friend(json)
+          MESSAGE -> message(json)
           else -> {
           }
         }
