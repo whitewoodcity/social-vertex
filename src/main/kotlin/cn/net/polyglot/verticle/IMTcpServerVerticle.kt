@@ -25,6 +25,7 @@ import java.util.*
  * @date 2018/7/9
  */
 class IMTcpServerVerticle : AbstractVerticle() {
+
   private val idMap = hashMapOf<String, String>()
   private val socketMap = hashMapOf<String, NetSocket>()
   private val activeMap = hashMapOf<String, Long>()
@@ -32,20 +33,20 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private lateinit var webClient: WebClient
 
   override fun start() {
-    val port = config().getInteger("port", DEFAULT_PORT)
+    val port = config().getInteger("tcp-port")
     val options = NetServerOptions().setTcpKeepAlive(true)
     val fs = vertx.fileSystem()
     webClient = WebClient.create(vertx)
 
     // get message from IMHttpServerVerticle eventBus
-    vertx.eventBus().localConsumer<JsonObject>(IMHttpServerVerticle::class.java.name) {
+    vertx.eventBus().consumer<JsonObject>(IMHttpServerVerticle::class.java.name) {
       val json = it.body()
       val type = json.getString("type")
       val toUser = json.getString("to")
       if (type == MESSAGE) {
-        val id = idMap[toUser] ?: return@localConsumer
-        val toSocket = socketMap[id] ?: return@localConsumer
-        val activeSocketTime = activeMap[id] ?: return@localConsumer
+        val id = idMap[toUser] ?: return@consumer
+        val toSocket = socketMap[id] ?: return@consumer
+        val activeSocketTime = activeMap[id] ?: return@consumer
         if ((System.currentTimeMillis() - activeSocketTime) < TIME_LIMIT) {
           toSocket.writeln(json.toString())
         }

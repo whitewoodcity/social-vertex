@@ -1,6 +1,5 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.config.DEFAULT_PORT
 import cn.net.polyglot.config.NumberConstants
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.makeAppDirs
@@ -18,43 +17,44 @@ import io.vertx.core.json.JsonObject
  */
 class IMHttpServerVerticle : AbstractVerticle() {
   override fun start() {
-    val port = config().getInteger("port", DEFAULT_PORT)
+    val port = config().getInteger("http-port")
     makeAppDirs(vertx)
 
     vertx.createHttpServer().requestHandler { req ->
+      req.response()
+        .putHeader("content-type", "application/json")
+
       req.bodyHandler { buffer ->
-        if (req.method() == HttpMethod.POST) {
-          val json = buffer.text().tryJson()
-          if (json == null) {
+        if (req.method() != HttpMethod.POST) {
+          req.response()
+            .end(JsonObject().put("info", "request method is not POST").toString())
+
+          return@bodyHandler
+        }
+        try {
+          val json = buffer.toJsonObject()
+
+          val fs = vertx.fileSystem()
+          val type = json.getString("type")
+
+          if (type == MESSAGE) {
+            // Message 为 接收到 TcpVerticle 发送出的 HTTP 请求
+            crossDomainMessage(json, req)
+          } else {
+            val ret = handleRequests(fs, json, type)
+            println(ret)
             req.response()
               .putHeader("content-type", "application/json")
-              .end("""{"info":"json format error"}""")
-          } else {
-
-            val fs = vertx.fileSystem()
-            val type = json.getString("type", "")
-            val version = json.getDouble("version", NumberConstants.CURRENT_VERSION)
-
-            if (type == MESSAGE) {
-              // Message 为 接收到 TcpVerticle 发送出的 HTTP 请求
-              crossDomainMessage(json, req)
-            } else {
-              val ret = handleRequests(fs, json, type)
-              println(ret)
-              req.response()
-                .putHeader("content-type", "application/json")
-                .end(ret.toString())
-            }
+              .end(ret.toString())
           }
-        } else {
+        } catch (e: Exception) {
           req.response()
-            .putHeader("content-type", "application/json")
-            .end("""{"info":"request method is not POST"}""")
+            .end(JsonObject().put("info", "json format error").toString())
         }
       }
     }.listen(port) {
       if (it.succeeded()) {
-        println(this.javaClass.name + " is deployed on $port port")
+        println(this.javaClass.name + " is deployed on port:$port")
       } else {
         println("deploy on $port failed")
       }
