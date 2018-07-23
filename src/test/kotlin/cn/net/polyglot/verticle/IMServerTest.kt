@@ -52,7 +52,8 @@ class IMServerTest {
     webClient.post(config.getInteger("http-port"), "localhost", "/")
       .sendJsonObject(JsonObject()
         .put("type", "search")
-        .put("user", "zxj@polyglot.net.cn")) { response ->
+        .put("user", "zxj2017")) { response ->
+
         if (response.succeeded()) {
           println(response.result().body().toString())
           async.complete()
@@ -87,6 +88,6 @@ class IMServerTest {
 
   @Test
   fun testApplication(context: TestContext) {
-    //todo need to assert some response not just println debug info.
+
   }
 }

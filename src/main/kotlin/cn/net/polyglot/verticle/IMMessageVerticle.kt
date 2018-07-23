@@ -34,7 +34,6 @@ class IMMessageVerticle : AbstractVerticle() {
           .put("info",e.message))
         return@consumer
       }
-
       launch(vertx.dispatcher()) {
         when (it.body().getString("type")) {
           USER -> it.reply(user(json))

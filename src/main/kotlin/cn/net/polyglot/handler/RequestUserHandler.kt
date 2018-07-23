@@ -60,7 +60,7 @@ fun handleUserRegistry(fs: FileSystem, json: JsonObject, userFile: String, id: S
       val friendDir = userDir + File.separator + FRIENDS
       fs.mkdirBlocking(friendDir)
       json.put("info", "注册成功")
-      json.put(ActionConstants.REGISTRY, true)
+      json.put(ActionConstants.REGISTER, true)
     } catch (e: Exception) {
       println("cannot mkdir $userDir")
       json.put("info", "cannot mkdir")
@@ -97,5 +97,5 @@ private fun authorizeLogin(resJson: JsonObject, id: String?, crypto: String?) =
 
 private fun registryDefaultFailedJson(json: JsonObject) {
   json.remove(JsonKeys.CRYPTO)
-  json.put(ActionConstants.REGISTRY, false)
+  json.put(ActionConstants.REGISTER, false)
 }
