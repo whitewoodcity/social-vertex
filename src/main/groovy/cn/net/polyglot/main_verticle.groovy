@@ -13,7 +13,7 @@ import io.vertx.core.json.JsonObject
 Vertx vertx = vertx
 
 JsonObject config = new JsonObject()
-  .put("version",0.1)
+  .put("version",0.1d)
   .put("dir", new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + File.separator + "social-vertex")
   .put("tcp-port", 7373)
   .put("http-port",7575)
