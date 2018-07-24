@@ -160,4 +160,19 @@ class IMMessageVerticleTest {
       async2.complete()
     }
   }
+  @Test
+ fun testUserSearch(context: TestContext){
+    val async3 = context.async()
+    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
+      JsonObject()
+      .put("type","search")
+      .put("action","user")
+      .put("keyword","zxj2017")
+      .put("version",".01")
+    ){
+      print(it.result()?.body())
+      context.assertTrue(!it.result().body().containsKey("info"))
+      async3.complete()
+    }
+  }
 }

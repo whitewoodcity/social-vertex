@@ -111,7 +111,7 @@ class IMMessageVerticle : AbstractVerticle() {
     val action = json.getString("action")
     val result = JsonObject().putNull(action)
 
-    val dir = config().getString("dir") + File.separator + json.getString("user")
+    val dir = config().getString("dir") + File.separator + json.getString("keyword")
     val userFile = dir + File.separator + "user.json"
 
     try {
