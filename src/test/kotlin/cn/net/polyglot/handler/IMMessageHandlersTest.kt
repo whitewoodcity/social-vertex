@@ -47,7 +47,7 @@ class IMMessageHandlersTest {
 "version":0.1
 }
 """)
-    val ret = userAuthorize(fs, json)
+    val ret = user(fs, json)
     println(ret)
   }
 
@@ -62,7 +62,7 @@ class IMMessageHandlersTest {
 "version":0.1
 }
 """)
-    println(userAuthorize(fs, json))
+    println(user(fs, json))
   }
 
   @Test

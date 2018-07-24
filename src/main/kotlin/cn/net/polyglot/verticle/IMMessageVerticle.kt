@@ -14,12 +14,32 @@ class IMMessageVerticle : AbstractVerticle() {
 
   override fun start() {
     vertx.eventBus().consumer<JsonObject>(IMMessageVerticle::class.java.name) {
+      val json = it.body()
+      try{
+        val type = json.getString("type")
+        val action = json.getString("action")
+
+        if(type==null){
+          it.reply(JsonObject().putNull("type"))
+          return@consumer
+        }
+
+        if(action==null) {
+          it.reply(JsonObject().putNull("action"))
+          return@consumer
+        }
+      }catch (e:Exception){
+        it.reply(JsonObject()
+          .putNull("type").putNull("action")
+          .put("info",e.message))
+        return@consumer
+      }
       launch(vertx.dispatcher()) {
         when (it.body().getString("type")) {
-          USER -> it.reply(user(it.body()))
-          SEARCH -> search((it.body()))
-          FRIEND -> friend((it.body()))
-          MESSAGE -> message((it.body()))
+          USER -> it.reply(user(json))
+          SEARCH -> search(json)
+          FRIEND -> friend(json)
+          MESSAGE -> message(json)
           else -> {
           }
         }
@@ -28,7 +48,8 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   private fun user(json: JsonObject) :JsonObject{
-    val result = JsonObject().put("register", false)
+    val action = json.getString("action")
+    val result = JsonObject().put(action, false)
 
     if(!json.containsKey("user")||!json.containsKey("crypto")){
       return result
@@ -41,7 +62,7 @@ class IMMessageVerticle : AbstractVerticle() {
       val validUser = when {
         user.length < 4 || user.length > 20 -> false
         user[0].isDigit() -> false
-        else -> user.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) }
+        else -> user.all { it.isLetterOrDigit() }
       }
 
       if(!validUser)
@@ -53,11 +74,26 @@ class IMMessageVerticle : AbstractVerticle() {
       }
 
       val dir = config().getString("dir") + File.separator + user
-      vertx.fileSystem().mkdirsBlocking(dir)
-      vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
-      vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
 
-      return result.put("register",true)
+      when(action){
+        "register" -> {
+          if(vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")){
+            return result.put("info","用户已存在")
+          }
+          vertx.fileSystem().mkdirsBlocking(dir)
+          vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
+          vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
+
+          return result.put(action,true)
+        }
+        else -> {//login as default action
+          if(!vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")){
+            return result.put(action, false)
+          }
+          val userJson = vertx.fileSystem().readFileBlocking(dir + File.separator + "user.json").toJsonObject()
+          return result.put(action, userJson.getString("crypto") == json.getString("crypto"))
+        }
+      }
     }catch (e:Exception){
       return result.put("info",e.message)
     }
