@@ -38,6 +38,7 @@ object FileSystemConstants {
   const val FRIENDS = "friends"
 
   val USER_DIR = APP_DATA_DIR_NAME + separator + "user"
+  const val CRLF = "\r\n"
 }
 
 object JsonKeys {

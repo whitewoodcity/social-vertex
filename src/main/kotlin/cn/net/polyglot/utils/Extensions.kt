@@ -1,5 +1,6 @@
 package cn.net.polyglot.utils
 
+import cn.net.polyglot.config.FileSystemConstants.CRLF
 import io.vertx.core.net.NetSocket
 
 /**
@@ -13,5 +14,5 @@ import io.vertx.core.net.NetSocket
  * @param str String
  */
 fun NetSocket.writeln(str: String) {
-  this.write(str + "\r\n")
+  this.write(str + CRLF)
 }
