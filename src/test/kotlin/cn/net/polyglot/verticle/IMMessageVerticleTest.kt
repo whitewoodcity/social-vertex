@@ -168,7 +168,7 @@ class IMMessageVerticleTest {
       .put("type","search")
       .put("action","user")
       .put("keyword","zxj2017")
-      .put("version",".1")
+        .put("version", 0.1)
     ){
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("user"))

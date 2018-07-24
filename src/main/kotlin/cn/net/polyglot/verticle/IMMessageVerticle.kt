@@ -8,6 +8,7 @@ import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
 import cn.net.polyglot.handler.*
 import io.vertx.core.AbstractVerticle
+import io.vertx.core.eventbus.Message
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
@@ -33,8 +34,11 @@ class IMMessageVerticle : AbstractVerticle() {
         }
 
         if(action==null) {
-          it.reply(JsonObject().putNull("action"))
-          return@consumer
+          // message has no `action` key
+          if (type != "message") {
+            it.reply(JsonObject().putNull("action"))
+            return@consumer
+          }
         }
       }catch (e:Exception){
         it.reply(JsonObject()
@@ -47,11 +51,12 @@ class IMMessageVerticle : AbstractVerticle() {
           USER -> it.reply(user(it.body()))
           SEARCH -> it.reply(search(it.body()))
           FRIEND -> it.reply(friend(it.body()))
-          MESSAGE -> message(it.body())
+          MESSAGE -> message(it.body(), it)
           else -> defaultMessage(it.body())
         }
       }
     }
+    println("${this::class.java.name} is deployed")
   }
 
   private fun user(json: JsonObject) :JsonObject{
@@ -151,8 +156,40 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun message(json: JsonObject) {
-    // TODO
+  private fun message(json: JsonObject, msg: Message<JsonObject>) {
+    val from = json.getString("from")
+    val to = json.getString("to")
+    val host = json.getString("host") ?: "test.net.cn"
+    val isSameDomain =
+      when {
+        from == null || to == null -> false
+        '@' !in from || '@' !in to -> true
+        else -> from.substringAfterLast("@")
+          .let {
+            it == to.substringAfterLast("@")
+              && it == host
+          }
+      }
+
+    if (isSameDomain) {
+      // TCP
+      vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
+        if (it.succeeded()) {
+          println(it.result().body())
+          msg.reply(JsonObject("""{"info":"TCP succeed"}"""))
+        }
+      }
+    } else {
+      // webClient
+      val port = config().getInteger("http-port")
+      webClient.post(port, host, "/").sendJsonObject(json) {
+        if (it.succeeded()) {
+          val result = it.result()
+          println(result.bodyAsJsonObject())
+          msg.reply(result.bodyAsJsonObject())
+        }
+      }
+    }
   }
 
   private fun defaultMessage(json: JsonObject): JsonObject {
