@@ -26,6 +26,9 @@ class IMMessageVerticleTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
+      if(vertx.fileSystem().existsBlocking(config.getString("dir")))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
+
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMMessageVerticle::class.java.name, option, context.asyncAssertSuccess())
     }
@@ -168,10 +171,11 @@ class IMMessageVerticleTest {
       .put("type","search")
       .put("action","user")
       .put("keyword","zxj2017")
-      .put("version",".01")
+      .put("version",".1")
     ){
-      print(it.result()?.body())
-      context.assertTrue(!it.result().body().containsKey("info"))
+      print(it.result().body())
+      context.assertTrue(it.result().body().containsKey("user"))
+      context.assertNotNull(it.result().body().getJsonObject("user"))
       async3.complete()
     }
   }
