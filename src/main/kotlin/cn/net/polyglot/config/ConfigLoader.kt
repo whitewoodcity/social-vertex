@@ -26,22 +26,15 @@ val fileStore = ConfigStoreOptions(
  */
 val options = ConfigRetrieverOptions(stores = arrayListOf(fileStore))
 
-const val DEFAULT_PORT = 8080
-val defaultJsonObject = JsonObject(
-  "port" to DEFAULT_PORT
-)
-
 fun makeAppDirs(vertx: Vertx): Boolean {
   val fs = vertx.fileSystem()
-  var result = false
+  var result = true
   try {
     if (fs.existsBlocking(USER_DIR)) {
       println("$USER_DIR already exists")
-      result = true
     } else {
       fs.mkdirsBlocking(USER_DIR)
       println("create $USER_DIR success")
-      result = true
     }
   } catch (e: Exception) {
     result = false

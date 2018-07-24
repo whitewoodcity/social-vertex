@@ -48,9 +48,9 @@ fun handleUserLogin(fs: FileSystem, json: JsonObject, userFile: String, id: Stri
   }
 }
 
-fun handleUserRegistry(fs: FileSystem, json: JsonObject, userFile: String, id: String?, userDir: String): JsonObject {
+fun handleUserRegister(fs: FileSystem, json: JsonObject, userFile: String, id: String?, userDir: String): JsonObject {
   if (fs.existsBlocking(userFile)) {
-    registryDefaultFailedJson(json)
+    registerDefaultFailedJson(json)
   } else {
     try {
       fs.mkdirsBlocking(userDir)
@@ -95,7 +95,7 @@ private fun authorizeLogin(resJson: JsonObject, id: String?, crypto: String?) =
   resJson.getString("user") == id &&
     resJson.getString("crypto") == crypto
 
-private fun registryDefaultFailedJson(json: JsonObject) {
+private fun registerDefaultFailedJson(json: JsonObject) {
   json.remove(JsonKeys.CRYPTO)
   json.put(ActionConstants.REGISTER, false)
 }

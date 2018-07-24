@@ -33,15 +33,15 @@ fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): Jso
 
   val prior = when {
     id == null || crypto == null -> {
-      json.put("info", "no id or no crypto")
+      json.put(JsonKeys.INFO, "no id or no crypto")
       false
     }
     !id.checkIdValid() -> {
-      json.put("info", "用户名格式错误")
+      json.put(JsonKeys.INFO, "用户名格式错误")
       false
     }
     !crypto.checkCryptoValid() -> {
-      json.put("info", "秘钥格式错误")
+      json.put(JsonKeys.INFO, "秘钥格式错误")
       false
     }
     else -> true
@@ -52,7 +52,7 @@ fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): Jso
   val (userDir, userFile) = getUserDirAndFile(id)
   return when (action) {
     LOGIN -> handleUserLogin(fs, json, userFile, id, crypto, loginTcpAction)
-    REGISTER -> handleUserRegistry(fs, json, userFile, id, userDir)
+    REGISTER -> handleUserRegister(fs, json, userFile, id, userDir)
     else -> defaultMessage(fs, json)
   }
 }
@@ -67,13 +67,15 @@ fun search(fs: FileSystem, json: JsonObject): JsonObject {
   }
 
   try {
+    // throws NoSuchFileException if not exist
     val buffer = fs.readFileBlocking(userFile)
+
     val resJson = buffer.toJsonObject()
     resJson.removeAll { it.key in arrayOf(JsonKeys.CRYPTO, JsonKeys.ACTION, JsonKeys.VERSION) }
     json.put("user", resJson)
 
   } catch (e: Exception) {
-    e.printStackTrace()
+    System.err.println(e.message)
     json.putNull("user")
   } finally {
     return json
@@ -92,8 +94,8 @@ fun message(fs: FileSystem, json: JsonObject,
             directlySend: (to: String) -> Unit = {},
             indirectlySend: (to: String) -> Unit = { }): JsonObject {
   val outputJson = json.copy()
-  val from = outputJson.getString("from")
-  val to = outputJson.getString("to")
+  val from = outputJson.getString(JsonKeys.FROM)
+  val to = outputJson.getString(JsonKeys.TO)
 
   val isSameDomain =
     when {
@@ -107,30 +109,30 @@ fun message(fs: FileSystem, json: JsonObject,
     if (isSameDomain) {
       val receiverExist = fs.existsBlocking(userDir)
       if (receiverExist) {
-        outputJson.put("info", "OK")
+        outputJson.put(JsonKeys.INFO, "OK")
         directlySend(to)
       } else {
-        outputJson.put("info", "no such user $to")
+        outputJson.put(JsonKeys.INFO, "no such user $to")
       }
     } else {
-      outputJson.put("info", "send message to other domain")
+      outputJson.put(JsonKeys.INFO, "send message to other domain")
       indirectlySend(to)
     }
   } catch (e: Exception) {
-    outputJson.put("info", "no such friend $to")
+    outputJson.put(JsonKeys.INFO, "no such friend $to")
   } finally {
     return outputJson
   }
 }
 
 fun friend(fs: FileSystem, json: JsonObject): JsonObject {
-  val action = json.getString("action")
-  val from = json.getString("from")
-  val to = json.getString("to")
+  val action = json.getString(JsonKeys.ACTION)
+  val from = json.getString(JsonKeys.FROM)
+  val to = json.getString(JsonKeys.TO)
 
-  val checkValid = json.containsKey("from")
+  val checkValid = json.containsKey(JsonKeys.FROM)
   if (!checkValid) {
-    json.put("info", "lack json key `from`")
+    json.put(JsonKeys.INFO, "lack json key `from`")
     return json
   }
 
@@ -147,7 +149,7 @@ fun friend(fs: FileSystem, json: JsonObject): JsonObject {
 }
 
 fun defaultMessage(fs: FileSystem, json: JsonObject): JsonObject {
-  json.removeAll { it.key !in arrayOf("version", "type") }
-  json.put("info", "Default info, please check all sent value is correct.")
+  json.removeAll { it.key !in arrayOf(JsonKeys.VERSION, JsonKeys.TYPE) }
+  json.put(JsonKeys.INFO, "Default info, please check all sent value is correct.")
   return json
 }

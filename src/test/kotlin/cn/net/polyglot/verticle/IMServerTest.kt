@@ -22,8 +22,8 @@ class IMServerTest {
   //init test, deploy verticles and close vert.x instance after running tests
   companion object {
     private val config = JsonObject()
-      .put("version",0.1)
-      .put("dir",File(Launcher::class.java.protectionDomain.codeSource.location.toURI()).parent + File.separator + "social-vertex")
+      .put("version", 0.1)
+      .put("dir", File(Launcher::class.java.protectionDomain.codeSource.location.toURI()).parent + File.separator + "social-vertex")
       .put("tcp-port", 7373)
       .put("http-port", 7575)
     private val vertx = Vertx.vertx()

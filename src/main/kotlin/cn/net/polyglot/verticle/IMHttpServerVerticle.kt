@@ -30,19 +30,20 @@ class IMHttpServerVerticle : AbstractVerticle() {
         }
         try {
           val json = buffer.toJsonObject()
-
           val fs = vertx.fileSystem()
           val type = json.getString("type")
 
-          if (type == MESSAGE) {
-            // Message 为 接收到 TcpVerticle 发送出的 HTTP 请求
-            crossDomainMessage(json, req)
-          } else {
-            val ret = handleRequests(fs, json, type)
-            println(ret)
-            req.response()
-              .putHeader("content-type", "application/json")
-              .end(ret.toString())
+          when (type) {
+          // Http 中 Message 类型为 接收到 TcpVerticle 发送出的 HTTP 请求, 由于请求必须为异步,
+          // 因此需与普通的 handler 区分处理
+            MESSAGE -> crossDomainMessage(json, req)
+            else -> {
+              val ret = handleRequests(fs, json, type)
+              println(ret)
+              req.response()
+                .putHeader("content-type", "application/json")
+                .end(ret.toString())
+            }
           }
         } catch (e: Exception) {
           req.response()

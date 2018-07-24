@@ -32,7 +32,7 @@ object ActionConstants {
 }
 
 object FileSystemConstants {
-  private const val APP_DATA_DIR_NAME = ".social-vertex"
+  private const val APP_DATA_DIR_NAME = "social-vertex"
   const val MAIN_VERTICLE = "cn/net/polyglot/main_verticle.groovy"
   const val USER_FILE = "user.json"
   const val FRIENDS = "friends"
@@ -41,9 +41,18 @@ object FileSystemConstants {
 }
 
 object JsonKeys {
-  const val CRYPTO = "crypto"
+  const val TYPE = "type"
   const val ACTION = "action"
   const val VERSION = "version"
+
+  const val FROM = "from"
+  const val TO = "to"
+
+  const val CRYPTO = "crypto"
+
+  const val INFO = "info"
+  const val STATUS = "status"
+
 }
 
 object NumberConstants {

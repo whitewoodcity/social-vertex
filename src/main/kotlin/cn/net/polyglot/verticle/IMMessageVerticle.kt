@@ -1,9 +1,13 @@
 package cn.net.polyglot.verticle
 
+import cn.net.polyglot.config.ActionConstants
+import cn.net.polyglot.config.FileSystemConstants
+import cn.net.polyglot.config.JsonKeys
 import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
+import cn.net.polyglot.handler.*
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.coroutines.dispatcher
@@ -36,12 +40,11 @@ class IMMessageVerticle : AbstractVerticle() {
       }
       launch(vertx.dispatcher()) {
         when (it.body().getString("type")) {
-          USER -> it.reply(user(json))
-          SEARCH -> search(json)
-          FRIEND -> friend(json)
-          MESSAGE -> message(json)
-          else -> {
-          }
+          USER -> it.reply(user(it.body()))
+          SEARCH -> it.reply(search(it.body()))
+          FRIEND -> it.reply(friend(it.body()))
+          MESSAGE -> message(it.body())
+          else -> defaultMessage(it.body())
         }
       }
     }
@@ -51,10 +54,10 @@ class IMMessageVerticle : AbstractVerticle() {
     val action = json.getString("action")
     val result = JsonObject().put(action, false)
 
-    if(!json.containsKey("user")||!json.containsKey("crypto")){
+    if (!json.containsKey("user") || !json.containsKey("crypto")) {
       return result
     }
-    try{
+    try {
       val user = json.getString("user")
       val crypto = json.getString("crypto")
 
@@ -99,15 +102,58 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun search(json: JsonObject) {
+  private fun search(json: JsonObject): JsonObject {
+    val id = json.getString("user")
+    val userFile = "${FileSystemConstants.USER_DIR}${File.separator}$id${File.separator}${FileSystemConstants.USER_FILE}"
+    val action = json.getString("action")
+    if (action == "request") {
+      json.put("action", "response")
+    }
 
+    try {
+      val buffer = vertx.fileSystem().readFileBlocking(userFile)
+      val resJson = buffer.toJsonObject()
+      resJson.removeAll { it.key in arrayOf(JsonKeys.CRYPTO, JsonKeys.ACTION, JsonKeys.VERSION) }
+      json.put("user", resJson)
+
+    } catch (e: Exception) {
+      e.printStackTrace()
+      json.putNull("user")
+    } finally {
+      return json
+    }
   }
 
-  private fun friend(json: JsonObject) {
+  private fun friend(json: JsonObject): JsonObject {
+    val action = json.getString(JsonKeys.ACTION)
+    val from = json.getString(JsonKeys.FROM)
+    val to = json.getString(JsonKeys.TO)
+    val fs = vertx.fileSystem()
+    val checkValid = json.containsKey(JsonKeys.FROM)
+    if (!checkValid) {
+      json.put(JsonKeys.INFO, "lack json key `from`")
+      return json
+    }
 
+    return when (action) {
+      ActionConstants.DELETE -> handleFriendDelete(fs, json, from, to)
+//   request to be friends
+      ActionConstants.REQUEST -> handleFriendRequest(fs, json)
+//   reply whether to accept the request
+      ActionConstants.RESPONSE -> handleFriendResponse(fs, json, from, to)
+//    list friends
+      ActionConstants.LIST -> handleFriendList(fs, json, from)
+      else -> defaultMessage(fs, json)
+    }
   }
 
   private fun message(json: JsonObject) {
+    // TODO
+  }
 
+  private fun defaultMessage(json: JsonObject): JsonObject {
+    json.removeAll { it.key !in arrayOf(JsonKeys.VERSION, JsonKeys.TYPE) }
+    json.put(JsonKeys.INFO, "Default info, please check all sent value is correct.")
+    return json
   }
 }

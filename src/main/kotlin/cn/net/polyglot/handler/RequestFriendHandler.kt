@@ -22,7 +22,6 @@ fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: Stri
   }
   val toUserDir = getDirFromUserToFriendDIr(from, to)
   val exist = fs.existsBlocking(toUserDir)
-  println(toUserDir)
   if (exist) {
     try {
       fs.deleteRecursiveBlocking(toUserDir, true)

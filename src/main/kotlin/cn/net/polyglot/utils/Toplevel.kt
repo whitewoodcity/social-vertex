@@ -10,10 +10,10 @@ import java.io.File.separator
  * @date 2018/7/21
  */
 /**
- * return ".social-vertex/user/yourID"
+ * return "social-vertex/user/yourID"
  * @param id String?
- * @return  first: userDir ".social-vertex/user/$id"
- *          second: userFile ".social-vertex/user/$id/user.json"
+ * @return  first: userDir "social-vertex/user/$id"
+ *          second: userFile "social-vertex/user/$id/user.json"
  */
 fun getUserDirAndFile(id: String?): Pair<String, String> {
   val userDir = "$USER_DIR$separator$id"
@@ -24,7 +24,7 @@ fun getUserDirAndFile(id: String?): Pair<String, String> {
 /**
  * @param from String
  * @param to String
- * @return String ".social-vertex/user/$from/friends/$to"
+ * @return String "social-vertex/user/$from/friends/$to"
  */
 fun getDirFromUserToFriendDIr(from: String, to: String): String {
   return USER_DIR + separator + from + separator + FRIENDS + separator + to
