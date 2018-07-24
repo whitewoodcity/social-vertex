@@ -1,7 +1,6 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.ActionConstants
-import cn.net.polyglot.config.FileSystemConstants
 import cn.net.polyglot.config.JsonKeys
 import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
@@ -10,13 +9,18 @@ import cn.net.polyglot.config.TypeConstants.USER
 import cn.net.polyglot.handler.*
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
 import java.io.File
 
 class IMMessageVerticle : AbstractVerticle() {
 
+  private lateinit var webClient: WebClient
+
   override fun start() {
+    webClient = WebClient.create(vertx)
+
     vertx.eventBus().consumer<JsonObject>(IMMessageVerticle::class.java.name) {
       val json = it.body()
       try{
@@ -85,6 +89,7 @@ class IMMessageVerticle : AbstractVerticle() {
           }
           vertx.fileSystem().mkdirsBlocking(dir)
           vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
+          json.removeAll {it.key in arrayOf("type", "action")}
           vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
 
           return result.put(action,true)
@@ -103,24 +108,22 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   private fun search(json: JsonObject): JsonObject {
-    val id = json.getString("user")
-    val userFile = "${FileSystemConstants.USER_DIR}${File.separator}$id${File.separator}${FileSystemConstants.USER_FILE}"
     val action = json.getString("action")
-    if (action == "request") {
-      json.put("action", "response")
-    }
+    val result = JsonObject().putNull(action)
+
+    val dir = config().getString("dir") + File.separator + json.getString("user")
+    val userFile = dir + File.separator + "user.json"
 
     try {
       val buffer = vertx.fileSystem().readFileBlocking(userFile)
       val resJson = buffer.toJsonObject()
-      resJson.removeAll { it.key in arrayOf(JsonKeys.CRYPTO, JsonKeys.ACTION, JsonKeys.VERSION) }
-      json.put("user", resJson)
+      resJson.removeAll { it.key in arrayOf("crypto") }
+      result.put(action, resJson)
 
     } catch (e: Exception) {
-      e.printStackTrace()
-      json.putNull("user")
+      result.put("info", e.message)
     } finally {
-      return json
+      return result
     }
   }
 

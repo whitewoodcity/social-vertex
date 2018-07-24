@@ -38,11 +38,6 @@ type类型有：
 返回结果  
 ```json
 {
-"type":"user",
-"action":"register",
-"user":"zxj5470",
-"version":0.1,
-"info":"注册成功",
 "register":true
 }
 ```
@@ -53,10 +48,6 @@ type类型有：
 - 有对应通信客户端时建议直接在客户端部分做好验证。但若提供 Web Service API 则提示如下信息。  
 ```json
 {
-  "type": "user",
-  "action": "login",
-  "user": " ",
-  "version": 0.1,
   "info": "用户名格式错误",
   "register": false
 }
@@ -103,26 +94,20 @@ type类型有：
 ```json
 {
 "type":"search",
-"action":"request",
-"user":"zxj@polyglot.net.cn",
+"action":"user",
+"keyword":"zxj2017",
 "version":0.1
 }
 ```
 ```json
 {
-"type":"search",
-"action":"response",
-"user":{"id":"zxj@polyglot.net.cn","nickname":"哲学家"},
-"version":0.1
+"user":{"id":"zxj2017","nickname":"哲学家"}
 }
 ```
 查询无结果
 ```json
 {
-"type":"search",
-"action":"response",
-"user":null,
-"version":0.1
+"user":null
 }
 ```
 <h3 id=3> message - 消息类型</h3>  
