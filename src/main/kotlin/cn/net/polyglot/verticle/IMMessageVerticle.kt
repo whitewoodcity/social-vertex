@@ -115,15 +115,16 @@ class IMMessageVerticle : AbstractVerticle() {
     val userFile = dir + File.separator + "user.json"
 
     try {
+      if(!vertx.fileSystem().existsBlocking(userFile))
+        return result.putNull(action)
+
       val buffer = vertx.fileSystem().readFileBlocking(userFile)
       val resJson = buffer.toJsonObject()
       resJson.removeAll { it.key in arrayOf("crypto") }
-      result.put(action, resJson)
+      return result.put(action, resJson)
 
     } catch (e: Exception) {
-      result.put("info", e.message)
-    } finally {
-      return result
+      return result.put("info", e.message)
     }
   }
 
