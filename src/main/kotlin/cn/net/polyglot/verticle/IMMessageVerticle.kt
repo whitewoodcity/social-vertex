@@ -85,7 +85,7 @@ class IMMessageVerticle : AbstractVerticle() {
         return result.put("info","秘钥格式错误")
       }
 
-      val dir = config().getString("dir") + File.separator + user
+      val dir = config().getString("dir") + File.separator + USER + File.separator + user
 
       when(action){
         "register" -> {
@@ -116,7 +116,7 @@ class IMMessageVerticle : AbstractVerticle() {
     val action = json.getString("action")
     val result = JsonObject().putNull(action)
 
-    val dir = config().getString("dir") + File.separator + json.getString("keyword")
+    val dir = config().getString("dir") + File.separator + USER + File.separator + json.getString("keyword")
     val userFile = dir + File.separator + "user.json"
 
     try {
