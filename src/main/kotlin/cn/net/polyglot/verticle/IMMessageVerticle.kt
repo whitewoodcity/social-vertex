@@ -21,7 +21,7 @@ class IMMessageVerticle : AbstractVerticle() {
   override fun start() {
     webClient = WebClient.create(vertx)
 
-    vertx.eventBus().consumer<JsonObject>(IMMessageVerticle::class.java.name) {
+    vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val json = it.body()
       try{
         val type = json.getString("type")

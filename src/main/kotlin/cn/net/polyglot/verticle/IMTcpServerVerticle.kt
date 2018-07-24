@@ -38,7 +38,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
     webClient = WebClient.create(vertx)
 
     // get message from IMHttpServerVerticle eventBus
-    vertx.eventBus().consumer<JsonObject>(IMHttpServerVerticle::class.java.name) {
+    vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val json = it.body()
       val type = json.getString("type")
       val toUser = json.getString("to")
