@@ -11,6 +11,7 @@ import cn.net.polyglot.handler.*
 import cn.net.polyglot.utils.text
 import cn.net.polyglot.utils.tryJson
 import cn.net.polyglot.utils.writeln
+import com.google.common.collect.HashBiMap
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
@@ -26,7 +27,7 @@ import java.util.*
 class IMTcpServerVerticle : AbstractVerticle() {
 
   private val idMap = hashMapOf<String, String>()
-  private val socketMap = hashMapOf<String, NetSocket>()
+  private val socketMap = HashBiMap.create<String, NetSocket>()
   private val activeMap = hashMapOf<String, Long>()
   // trigger NPE in unit test if initialize by ClassLoader
   private lateinit var webClient: WebClient
@@ -37,7 +38,6 @@ class IMTcpServerVerticle : AbstractVerticle() {
     val fs = vertx.fileSystem()
     webClient = WebClient.create(vertx)
 
-    // get message from IMHttpServerVerticle eventBus
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val json = it.body()
       val type = json.getString("type")

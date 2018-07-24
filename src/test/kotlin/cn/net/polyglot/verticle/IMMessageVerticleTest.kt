@@ -26,6 +26,7 @@ class IMMessageVerticleTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
+      //clean the directory
       if(vertx.fileSystem().existsBlocking(config.getString("dir")))
         vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
 
@@ -36,10 +37,6 @@ class IMMessageVerticleTest {
     @AfterClass
     @JvmStatic
     fun afterClass(context: TestContext) {
-      //clean the directory
-      if(vertx.fileSystem().existsBlocking(config.getString("dir")))
-        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
-
       vertx.close(context.asyncAssertSuccess())
     }
   }
