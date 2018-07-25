@@ -72,7 +72,7 @@ fun handleUserRegister(fs: FileSystem, json: JsonObject, userFile: String, id: S
 fun String.checkIdValid(): Boolean {
   if (this.length < 4) return false
   if (this[0].isDigit()) return false
-  return this.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) } && this.count { it == '@' } == 1
+  return this.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) } && this.count { it == '@' } > 1
 }
 
 /**
