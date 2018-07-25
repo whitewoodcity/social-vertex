@@ -50,29 +50,29 @@ fun handleUserLogin(fs: FileSystem, json: JsonObject, userFile: String, id: Stri
 
 fun handleUserRegister(fs: FileSystem, json: JsonObject, userFile: String, id: String?, userDir: String): JsonObject {
   if (fs.existsBlocking(userFile)) {
-    registerDefaultFailedJson(json)
-  } else {
-    try {
-      fs.mkdirsBlocking(userDir)
-      fs.writeFileBlocking(userFile, json.toBuffer())
-      // after write
-      json.remove(JsonKeys.CRYPTO)
-      val friendDir = userDir + File.separator + FRIENDS
-      fs.mkdirBlocking(friendDir)
-      json.put("info", "注册成功")
-      json.put(ActionConstants.REGISTER, true)
-    } catch (e: Exception) {
-      println("cannot mkdir $userDir")
-      json.put("info", "cannot mkdir")
-    }
+    return userExistBefore(json)
   }
-  return json
+  try {
+    fs.mkdirsBlocking(userDir)
+    fs.writeFileBlocking(userFile, json.toBuffer())
+    // after write
+    json.remove(JsonKeys.CRYPTO)
+    val friendDir = userDir + File.separator + FRIENDS
+    fs.mkdirBlocking(friendDir)
+    json.put("info", "注册成功")
+    json.put(ActionConstants.REGISTER, true)
+  } catch (e: Exception) {
+    println("cannot mkdir $userDir")
+    json.put("info", "cannot create user $id")
+  } finally {
+    return json
+  }
 }
 
 fun String.checkIdValid(): Boolean {
   if (this.length < 4) return false
   if (this[0].isDigit()) return false
-  return this.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) }
+  return this.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) } && this.count { it == '@' } == 1
 }
 
 /**
@@ -95,7 +95,9 @@ private fun authorizeLogin(resJson: JsonObject, id: String?, crypto: String?) =
   resJson.getString("user") == id &&
     resJson.getString("crypto") == crypto
 
-private fun registerDefaultFailedJson(json: JsonObject) {
+private fun userExistBefore(json: JsonObject): JsonObject {
   json.remove(JsonKeys.CRYPTO)
+  json.put(JsonKeys.INFO, "user has already existed.")
   json.put(ActionConstants.REGISTER, false)
+  return json
 }

@@ -15,6 +15,7 @@ object TypeConstants {
   const val SEARCH = "search"
   const val FRIEND = "friend"
   const val USER = "user"
+  val SUPPORTED_TYPE = arrayOf(MESSAGE, SEARCH, FRIEND, USER)
 }
 
 /**
