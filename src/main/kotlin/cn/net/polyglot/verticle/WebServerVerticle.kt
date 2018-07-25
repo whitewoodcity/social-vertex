@@ -5,7 +5,6 @@ import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CookieHandler
 
@@ -20,7 +19,7 @@ class WebServerVerticle : AbstractVerticle() {
 
     router.route("/user").handler{ routingContext ->
       if (routingContext.request().method() != HttpMethod.POST) {
-        routingContext.request().response().end("request method is not POST")
+        routingContext.response().end("request method is not POST")
         return@handler
       }
       try {
@@ -29,7 +28,7 @@ class WebServerVerticle : AbstractVerticle() {
         when (type) {
           "message" -> {
             vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
-            routingContext.request().response().end()
+            routingContext.response().end()
           }
           else -> {
             var result: JsonObject?
