@@ -48,7 +48,7 @@ class IMMessageVerticleTest {
       JsonObject()){
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("type"))
-      context.assertTrue(it.result().body().getValue("type")==null)
+      context.assertNull(it.result().body().getValue("type"))
       async1.complete()
     }
 
@@ -57,7 +57,7 @@ class IMMessageVerticleTest {
       JsonObject().put("type","user")){
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("action"))
-      context.assertTrue(it.result().body().getValue("action")==null)
+      context.assertNull(it.result().body().getValue("action"))
       async2.complete()
     }
 
@@ -65,8 +65,8 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject().put("type",123)){
       println(it.result().body())
-      context.assertTrue(it.result().body().getValue("type")==null)
-      context.assertTrue(it.result().body().getValue("action")==null)
+      context.assertNull(it.result().body().getValue("type"))
+      context.assertNull(it.result().body().getValue("action"))
       async3.complete()
     }
   }
