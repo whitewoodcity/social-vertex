@@ -10,22 +10,11 @@ import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
 import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.config.JsonKeys
-import cn.net.polyglot.config.TypeConstants.FRIEND
-import cn.net.polyglot.config.TypeConstants.SEARCH
-import cn.net.polyglot.config.TypeConstants.USER
 import cn.net.polyglot.utils.getUserDirAndFile
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import java.io.File.separator
 
-fun handleRequests(fs: FileSystem, json: JsonObject, type: String): JsonObject {
-  return when (type) {
-    SEARCH -> search(fs, json)
-    FRIEND -> friend(fs, json)
-    USER -> user(fs, json)
-    else -> defaultMessage(fs, json)
-  }
-}
 
 fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): JsonObject {
   val id = json.getString("user")
@@ -57,7 +46,7 @@ fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): Jso
   }
 }
 
-
+@Deprecated("")
 fun search(fs: FileSystem, json: JsonObject): JsonObject {
   val id = json.getString("user")
   val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
@@ -125,6 +114,7 @@ fun message(fs: FileSystem, json: JsonObject,
   }
 }
 
+@Deprecated("")
 fun friend(fs: FileSystem, json: JsonObject): JsonObject {
   val action = json.getString(JsonKeys.ACTION)
   val from = json.getString(JsonKeys.FROM)
