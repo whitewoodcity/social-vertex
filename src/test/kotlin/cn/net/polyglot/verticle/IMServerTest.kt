@@ -79,9 +79,7 @@ class IMServerTest {
         .put("action", "login")
         .put("user", "zxj2017")
         .put("crypto", "431fe828b9b8e8094235dee515562247")
-        .toString())
-
-      socket.write("\r\n")
+        .toString().plus("\r\n"))
 
       socket.handler {
         println(it.toString())
