@@ -15,7 +15,16 @@ import java.io.File
  * @date 2018/7/11
  */
 
-fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: String?): JsonObject {
+/**
+ *
+ * @param fs FileSystem
+ * @param json JsonObject
+ * @param from String?
+ * @param to String?
+ * @param deletedFriendSide () -> Unit, which we can delete each other
+ * @return JsonObject
+ */
+fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: String?, deletedFriendSide: () -> Unit = {}): JsonObject {
   if (from == null || to == null) {
     json.put("info", "failed")
     return json
@@ -26,6 +35,7 @@ fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: Stri
     try {
       fs.deleteRecursiveBlocking(toUserDir, true)
       json.put("info", "$from 删除好友 $to")
+      deletedFriendSide()
     } catch (e: Exception) {
       e.printStackTrace()
       json.put("info", "failed")
@@ -40,9 +50,9 @@ fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: Stri
   }
 }
 
-fun handleFriendRequest(fs: FileSystem, json: JsonObject): JsonObject {
+fun handleFriendRequest(fs: FileSystem, json: JsonObject, action: () -> Unit = {}): JsonObject {
   json.put("info", "请求信息已发送")
-  // TODO: send request to receiver
+  action()
   return json
 }
 
@@ -84,7 +94,7 @@ fun handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: St
       return json
     }
   } else {
-    // rejection is included in `accept` info
+    // rejection is included in `accept` => `info`
   }
   return json
 }
