@@ -1,7 +1,5 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.config.FileSystemConstants.CRLF
-import cn.net.polyglot.utils.writeln
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -50,7 +48,6 @@ class IMServerTest {
   }
 
   private val webClient = WebClient.create(vertx)
-  private val netClient = vertx.createNetClient()
 
   @Test
   fun testAccountRegister(context: TestContext) {
@@ -70,76 +67,31 @@ class IMServerTest {
   }
 
   @Test
-  fun testSearch(context: TestContext) {
-    val async = context.async()
-    netClient.connect(config.getInteger("tcp-port"), "localhost") {
-      if (it.succeeded()) {
-        val socket = it.result()
+  fun testAccountsCommunication(context: TestContext) {//依赖前一个方法
+    val netClient0 = vertx.createNetClient()
 
-        socket.handler {
-          // avoid sticking packages
-          val buffers = it.toString().split(CRLF).filter { it.isNotEmpty() }
-          buffers.forEach {
-            val ret = it.contains("response")
-            println(it)
-            assert(ret)
-          }
-          async.complete()
-        }
-        socket.writeln("""{"type":"search","action":"request","user":"zxj@polyglot.net.cn","version":0.1}""")
-      }
-    }
-  }
+    val async0 = context.async()
 
-  @Test
-  fun testMessage(context: TestContext) {
-    val async = context.async()
-    val loginJson = JsonObject("""{
-"type":"user",
-"action":"login",
-"user":"zxj@test.net.cn",
-"crypto":"431fe828b9b8e8094235dee515562247",
-"version":0.1
-}""")
-    val receiverLoginJson = JsonObject("""{
-"type":"user",
-"action":"login",
-"user":"zxj5470@test.net.cn",
-"crypto":"431fe828b9b8e8094235dee515562247",
-"version":0.1
-}""")
-    val messageJson = JsonObject("""
-{
-"type":"message",
-"from":"zxj@test.net.cn",
-"to":"zxj5470@test.net.cn",
-"body":"你好吗？",
-"version":0.1
-}""")
-    netClient.connect(config.getInteger("tcp-port"), "localhost") {
-      if (it.succeeded()) {
-        val socket = it.result()
-        socket.writeln(receiverLoginJson.toString())
+    netClient0.connect(config.getInteger("tcp-port"), "localhost") {
+      val socket = it.result()
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "zxj2017")
+        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .toString())
+
+      socket.write("\r\n")
+
+      socket.handler {
+        println(it.toString())
+        context.assertTrue(it.toJsonObject().getBoolean("login"))
+        socket.close()
+        netClient0.close()
+        async0.complete()
       }
     }
-    Thread.sleep(1000)
-    netClient.connect(config.getInteger("tcp-port"), "localhost") {
-      if (it.succeeded()) {
-        val socket = it.result()
-        socket.handler {
-          // avoid sticking packages
-          val buffers = it.toString().split(CRLF).filter { it.isNotEmpty() }
-          buffers.forEach {
-            println(it)
-            if (it.contains("succeed")) {
-              async.complete()
-            }
-          }
-        }
-        socket.writeln(loginJson.toString())
-        socket.writeln(messageJson.toString())
-      }
-    }
+
   }
 
 }
