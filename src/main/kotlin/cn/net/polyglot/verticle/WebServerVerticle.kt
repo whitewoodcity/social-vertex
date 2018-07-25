@@ -20,23 +20,28 @@ class WebServerVerticle : AbstractVerticle() {
     httpServer.requestHandler { req ->
       req.bodyHandler {
         if (req.method() != HttpMethod.POST) {
-          req.response().end()
+          req.response().end("request method is not POST")
           return@bodyHandler
         }
-        val json = it.toJsonObject()
-        val type = json.getString("type")
-        when(type){
-          "message" -> {
-            vertx.eventBus().send(IMMessageVerticle::class.java.name,json)
-            req.response().end()
-          }
-          else ->{
-            var result:JsonObject?
-              vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,json) {
-              result = it.result().body()
-              req.response().end(result.toString())
+        try {
+          val json = it.toJsonObject()
+          val type = json.getString("type")
+          when (type) {
+            "message" -> {
+              vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
+              req.response().end()
+            }
+            else -> {
+              var result: JsonObject?
+              vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
+                result = it.result().body()
+                req.response().end(result.toString())
+              }
             }
           }
+        }catch (e:Exception){
+          req.response().end(e.message)
+          return@bodyHandler
         }
       }
     }.listen(config().getInteger("http-port")) {
