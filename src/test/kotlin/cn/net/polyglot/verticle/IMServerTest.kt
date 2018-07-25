@@ -2,7 +2,6 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.FileSystemConstants.CRLF
 import cn.net.polyglot.utils.writeln
-import io.vertx.core.Launcher
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -34,8 +33,8 @@ class IMServerTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
-      if(vertx.fileSystem().existsBlocking(config.getString("dir")))
-        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
+      if (vertx.fileSystem().existsBlocking(config.getString("dir")))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -56,7 +55,7 @@ class IMServerTest {
   @Test
   fun testAccountRegister(context: TestContext) {
     val async = context.async()
-    webClient.post(config.getInteger("http-port"), "localhost", "/")
+    webClient.post(config.getInteger("http-port"), "localhost", "/user")
       .sendJsonObject(JsonObject()
         .put("type", "user")
         .put("action", "register")
@@ -64,15 +63,9 @@ class IMServerTest {
         .put("crypto", "431fe828b9b8e8094235dee515562247")
         .put("version", 0.1)
       ) { response ->
-
-        if (response.succeeded()) {
-          //todo 用context.assert来设置断言，unit test必需写断言，要不然没办法判断返回结果对错
-          println(response.result().body().toString())
-          async.complete()
-        } else {
-          System.err.println("failed")
-          async.complete()
-        }
+        println(response.result().body())
+        context.assertTrue(response.result().body().toJsonObject().getBoolean("register"))
+        async.complete()
       }
   }
 
@@ -149,8 +142,4 @@ class IMServerTest {
     }
   }
 
-  @Test
-  fun testApplication(context: TestContext) {
-
-  }
 }
