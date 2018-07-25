@@ -34,6 +34,9 @@ class IMServerTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
+      if(vertx.fileSystem().existsBlocking(config.getString("dir")))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
+
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
       vertx.deployVerticle(WebServerVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -57,7 +60,7 @@ class IMServerTest {
       .sendJsonObject(JsonObject()
         .put("type", "user")
         .put("action", "register")
-        .put("user", "zxj2017@test.net.cn")
+        .put("user", "zxj2017")
         .put("crypto", "431fe828b9b8e8094235dee515562247")
         .put("version", 0.1)
       ) { response ->

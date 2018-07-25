@@ -1,6 +1,6 @@
 package cn.net.polyglot.verticle
 
-import com.sun.deploy.util.BufferUtil
+import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
@@ -15,18 +15,22 @@ class WebServerVerticle : AbstractVerticle() {
     val router = Router.router(vertx)
 
     router.route().handler(CookieHandler.create())
-    router.route().handler(BodyHandler.create().setBodyLimit(1 * BufferUtil.MB))
+    router.route().handler(BodyHandler.create().setBodyLimit(1 * MB))
 
     httpServer.requestHandler { req ->
       req.bodyHandler {
         if (req.method() != HttpMethod.POST) {
-          println("方法不为POST")
+          req.response().end()
           return@bodyHandler
         }
         val json = it.toJsonObject()
         val type = json.getString("type")
         when(type){
-          "user"->{
+          "message" -> {
+            vertx.eventBus().send(IMMessageVerticle::class.java.name,json)
+            req.response().end()
+          }
+          else ->{
             var result:JsonObject?
               vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,json) {
               result = it.result().body()
@@ -35,11 +39,11 @@ class WebServerVerticle : AbstractVerticle() {
           }
         }
       }
-    }.listen(8080) {
+    }.listen(config().getInteger("http-port")) {
       if (it.succeeded()) {
-        println("Succeed")
+        println("${this::class.java.name} is deployed")
       } else {
-        println("Failed:${it.cause()}")
+        println("${this::class.java.name} fail to deploy")
       }
     }
   }
