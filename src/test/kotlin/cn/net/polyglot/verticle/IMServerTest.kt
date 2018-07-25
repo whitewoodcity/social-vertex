@@ -16,6 +16,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.io.File
+import java.nio.file.Paths
 
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
@@ -24,9 +25,10 @@ class IMServerTest {
   companion object {
     private val config = JsonObject()
       .put("version", 0.1)
-      .put("dir", File(Launcher::class.java.protectionDomain.codeSource.location.toURI()).parent + File.separator + "social-vertex")
+      .put("dir", Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
       .put("tcp-port", 7373)
       .put("http-port", 7575)
+      .put("host", "localhost")
     private val vertx = Vertx.vertx()
 
     @BeforeClass
@@ -34,7 +36,7 @@ class IMServerTest {
     fun beforeClass(context: TestContext) {
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
-      vertx.deployVerticle(IMHttpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
+      vertx.deployVerticle(WebServerVerticle::class.java.name, option, context.asyncAssertSuccess())
       vertx.deployVerticle(IMMessageVerticle::class.java.name, option, context.asyncAssertSuccess())
     }
 
