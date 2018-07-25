@@ -66,6 +66,7 @@ class IMServerTest {
       ) { response ->
 
         if (response.succeeded()) {
+          //todo 用context.assert来设置断言，unit test必需写断言，要不然没办法判断返回结果对错
           println(response.result().body().toString())
           async.complete()
         } else {
