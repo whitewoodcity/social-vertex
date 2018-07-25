@@ -4,6 +4,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.DeploymentOptions
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -32,6 +33,7 @@ class IMMessageVerticleTest {
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMMessageVerticle::class.java.name, option, context.asyncAssertSuccess())
+      vertx.deployVerticle(WebServerVerticle::class.java.name,context.asyncAssertSuccess())
     }
 
     @AfterClass
@@ -188,6 +190,29 @@ class IMMessageVerticleTest {
       context.assertTrue(it.result().body().containsKey("user"))
       context.assertNull(it.result().body().getJsonObject("user"))
       async1.complete()
+    }
+  }
+  @Test
+  fun testWebClientCreateUser(context: TestContext) {
+    val async = context.async()
+    val client = WebClient.create(vertx)
+    val json = JsonObject("""{
+"type":"user",
+"action":"register",
+"user":"jack",
+"crypto":"431fe828b9b8e8094235dee515562247",
+"version":0.1
+}
+""")
+
+    client.post(8080,"localhost","/").sendJson(json){
+      if (it.succeeded()){
+        val result = it.result().body().toJsonObject()
+        println(result)
+        async.complete()
+      }else{
+        print("error:${it.cause().message}")
+      }
     }
   }
 }
