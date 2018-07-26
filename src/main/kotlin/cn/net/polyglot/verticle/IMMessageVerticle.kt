@@ -21,9 +21,6 @@ import java.io.File
 import java.io.IOException
 import java.util.UUID
 
-
-
-
 class IMMessageVerticle : AbstractVerticle() {
 
   private lateinit var webClient: WebClient
@@ -201,20 +198,7 @@ class IMMessageVerticle : AbstractVerticle() {
           if (!fs.existsBlocking(filePath)){
             fs.createFileBlocking(filePath)
           }
-          try {
-            fs.writeFileBlocking(filePath,it.result().body().toBuffer())
-            it.result().reply(JsonObject()
-              .put("type", "friend")
-              .put("action", "response")
-              .put("status", "save")
-              .put("info", "succeed"))
-          } catch (e: IOException) {
-            it.result().reply(JsonObject()
-              .put("type", "friend")
-              .put("action", "response")
-              .put("status", "save")
-              .put("info", "failed:${it.cause().message}"))
-          }
+          fs.writeFileBlocking(filePath,it.result().body().toBuffer())
         }
       }
     } else {
