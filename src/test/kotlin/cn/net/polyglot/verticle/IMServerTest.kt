@@ -66,32 +66,6 @@ class IMServerTest {
   }
 
   @Test
-  fun testAccountsCommunication(context: TestContext) {//依赖前一个方法
-    val netClient0 = vertx.createNetClient()
-
-    val async0 = context.async()
-
-    netClient0.connect(config.getInteger("tcp-port"), "localhost") {
-      val socket = it.result()
-      socket.write(JsonObject()
-        .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247")
-        .toString().plus("\r\n"))
-
-      socket.handler {
-        println(it.toString())
-        context.assertTrue(it.toJsonObject().getBoolean("login"))
-        socket.close()
-        netClient0.close()
-        async0.complete()
-      }
-    }
-
-  }
-
-  @Test
   fun testAccountsAddFriend(context: TestContext) {
     val async = context.async()
     val netClient = vertx.createNetClient()
@@ -116,11 +90,33 @@ class IMServerTest {
         //async.complete()
       } else {
         print("failed:${it.cause()}")
+      }
+    }
+  }
 
+  @Test
+  fun testAccountsCommunication(context: TestContext) {//依赖前一个方法
+    val netClient0 = vertx.createNetClient()
+
+    val async0 = context.async()
+
+    netClient0.connect(config.getInteger("tcp-port"), "localhost") {
+      val socket = it.result()
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "zxj2017")
+        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .toString().plus("\r\n"))
+
+      socket.handler {
+        println(it.toString())
+        context.assertTrue(it.toJsonObject().getBoolean("login"))
+        socket.close()
+        netClient0.close()
+        async0.complete()
       }
     }
 
-
   }
-
 }
