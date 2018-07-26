@@ -25,6 +25,7 @@ class IMHttpServerVerticle : AbstractVerticle() {
           req.response().end(JsonObject().put(JsonKeys.INFO, "request method is not POST").toString())
         }
         try {
+          // make sure json format is correct and transmit it to IMMessageVerticle
           val json = buffer.toJsonObject()
           val type = json.getString(JsonKeys.TYPE)
           if (type !in TypeConstants.SUPPORTED_TYPE) {

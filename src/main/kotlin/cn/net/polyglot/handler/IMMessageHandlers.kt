@@ -10,7 +10,7 @@ import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import java.io.File.separator
 
-
+@Deprecated("")
 fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): JsonObject {
   val id = json.getString("user")
   val crypto = json.getString("crypto")
@@ -49,6 +49,7 @@ fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): Jso
  * @param indirectlySend () -> Unit 非直接发送。适用于不同域名以及对方不在线时的场景
  * @return JsonObject
  */
+@Deprecated("")
 fun message(fs: FileSystem, json: JsonObject,
             directlySend: (to: String) -> Unit = {},
             indirectlySend: (to: String) -> Unit = { }): JsonObject {

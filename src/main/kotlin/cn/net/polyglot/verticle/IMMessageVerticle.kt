@@ -18,8 +18,7 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
 import java.io.File
-import java.io.IOException
-import java.util.UUID
+import java.util.*
 
 class IMMessageVerticle : AbstractVerticle() {
 
@@ -31,34 +30,24 @@ class IMMessageVerticle : AbstractVerticle() {
     // consume messages from Http/TcpServerVerticle to IMMessageVerticle
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val json = it.body()
-      try {
-        val type = json.getString("type")
-        val action = json.getString("action")
-
-        if (type == null) {
-          it.reply(JsonObject().putNull("type"))
-          return@consumer
-        }
-
-        if (action == null) {
-          // message has no `action` key
-          if (type != MESSAGE) {
-            it.reply(JsonObject().putNull("action"))
-            return@consumer
-          }
-        }
-      } catch (e: Exception) {
-        it.reply(JsonObject()
-          .putNull("type").putNull("action")
-          .put("info", e.message))
-        return@consumer
+      if (!json.containsKey("type")) {
+        it.reply(JsonObject().putNull("type"))
       }
+      if (!json.containsKey("action")) {
+        // type `message` doesn't need `action` key
+        if (json.getString("type") != MESSAGE) {
+          it.reply(JsonObject().putNull("action"))
+        }
+      }
+
       launch(vertx.dispatcher()) {
-        when (it.body().getString("type")) {
-          USER -> it.reply(user(it.body()))
-          SEARCH -> it.reply(search(it.body()))
+        when (json.getString("type")) {
+        // future reply
           FRIEND -> friend(it.body(), it)
           MESSAGE -> message(it.body(), it)
+        // synchronization reply
+          USER -> it.reply(user(it.body()))
+          SEARCH -> it.reply(search(it.body()))
           else -> it.reply(defaultMessage(it.body()))
         }
       }
@@ -66,7 +55,7 @@ class IMMessageVerticle : AbstractVerticle() {
     println("${this::class.java.name} is deployed")
   }
 
-  private fun user(json: JsonObject): JsonObject {
+  fun user(json: JsonObject): JsonObject {
     val action = json.getString("action")
     val result = JsonObject().put(action, false)
 
@@ -120,7 +109,7 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun search(json: JsonObject): JsonObject {
+  fun search(json: JsonObject): JsonObject {
     val action = json.getString("action")
     val result = JsonObject().putNull(action)
 
@@ -141,7 +130,7 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun friend(json: JsonObject, msg: Message<JsonObject>) {
+  fun friend(json: JsonObject, msg: Message<JsonObject>) {
     val action = json.getString(JsonKeys.ACTION)
     val from = json.getString(JsonKeys.FROM)
     val to = json.getString(JsonKeys.TO)
@@ -176,7 +165,7 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun message(json: JsonObject, msg: Message<JsonObject>) {
+  fun message(json: JsonObject, msg: Message<JsonObject>) {
     val from = json.getString("from")
     val to = json.getString("to")
     if (from == null || to == null) {
@@ -200,8 +189,8 @@ class IMMessageVerticle : AbstractVerticle() {
               fs.createFileBlocking(filePath)
             }
             fs.writeFileBlocking(filePath, it.result().body().toBuffer())
-          }else{
-            print("status:"+it.result().body().getString("info"))
+          } else {
+            print("status:" + it.result().body().getString("info"))
           }
         }
       }
