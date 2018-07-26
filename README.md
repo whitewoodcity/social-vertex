@@ -116,8 +116,7 @@ type类型有：
 ```json
 {
 "type":"message",
-"from":"inquiry@polyglot.net.cn",
-"to":"customer@w2v4.com",
+"to":"yangkui",
 "body":"你好吗？",
 "version":0.1
 }

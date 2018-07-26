@@ -1,6 +1,5 @@
 package cn.net.polyglot.verticle
 
-
 import com.google.common.collect.HashBiMap
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
@@ -61,9 +60,8 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private fun processJsonString(jsonString:String, socket:NetSocket){
     val result = JsonObject()
     try{
-      val json = JsonObject(jsonString)
+      val json = JsonObject(jsonString).put("from",socketMap[socket])
 
-      //todo dealing with json request here
       when(json.getString("type")){
         "user" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,json){
           val resultJson = it.result().body()
@@ -73,7 +71,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
 
           socket.write(it.result().body().toBuffer())}
         else -> {
-
+          vertx.eventBus().send(IMMessageVerticle::class.java.name,json)
         }
       }
     }catch (e:Exception){
