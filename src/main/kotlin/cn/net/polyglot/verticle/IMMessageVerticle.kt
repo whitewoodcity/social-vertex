@@ -188,17 +188,21 @@ class IMMessageVerticle : AbstractVerticle() {
       vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
         if (it.succeeded()) {
           val result = it.result().body()
-          val target = result.getString("to")
-          val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".friend"
-          val fs = vertx.fileSystem()
-          if (!fs.existsBlocking(dir)) {
-            fs.mkdirBlocking(dir)
+          if (!result.getBoolean("status")) {
+            val target = result.getString("to")
+            val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".friend"
+            val fs = vertx.fileSystem()
+            if (!fs.existsBlocking(dir)) {
+              fs.mkdirBlocking(dir)
+            }
+            val filePath = dir + File.separator + UUID.randomUUID() + ".json"
+            if (!fs.existsBlocking(filePath)) {
+              fs.createFileBlocking(filePath)
+            }
+            fs.writeFileBlocking(filePath, it.result().body().toBuffer())
+          }else{
+            print("status:"+it.result().body().getString("info"))
           }
-          val filePath =dir+File.separator+UUID.randomUUID()+".json"
-          if (!fs.existsBlocking(filePath)){
-            fs.createFileBlocking(filePath)
-          }
-          fs.writeFileBlocking(filePath,it.result().body().toBuffer())
         }
       }
     } else {
