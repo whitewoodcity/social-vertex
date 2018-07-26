@@ -18,6 +18,11 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
 import java.io.File
+import java.io.IOException
+import java.util.UUID
+
+
+
 
 class IMMessageVerticle : AbstractVerticle() {
 
@@ -185,8 +190,31 @@ class IMMessageVerticle : AbstractVerticle() {
     if (sameDomain(from, to, host)) {
       vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
         if (it.succeeded()) {
-          println(it.result().body())
-          msg.reply(JsonObject("""{"info":"TCP succeed"}"""))
+          val result = it.result().body()
+          val target = result.getString("to")
+          val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".friend"
+          val fs = vertx.fileSystem()
+          if (!fs.existsBlocking(dir)) {
+            fs.mkdirBlocking(dir)
+          }
+          val filePath =dir+File.separator+UUID.randomUUID()+".json"
+          if (!fs.existsBlocking(filePath)){
+            fs.createFileBlocking(filePath)
+          }
+          try {
+            fs.writeFileBlocking(filePath,it.result().body().toBuffer())
+            it.result().reply(JsonObject()
+              .put("type", "friend")
+              .put("action", "response")
+              .put("status", "save")
+              .put("info", "succeed"))
+          } catch (e: IOException) {
+            it.result().reply(JsonObject()
+              .put("type", "friend")
+              .put("action", "response")
+              .put("status", "save")
+              .put("info", "failed:${it.cause().message}"))
+          }
         }
       }
     } else {

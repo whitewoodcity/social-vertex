@@ -20,6 +20,31 @@ class IMTcpServerVerticle : AbstractVerticle() {
   override fun start() {
     val port = config().getInteger("tcp-port")
 
+    vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
+      val type = it.body().getString("type")
+      when (type) {
+        "friend" -> {
+          val action = it.body().getString("action")
+          when (action) {
+            "request" -> {
+              val target = it.body().getString("to")
+              val socketMap = socketMap.inverse()
+              val socket = socketMap[target]
+              if (socket != null) {
+                socket.write(it.body().toBuffer())
+              } else {
+                it.reply(it.body())
+              }
+            }
+            "response" -> {
+              val info = it.body().getString("info")
+              println(info)
+
+            }
+          }
+        }
+      }
+    }
     vertx.createNetServer(NetServerOptions().setTcpKeepAlive(true)).connectHandler { socket ->
 
       //因为是bimap，不能重复存入null，会抛异常，所以临时先放一个字符串，等用户登陆之后便会替换该字符串，以用户名取代
@@ -27,15 +52,15 @@ class IMTcpServerVerticle : AbstractVerticle() {
 
       socket.handler {
         buffer.appendBuffer(it)
-        if(buffer.toString().endsWith("\r\n")){
+        if (buffer.toString().endsWith("\r\n")) {
           val msgs = buffer.toString().substringBeforeLast("\r\n").split("\r\n")
-          for(s in msgs){
+          for (s in msgs) {
             processJsonString(s, socket)
           }
           buffer = Buffer.buffer()
         }
 
-        if(buffer.length() > 1*MB){
+        if (buffer.length() > 1 * MB) {
           buffer = Buffer.buffer()
         }
       }
@@ -57,24 +82,25 @@ class IMTcpServerVerticle : AbstractVerticle() {
     }
   }
 
-  private fun processJsonString(jsonString:String, socket:NetSocket){
+  private fun processJsonString(jsonString: String, socket: NetSocket) {
     val result = JsonObject()
-    try{
-      val json = JsonObject(jsonString).put("from",socketMap[socket])
+    try {
+      val json = JsonObject(jsonString).put("from", socketMap[socket])
 
-      when(json.getString("type")){
-        "user" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,json){
+      when (json.getString("type")) {
+        "user" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
           val resultJson = it.result().body()
 
-          if(resultJson.getBoolean("login"))
+          if (resultJson.getBoolean("login"))
             socketMap[socket] = json.getString("user")
 
-          socket.write(it.result().body().toBuffer())}
+          socket.write(it.result().body().toBuffer())
+        }
         else -> {
-          vertx.eventBus().send(IMMessageVerticle::class.java.name,json)
+          vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
         }
       }
-    }catch (e:Exception){
+    } catch (e: Exception) {
       socket.write(result.put("info", e.message).toBuffer())
     }
   }

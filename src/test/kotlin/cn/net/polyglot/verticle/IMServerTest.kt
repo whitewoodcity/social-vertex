@@ -18,7 +18,6 @@ import java.nio.file.Paths
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
 class IMServerTest {
-  //init test, deploy verticles and close vert.x instance after running tests
   companion object {
     private val config = JsonObject()
       .put("version", 0.1)
@@ -31,8 +30,8 @@ class IMServerTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
-      if (vertx.fileSystem().existsBlocking(config.getString("dir")))
-        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)
+     /* if (vertx.fileSystem().existsBlocking(config.getString("dir")))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)*/
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -89,6 +88,38 @@ class IMServerTest {
         async0.complete()
       }
     }
+
+  }
+
+  @Test
+  fun testApplyAddFriend(context: TestContext) {
+    val async = context.async()
+    val netClient = vertx.createNetClient()
+    netClient.connect(config.getInteger("tcp-port"), config.getString("host")) {
+      if (it.succeeded()) {
+        val socket = it.result()
+        val json = JsonObject("""{
+          "type":"friend",
+          "action":"request",
+          "from":"zxj@polyglot.net.cn",
+          "to":"zxj2017",
+          "message":"请添加我为你的好友，我是哲学家",
+          "version":0.1
+        }""").toString().plus("\r\n")
+        socket.closeHandler {
+          println("close")
+        }
+        socket.exceptionHandler{
+          print("Error:${it.cause?.message}")
+        }
+        socket.write(json)
+       // async.complete()
+      } else {
+        print("failed:${it.cause()}")
+
+      }
+    }
+
 
   }
 
