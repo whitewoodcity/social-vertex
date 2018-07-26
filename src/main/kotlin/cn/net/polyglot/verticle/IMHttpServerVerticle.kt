@@ -2,7 +2,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.JsonKeys
 import cn.net.polyglot.config.TypeConstants
-import cn.net.polyglot.config.makeAppDirs
+import cn.net.polyglot.utils.makeAppDirs
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject

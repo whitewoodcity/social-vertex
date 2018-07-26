@@ -1,14 +1,9 @@
 package cn.net.polyglot.handler
 
-import cn.net.polyglot.config.ActionConstants.DELETE
-import cn.net.polyglot.config.ActionConstants.LIST
 import cn.net.polyglot.config.ActionConstants.LOGIN
 import cn.net.polyglot.config.ActionConstants.REGISTER
-import cn.net.polyglot.config.ActionConstants.REQUEST
-import cn.net.polyglot.config.ActionConstants.RESPONSE
 import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.FileSystemConstants.USER_DIR
-import cn.net.polyglot.config.FileSystemConstants.USER_FILE
 import cn.net.polyglot.config.JsonKeys
 import cn.net.polyglot.utils.getUserDirAndFile
 import io.vertx.core.file.FileSystem
@@ -43,31 +38,6 @@ fun user(fs: FileSystem, json: JsonObject, loginTcpAction: () -> Unit = {}): Jso
     LOGIN -> handleUserLogin(fs, json, userFile, id, crypto, loginTcpAction)
     REGISTER -> handleUserRegister(fs, json, userFile, id, userDir)
     else -> defaultMessage(fs, json)
-  }
-}
-
-@Deprecated("")
-fun search(fs: FileSystem, json: JsonObject): JsonObject {
-  val id = json.getString("user")
-  val userFile = "$USER_DIR$separator$id$separator$USER_FILE"
-  val action = json.getString("action")
-  if (action == "request") {
-    json.put("action", "response")
-  }
-
-  try {
-    // throws NoSuchFileException if not exist
-    val buffer = fs.readFileBlocking(userFile)
-
-    val resJson = buffer.toJsonObject()
-    resJson.removeAll { it.key in arrayOf(JsonKeys.CRYPTO, JsonKeys.ACTION, JsonKeys.VERSION) }
-    json.put("user", resJson)
-
-  } catch (e: Exception) {
-    System.err.println(e.message)
-    json.putNull("user")
-  } finally {
-    return json
   }
 }
 
@@ -111,30 +81,6 @@ fun message(fs: FileSystem, json: JsonObject,
     outputJson.put(JsonKeys.INFO, "no such friend $to")
   } finally {
     return outputJson
-  }
-}
-
-@Deprecated("")
-fun friend(fs: FileSystem, json: JsonObject): JsonObject {
-  val action = json.getString(JsonKeys.ACTION)
-  val from = json.getString(JsonKeys.FROM)
-  val to = json.getString(JsonKeys.TO)
-
-  val checkValid = json.containsKey(JsonKeys.FROM)
-  if (!checkValid) {
-    json.put(JsonKeys.INFO, "lack json key `from`")
-    return json
-  }
-
-  return when (action) {
-    DELETE -> handleFriendDelete(fs, json, from, to)
-//   request to be friends
-    REQUEST -> handleFriendRequest(fs, json)
-//   reply whether to accept the request
-    RESPONSE -> handleFriendResponse(fs, json, from, to)
-//    list friends
-    LIST -> handleFriendList(fs, json, from)
-    else -> defaultMessage(fs, json)
   }
 }
 

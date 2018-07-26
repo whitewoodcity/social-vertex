@@ -182,7 +182,7 @@ class IMMessageVerticleTest {
         .put("type","search")
         .put("action","user")
         .put("keyword","zxj2018")
-        .put("version",".1")
+        .put("version", 0.1)
     ){
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("user"))
@@ -191,4 +191,17 @@ class IMMessageVerticleTest {
     }
   }
 
+  @Test
+  fun testUserFriendList(context: TestContext) {
+    val async = context.async()
+    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
+      JsonObject()
+        .put("type", "friend")
+        .put("action", "list")
+        .put("from", "zxj2017")
+        .put("version", 0.1)) {
+      println(it.result().body())
+      async.complete()
+    }
+  }
 }

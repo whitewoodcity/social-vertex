@@ -104,7 +104,14 @@ class IMTcpServerVerticle : AbstractVerticle() {
           socket.write(it.result().body().toBuffer())
         }
         else -> {
-          vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
+          vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
+            if (it.succeeded()) {
+              val ret = it.result().body()
+              socket.write(ret.toString().plus("\r\n"))
+            } else {
+              socket.write(JsonObject().put("info", "no response").toBuffer())
+            }
+          }
         }
       }
     } catch (e: Exception) {
