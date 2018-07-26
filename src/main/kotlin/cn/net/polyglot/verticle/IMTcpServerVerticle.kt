@@ -32,14 +32,21 @@ class IMTcpServerVerticle : AbstractVerticle() {
               val socket = socketMap[target]
               if (socket != null) {
                 socket.write(it.body().toBuffer())
+                it.reply(JsonObject()
+                  .put("type", "friend")
+                  .put("to","$target")
+                  .put("action", "response")
+                  .put("status", true)
+                  .put("info", "succeed")
+                )
               } else {
-                it.reply(it.body())
+                it.reply(JsonObject()
+                  .put("type", "friend")
+                  .put("to","$target")
+                  .put("action", "response")
+                  .put("status", false)
+                  .put("info", "offline"))
               }
-            }
-            "response" -> {
-              val info = it.body().getString("info")
-              println(info)
-
             }
           }
         }

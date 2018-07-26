@@ -92,7 +92,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testApplyAddFriend(context: TestContext) {
+  fun testAccountsAddFriend(context: TestContext) {
     val async = context.async()
     val netClient = vertx.createNetClient()
     netClient.connect(config.getInteger("tcp-port"), config.getString("host")) {
@@ -113,7 +113,7 @@ class IMServerTest {
           print("Error:${it.cause?.message}")
         }
         socket.write(json)
-       // async.complete()
+        //async.complete()
       } else {
         print("failed:${it.cause()}")
 
