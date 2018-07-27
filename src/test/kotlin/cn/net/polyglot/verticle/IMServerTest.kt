@@ -96,19 +96,20 @@ class IMServerTest {
       socket.handler {
         val result = it.toJsonObject()
         println(result)
-        when(result.getString("type")){
+        when (result.getString("type")) {
           "user" -> {
             context.assertTrue(result.getBoolean("login"))
-            socket.write(JsonObject().put("type","friend")
-              .put("action","request")
-              .put("to","zxj2017")
-              .put("message","请添加我为你的好友，我是yangkui")
-              .put("version",0.1).toString().plus("\r\n"))
+            socket.write(JsonObject().put("type", "friend")
+              .put("action", "request")
+              .put("to", "zxj2017")
+              .put("message", "请添加我为你的好友，我是yangkui")
+              .put("version", 0.1).toString().plus("\r\n"))
           }
           "friend" -> {
             //todo  添加收到好友响应时候的文件检查，可参考下面的代码
           }
-          else -> {}
+          else -> {
+          }
         }
       }
 
@@ -125,16 +126,16 @@ class IMServerTest {
           "friend" -> {
             //检查yangkui/.send/zxj2017.json 和 zxj2017/.receive/yangkui.json 两个文件存在
             context.assertTrue(vertx.fileSystem().existsBlocking(
-              config.getString("dir")+separator + "yangkui"+separator +".send"+separator +"zxj2017.json"))
+              config.getString("dir") + separator + "yangkui" + separator + ".send" + separator + "zxj2017.json"))
             context.assertTrue(vertx.fileSystem().existsBlocking(
-              config.getString("dir")+separator + "zxj2017"+separator +".receive"+separator +"yangkui.json"))
+              config.getString("dir") + separator + "zxj2017" + separator + ".receive" + separator + "yangkui.json"))
 
             //todo 实现该测试案例的逻辑
-            socket.write(JsonObject().put("type","friend")
-              .put("action","response")
+            socket.write(JsonObject().put("type", "friend")
+              .put("action", "response")
               .put("to", result.getString("from"))
-              .put("accept",true)
-              .put("version",0.1).toString().plus("\r\n"))
+              .put("accept", true)
+              .put("version", 0.1).toString().plus("\r\n"))
           }
           "propel" -> {
             println(it.toJsonObject())
