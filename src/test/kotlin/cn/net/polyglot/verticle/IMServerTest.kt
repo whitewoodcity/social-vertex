@@ -13,6 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.io.File
+import java.io.File.separator
 import java.nio.file.Paths
 
 @RunWith(VertxUnitRunner::class)
@@ -93,18 +94,21 @@ class IMServerTest {
       )
 
       socket.handler {
-        var result = it.toJsonObject()
-        if (result.getString("type") != "propel") {
-          println(result)
-          context.assertTrue(result.getString("info") != "Server error！")
-        }
-
-        if (result.getBoolean("login") == true) {
-          socket.write(JsonObject().put("type","friend")
+        val result = it.toJsonObject()
+        println(result)
+        when(result.getString("type")){
+          "user" -> {
+            context.assertTrue(result.getBoolean("login"))
+            socket.write(JsonObject().put("type","friend")
               .put("action","request")
               .put("to","zxj2017")
               .put("message","请添加我为你的好友，我是yangkui")
               .put("version",0.1).toString().plus("\r\n"))
+          }
+          "friend" -> {
+            //todo  添加收到好友响应时候的文件检查，可参考下面的代码
+          }
+          else -> {}
         }
       }
 
@@ -119,14 +123,18 @@ class IMServerTest {
         val type = result.getString("type")
         when (type) {
           "friend" -> {
-            if (result.getString("type") == "friend" && result.getString("action") == "request") {
-              print("to" + result.getString("to"))
-              socket.write(JsonObject().put("type","friend")
-                .put("action","response")
-                .put("to", result.getString("from"))
-                .put("accept",true)
-                .put("version",0.1).toString().plus("\r\n"))
-            }
+            //检查yangkui/.send/zxj2017.json 和 zxj2017/.receive/yangkui.json 两个文件存在
+            context.assertTrue(vertx.fileSystem().existsBlocking(
+              config.getString("dir")+separator + "yangkui"+separator +".send"+separator +"zxj2017.json"))
+            context.assertTrue(vertx.fileSystem().existsBlocking(
+              config.getString("dir")+separator + "zxj2017"+separator +".receive"+separator +"yangkui.json"))
+
+            //todo 实现该测试案例的逻辑
+            socket.write(JsonObject().put("type","friend")
+              .put("action","response")
+              .put("to", result.getString("from"))
+              .put("accept",true)
+              .put("version",0.1).toString().plus("\r\n"))
           }
           "propel" -> {
             println(it.toJsonObject())

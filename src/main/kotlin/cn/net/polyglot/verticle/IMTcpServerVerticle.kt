@@ -118,7 +118,9 @@ class IMTcpServerVerticle : AbstractVerticle() {
           if (resultJson.getBoolean("login"))
              socketMap[socket] = json.getString("user")
 
-          socket.write(it.result().body().toBuffer())
+          resultJson.put("type","user").put("action","login")
+
+          socket.write(resultJson.toBuffer())
         }
         else -> {
           vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
