@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.kotlin.core.DeploymentOptions
+import io.vertx.kotlin.core.json.get
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -27,8 +28,8 @@ class IMMessageVerticleTest {
     @JvmStatic
     fun beforeClass(context: TestContext) {
       //clean the directory
-      if(vertx.fileSystem().existsBlocking(config.getString("dir")))
-        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
+      /*  if(vertx.fileSystem().existsBlocking(config.getString("dir")))
+          vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)*/
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMMessageVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -42,10 +43,10 @@ class IMMessageVerticleTest {
   }
 
   @Test
-  fun testJsonFormat(context: TestContext){
+  fun testJsonFormat(context: TestContext) {
     val async1 = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
-      JsonObject()){
+      JsonObject()) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("type"))
       context.assertNull(it.result().body().getValue("type"))
@@ -54,7 +55,7 @@ class IMMessageVerticleTest {
 
     val async2 = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
-      JsonObject().put("type","user")){
+      JsonObject().put("type", "user")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("action"))
       context.assertNull(it.result().body().getValue("action"))
@@ -63,7 +64,7 @@ class IMMessageVerticleTest {
 
     val async3 = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
-      JsonObject().put("type",123)){
+      JsonObject().put("type", 123)) {
       println(it.result().body())
       context.assertNull(it.result().body().getValue("type"))
       context.assertNull(it.result().body().getValue("action"))
@@ -72,14 +73,14 @@ class IMMessageVerticleTest {
   }
 
   @Test
-  fun testUserCreation(context: TestContext){
+  fun testUserCreation(context: TestContext) {
     val async1 = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action","register")
+        .put("action", "register")
         .put("user", "zxj2017")
-        .put("crypto","431fe828b9b8e8094235dee515562127")){
+        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(it.result().body().getBoolean("register"))
@@ -88,14 +89,14 @@ class IMMessageVerticleTest {
   }
 
   @Test
-  fun testUserCreationFail(context: TestContext){
+  fun testUserCreationFail(context: TestContext) {
     val async1 = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action","register")
+        .put("action", "register")
         .put("user", "zxj2017")
-        .put("crypto","abcd")){
+        .put("crypto", "abcd")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(!it.result().body().getBoolean("register"))
@@ -106,9 +107,9 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action","register")
+        .put("action", "register")
         .put("user", "zxj2017")
-        .put("crypto","431fe828b9b8e8094235dee515562127")){
+        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(!it.result().body().getBoolean("register"))
@@ -117,14 +118,14 @@ class IMMessageVerticleTest {
   }
 
   @Test
-  fun testUserLogin(context: TestContext){
+  fun testUserLogin(context: TestContext) {
     val async = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action","login")
+        .put("action", "login")
         .put("user", "zxj2017")
-        .put("crypto","431fe828b9b8e8094235dee515562127")){
+        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("login"))
       context.assertTrue(it.result().body().getBoolean("login"))
@@ -133,14 +134,14 @@ class IMMessageVerticleTest {
   }
 
   @Test
-  fun testUserLoginFail(context: TestContext){
+  fun testUserLoginFail(context: TestContext) {
     val async1 = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action","login")
+        .put("action", "login")
         .put("user", "zxj2018")
-        .put("crypto","431fe828b9b8e8094235dee515562127")){
+        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("login"))
       context.assertTrue(!it.result().body().getBoolean("login"))
@@ -151,25 +152,26 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action","login")
+        .put("action", "login")
         .put("user", "zxj2017")
-        .put("crypto","431fe828b9b8e8094235dee515562126")){
+        .put("crypto", "431fe828b9b8e8094235dee515562126")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("login"))
       context.assertTrue(!it.result().body().getBoolean("login"))
       async2.complete()
     }
   }
+
   @Test
- fun testUserSearch(context: TestContext){
+  fun testUserSearch(context: TestContext) {
     val async = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
-      .put("type","search")
-      .put("action","user")
-      .put("keyword","zxj2017")
+        .put("type", "search")
+        .put("action", "user")
+        .put("keyword", "zxj2017")
         .put("version", 0.1)
-    ){
+    ) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("user"))
       context.assertNotNull(it.result().body().getJsonObject("user"))
@@ -179,11 +181,11 @@ class IMMessageVerticleTest {
     val async1 = context.async()
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
-        .put("type","search")
-        .put("action","user")
-        .put("keyword","zxj2018")
+        .put("type", "search")
+        .put("action", "user")
+        .put("keyword", "zxj2018")
         .put("version", 0.1)
-    ){
+    ) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("user"))
       context.assertNull(it.result().body().getJsonObject("user"))
@@ -205,3 +207,11 @@ class IMMessageVerticleTest {
     }
   }
 }
+
+
+
+
+
+
+
+

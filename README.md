@@ -189,6 +189,20 @@ type类型有：
   }]
 }
 ```
+
+###系统推送
+
+```
+{
+"type":"propel",
+"action":"inform",
+"info":"添加好友成功",
+"target":[{"id":"zxj2017"},{"id":"yangkui2017"}],
+"version":"1.0"
+}
+```
+
+
 json 结果 `d.ts` 描述。
 ```typescript
 class ListObject {

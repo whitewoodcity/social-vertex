@@ -13,6 +13,7 @@ import cn.net.polyglot.handler.handleFriendList
 import cn.net.polyglot.handler.handleFriendResponse
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.eventbus.Message
+import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
@@ -173,7 +174,16 @@ class IMMessageVerticle : AbstractVerticle() {
 //   request to be friends
       ActionConstants.REQUEST -> message(json, msg)
 //   reply whether to accept the request
-      ActionConstants.RESPONSE -> handleFriendResponse(fs, retJson, from, to)
+      ActionConstants.RESPONSE -> {
+        val result = handleFriendResponse(fs, retJson, from, to,config())
+        vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name,result){
+          if (it.succeeded()){
+            println(it.result().body())
+          }else{
+            print("failed:${it.cause()}")
+          }
+        }
+      }
       else -> defaultMessage(fs, retJson)
     }
   }
@@ -187,17 +197,27 @@ class IMMessageVerticle : AbstractVerticle() {
 
     val host = json.getString("host") ?: "test.net.cn"
     if (sameDomain(from, to, host)) {
+      val fs = vertx.fileSystem()
+      val sendDir = config().getString("dir") + File.separator + "user"+
+        File.separator + json.getString("from")+File.separator+ ".send"
+      val status = saveSendRecord(fs, sendDir, json)
+      if (!status){
+        msg.reply(JsonObject()
+          .put("status","500")
+          .put("info","Server error!")
+        )
+        return
+      }
       vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
         if (it.succeeded()) {
           val result = it.result().body()
           if (!result.getBoolean("status")) {
             val target = result.getString("to")
-            val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".friend"
-            val fs = vertx.fileSystem()
+            val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".receive"
             if (!fs.existsBlocking(dir)) {
               fs.mkdirBlocking(dir)
             }
-            val filePath = dir + File.separator + UUID.randomUUID() + ".json"
+            val filePath = dir + File.separator + to + ".json"
             if (!fs.existsBlocking(filePath)) {
               fs.createFileBlocking(filePath)
             }
@@ -235,4 +255,22 @@ class IMMessageVerticle : AbstractVerticle() {
     json.put(JsonKeys.INFO, "Default info, please check all sent value is correct.")
     return json
   }
+
+  private fun saveSendRecord(fs: FileSystem, dir: String, json: JsonObject): Boolean {
+    val fileDir = dir + File.separator + json.getString("to") + ".json"
+    try {
+      if (!fs.existsBlocking(dir)) {
+        fs.mkdirsBlocking(dir)
+      }
+      if (!fs.existsBlocking(fileDir)) {
+        fs.createFileBlocking(fileDir)
+      }
+      fs.writeFileBlocking(fileDir, json.toBuffer())
+      return true
+    } catch (e: Exception) {
+      print("Save failed:${e.message}")
+    }
+    return false
+  }
 }
+

@@ -4,9 +4,11 @@ import com.google.common.collect.HashBiMap
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
+import kotlinx.coroutines.experimental.async
 
 /**
  * @author zxj5470
@@ -31,7 +33,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
               val socketMap = socketMap.inverse()
               val socket = socketMap[target]
               if (socket != null) {
-                socket.write(it.body().toBuffer())
+                socket.write(it.body().toString().plus("\r\n"))
                 it.reply(JsonObject()
                   .put("type", "friend")
                   .put("to","$target")
@@ -48,7 +50,24 @@ class IMTcpServerVerticle : AbstractVerticle() {
                   .put("info", "offline"))
               }
             }
+
           }
+        }
+        "propel"->{
+          val result = it.body()
+          val infomTarget = result.getJsonArray("target")
+          val socketMap   = socketMap.inverse()
+          for (json in infomTarget){
+            val target = json as JsonObject
+            val socket = socketMap[target.getString("id")]
+            if (socket!=null){
+              socket.write(result.toString().plus("\r\n"))
+            }else{
+              it.reply(JsonObject()
+                .put("status","succeed"))
+            }
+          }
+
         }
       }
     }
@@ -118,4 +137,5 @@ class IMTcpServerVerticle : AbstractVerticle() {
       socket.write(result.put("info", e.message).toBuffer())
     }
   }
+
 }

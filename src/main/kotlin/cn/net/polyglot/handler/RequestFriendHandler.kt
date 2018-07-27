@@ -7,8 +7,12 @@ import cn.net.polyglot.utils.getUserDirAndFile
 import cn.net.polyglot.utils.putNullable
 import cn.net.polyglot.utils.toJsonArray
 import io.vertx.core.file.FileSystem
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.core.json.JsonObject
+import io.vertx.kotlin.core.json.get
 import java.io.File
+import java.io.IOException
 
 /**
  * @author zxj5470
@@ -56,47 +60,90 @@ fun handleFriendRequest(fs: FileSystem, json: JsonObject, action: () -> Unit = {
   return json
 }
 
-fun handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: String?): JsonObject {
+fun handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: String?, config: JsonObject): JsonObject {
+  val target = ArrayList<JsonObject>()
+  target.add(0, JsonObject().put("id", "$to"))
+  target.add(1, JsonObject().put("id", "$from"))
+  val result = JsonObject()
+    .put("type", "propel")
+    .put("action", "inform")
+    .put("version", "1.0")
+    .put("target", JsonArray(target))
   val accept = json.getBoolean("accept")
-  if (accept == null || from == null || to == null) {
-    json.put("info", "参数格式错误")
-    return json
-  }
-
-  val group = json.getString("group") ?: "我的好友"
-  val info =
-    if (accept) "对方已接受您的好友请求"
-    else "对方拒绝了您的好友请求"
-  json.put("info", info)
-
-  val fromUserDirToFriendDir = getDirFromUserToFriendDIr(from, to)
   if (accept) {
+    val dir = config.getString("dir") + File.separator + "user"
+    val fromDir = dir + File.separator + from + File.separator + "friends" + File.separator + to
+    val toDir = dir + File.separator + to + File.separator + "friends" + File.separator + from
     try {
-      // if `from` user doesn't exist, it will be failed.
-      val fromDir = getUserDirAndFile(from).first
-      if (!fs.existsBlocking(fromDir)) {
-        json.put("info", "$from user doesn't exist.")
-        json.put("status", 1)
-        return json
-      }
+      if (!fs.existsBlocking(fromDir) && !fs.existsBlocking(toDir)) {
 
-      fs.mkdirsBlocking(fromUserDirToFriendDir)
-      val filePath = fromUserDirToFriendDir + File.separator + USER_FILE
-      val writeJson = JsonObject().apply {
-        put("id", to)
-        put("nickname", to)
-        put("group", group)
+        fs.mkdirsBlocking(toDir)
+        fs.mkdirsBlocking(fromDir)
+        fs.createFileBlocking(fromDir + File.separator + "$to.json")
+          .writeFileBlocking(fromDir + File.separator + "$to.json", JsonObject()
+            .put("id", "$to")
+            .put("nickname", "$to").toBuffer())
+        fs.createFileBlocking(toDir + File.separator + "$from.json")
+          .writeFileBlocking(toDir + File.separator + "$from.json", JsonObject()
+            .put("id", "$from")
+            .put("nickname", "$from").toBuffer())
+      } else {
+        result.put("info", "不允许重复添加")
+        return result
       }
-      fs.writeFileBlocking(filePath, writeJson.toBuffer())
-      json.put("status", 0)
-    } catch (e: Exception) {
-      json.put("status", 1)
-      return json
+    } catch (e: IOException) {
+      result.put("info", "Server error！")
+      return result
     }
+    result.put("info", "我们已经是好友开始交谈吧！")
+    return result
+
+
   } else {
-    // rejection is included in `accept` => `info`
+
+    return result.put("info", "对方拒绝加你为好友")
+
   }
-  return json
+
+//  if (accept == null || from == null || to == null) {
+//    json.put("info", "参数格式错误")
+//    return json
+//  }
+//
+//  val group = json.getString("group") ?: "我的好友"
+//  val info =
+//    if (accept) "对方已接受您的好友请求"
+//    else "对方拒绝了您的好友请求"
+//  json.put("info", info)
+//
+//  val fromUserDirToFriendDir = getDirFromUserToFriendDIr(from, to)
+//  if (accept) {
+//    try {
+//      // if `from` user doesn't exist, it will be failed.
+//      val fromDir = getUserDirAndFile(from).first
+//      if (!fs.existsBlocking(fromDir)) {
+//        json.put("info", "$from user doesn't exist.")
+//        json.put("status", 1)
+//        return json
+//      }
+//
+//      fs.mkdirsBlocking(fromUserDirToFriendDir)
+//      val filePath = fromUserDirToFriendDir + File.separator + USER_FILE
+//      val writeJson = JsonObject().apply {
+//        put("id", to)
+//        put("nickname", to)
+//        put("group", group)
+//      }
+//      fs.writeFileBlocking(filePath, writeJson.toBuffer())
+//      json.put("status", 0)
+//    } catch (e: Exception) {
+//      json.put("status", 1)
+//      return json
+//    }
+//  } else {
+//    // rejection is included in `accept` => `info`
+//  }
+//  return json
 }
 
 /**
