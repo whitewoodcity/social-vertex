@@ -79,6 +79,7 @@ class IMServerTest {
       }
   }
 
+  //todo friend和message，都是单向信息流动，不需要任何的response和reply，所有的响应都以相反方向单向发送，请依照此设计完善unit tests
   @Test
   fun testAccountsAddFriend(context: TestContext) {
     val async = context.async()
@@ -99,16 +100,14 @@ class IMServerTest {
         }
 
         if (result.getBoolean("login") == true) {
-          socket.write(JsonObject("""{
-          "type":"friend",
-          "action":"request",
-          "to":"zxj2017",
-          "message":"请添加我为你的好友，我是yangkui",
-          "version":0.1
-        }""").toString().plus("\r\n"))
+          socket.write(JsonObject().put("type","friend")
+              .put("action","request")
+              .put("to","zxj2017")
+              .put("message","请添加我为你的好友，我是yangkui")
+              .put("version",0.1).toString().plus("\r\n"))
         }
-
       }
+
       socket.exceptionHandler {
         socket.close()
       }
@@ -122,13 +121,11 @@ class IMServerTest {
           "friend" -> {
             if (result.getString("type") == "friend" && result.getString("action") == "request") {
               print("to" + result.getString("to"))
-              socket.write(JsonObject("""{
-            "type":"friend",
-            "action":"response",
-            "to":"${result.getString("from")}",
-            "accept":true,
-            "version":0.1
-          }""").toString().plus("\r\n"))
+              socket.write(JsonObject().put("type","friend")
+                .put("action","response")
+                .put("to", result.getString("from"))
+                .put("accept",true)
+                .put("version",0.1).toString().plus("\r\n"))
             }
           }
           "propel" -> {

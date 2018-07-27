@@ -30,7 +30,6 @@ class IMMessageVerticle : AbstractVerticle() {
     // consume messages from Http/TcpServerVerticle to IMMessageVerticle
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val json = it.body()
-      System.err.println(json)
       try {
         if (!json.containsKey("type")) {
           it.reply(JsonObject().putNull("type"))
@@ -179,7 +178,7 @@ class IMMessageVerticle : AbstractVerticle() {
           if (it.succeeded()){
             println(it.result().body())
           }else{
-            print("failed:${it.cause()}")
+            println("failed:${it.cause()}")
           }
         }
       }
@@ -222,7 +221,7 @@ class IMMessageVerticle : AbstractVerticle() {
             }
             fs.writeFileBlocking(filePath, it.result().body().toBuffer())
           } else {
-            print("status:" + it.result().body().getString("info"))
+            println("status:" + it.result().body().getString("info"))
           }
         }
       }
@@ -267,7 +266,7 @@ class IMMessageVerticle : AbstractVerticle() {
       fs.writeFileBlocking(fileDir, json.toBuffer())
       return true
     } catch (e: Exception) {
-      print("Save failed:${e.message}")
+      println("Save failed:${e.message}")
     }
     return false
   }
