@@ -1,11 +1,9 @@
 package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.ActionConstants
-import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.JsonKeys
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
-import java.io.File
 
 /**
  * @author zxj5470
@@ -46,42 +44,6 @@ fun handleUserLogin(fs: FileSystem, json: JsonObject, userFile: String, id: Stri
     json.remove(JsonKeys.CRYPTO)
     return json
   }
-}
-
-fun handleUserRegister(fs: FileSystem, json: JsonObject, userFile: String, id: String?, userDir: String): JsonObject {
-  if (fs.existsBlocking(userFile)) {
-    return userExistBefore(json)
-  }
-  try {
-    fs.mkdirsBlocking(userDir)
-    fs.writeFileBlocking(userFile, json.toBuffer())
-    // after write
-    json.remove(JsonKeys.CRYPTO)
-    val friendDir = userDir + File.separator + FRIENDS
-    fs.mkdirBlocking(friendDir)
-    json.put("info", "注册成功")
-    json.put(ActionConstants.REGISTER, true)
-  } catch (e: Exception) {
-    println("cannot mkdir $userDir")
-    json.put("info", "cannot create user $id")
-  } finally {
-    return json
-  }
-}
-
-fun String.checkIdValid(): Boolean {
-  if (this.length < 4) return false
-  if (this[0].isDigit()) return false
-  return this.all { it.isLetterOrDigit() or (it in arrayOf('.', '@')) } && this.count { it == '@' } > 1
-}
-
-/**
- * check whether the length of md5sum is 32
- * @receiver String
- * @return Boolean
- */
-fun String.checkCryptoValid(): Boolean {
-  return this.length == 32
 }
 
 /**

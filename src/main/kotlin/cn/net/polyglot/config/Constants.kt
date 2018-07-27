@@ -56,11 +56,3 @@ object JsonKeys {
   const val STATUS = "status"
 
 }
-
-object NumberConstants {
-  /**
-   * TCP time limit for keeping alive.
-   */
-  const val TIME_LIMIT = 3 * 60 * 1000L
-  const val CURRENT_VERSION = 0.1
-}

@@ -1,8 +1,6 @@
 package cn.net.polyglot
 
-import cn.net.polyglot.verticle.IMHttpServerVerticle
-import cn.net.polyglot.verticle.IMMessageVerticle
-import cn.net.polyglot.verticle.IMTcpServerVerticle
+import cn.net.polyglot.verticle.*
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
@@ -44,7 +42,7 @@ retriever.getConfig { ar ->
       vertx.fileSystem().mkdirBlocking(config.getString("dir"))
     }
 
-    vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
+    vertx.deployVerticle(WebServerVerticle.class.name, new DeploymentOptions().setConfig(config))
     vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
     vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
 
