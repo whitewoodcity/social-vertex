@@ -30,8 +30,8 @@ class IMServerTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
-     /* if (vertx.fileSystem().existsBlocking(config.getString("dir")))
-        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)*/
+     if (vertx.fileSystem().existsBlocking(config.getString("dir")))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -75,7 +75,6 @@ class IMServerTest {
         val json = JsonObject("""{
           "type":"friend",
           "action":"request",
-          "from":"zxj@polyglot.net.cn",
           "to":"zxj2017",
           "message":"请添加我为你的好友，我是哲学家",
           "version":0.1
