@@ -30,14 +30,27 @@ class IMMessageVerticle : AbstractVerticle() {
     // consume messages from Http/TcpServerVerticle to IMMessageVerticle
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val json = it.body()
-      if (!json.containsKey("type")) {
-        it.reply(JsonObject().putNull("type"))
-      }
-      if (!json.containsKey("action")) {
-        // type `message` doesn't need `action` key
-        if (json.getString("type") != MESSAGE) {
-          it.reply(JsonObject().putNull("action"))
+      System.err.println(json)
+      try {
+        if (!json.containsKey("type")) {
+          it.reply(JsonObject().putNull("type"))
+          return@consumer
         }
+        if (!json.containsKey("action")) {
+          // type `message` doesn't need `action` key
+          if (json.getString("type") != MESSAGE) {
+            it.reply(JsonObject().putNull("action"))
+          }
+          return@consumer
+        }
+      } catch (e: Exception) {
+        if (e is ClassCastException) {
+          it.reply(JsonObject().put("info", "value type error"))
+        } else {
+          // e.message 应该算是危险写法, 有可能有注入风险
+          it.reply(JsonObject().put("info", e.message ?: "other error"))
+        }
+        return@consumer
       }
 
       launch(vertx.dispatcher()) {
