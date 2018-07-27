@@ -118,7 +118,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
           val resultJson = it.result().body()
 
           if (resultJson.getBoolean("login"))
-            socketMap[socket] = json.getString("user")
+             socketMap[socket] = json.getString("user")
 
           socket.write(it.result().body().toBuffer())
         }

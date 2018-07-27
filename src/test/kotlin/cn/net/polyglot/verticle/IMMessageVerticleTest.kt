@@ -28,8 +28,8 @@ class IMMessageVerticleTest {
     @JvmStatic
     fun beforeClass(context: TestContext) {
       //clean the directory
-      /*  if(vertx.fileSystem().existsBlocking(config.getString("dir")))
-          vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)*/
+        if(vertx.fileSystem().existsBlocking(config.getString("dir")))
+          vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"),true)
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMMessageVerticle::class.java.name, option, context.asyncAssertSuccess())

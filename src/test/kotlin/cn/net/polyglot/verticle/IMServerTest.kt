@@ -31,7 +31,7 @@ class IMServerTest {
     @JvmStatic
     fun beforeClass(context: TestContext) {
       if (vertx.fileSystem().existsBlocking(config.getString("dir")))
-         vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -82,29 +82,70 @@ class IMServerTest {
   @Test
   fun testAccountsAddFriend(context: TestContext) {
     val async = context.async()
-    val netClient = vertx.createNetClient()
-    netClient.connect(config.getInteger("tcp-port"), config.getString("host")) {
-      if (it.succeeded()) {
-        val socket = it.result()
-        val json = JsonObject("""{
+    vertx.createNetClient().connect(config.getInteger("tcp-port"), config.getString("host")) {
+      val socket = it.result()
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "yangkui")
+        .put("crypto", "431fe828b9b8e8094235dee515562248").toString().plus("\r\n")
+      )
+
+      socket.handler {
+        var result = it.toJsonObject()
+        if (result.getString("type") != "propel") {
+          println(result)
+          context.assertTrue(result.getString("info") != "Server error！")
+        }
+
+        if (result.getBoolean("login") == true) {
+          socket.write(JsonObject("""{
           "type":"friend",
           "action":"request",
-          "from":"yangkui2017",
           "to":"zxj2017",
-          "message":"请添加我为你的好友，我是哲学家",
+          "message":"请添加我为你的好友，我是yangkui",
           "version":0.1
-        }""").toString().plus("\r\n")
-        socket.closeHandler {
-          println("close")
+        }""").toString().plus("\r\n"))
         }
-        socket.exceptionHandler {
-          print("Error:${it.cause?.message}")
-        }
-        socket.write(json)
-        async.complete()
-      } else {
-        print("failed:${it.cause()}")
+
       }
+      socket.exceptionHandler {
+        socket.close()
+      }
+    }
+    vertx.createNetClient().connect(config.getInteger("tcp-port"), config.getString("host")) {
+      val socket = it.result()
+      socket.handler {
+        val result = it.toJsonObject()
+        val type = result.getString("type")
+        when (type) {
+          "friend" -> {
+            if (result.getString("type") == "friend" && result.getString("action") == "request") {
+              print("to" + result.getString("to"))
+              socket.write(JsonObject("""{
+            "type":"friend",
+            "action":"response",
+            "to":"${result.getString("from")}",
+            "accept":true,
+            "version":0.1
+          }""").toString().plus("\r\n"))
+            }
+          }
+          "propel" -> {
+            println(it.toJsonObject())
+            context.assertTrue(result.getString("info") != "Server error！")
+            socket.close()
+            async.complete()
+          }
+        }
+
+      }
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "zxj2017")
+        .put("crypto", "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
+      )
     }
   }
 
@@ -130,82 +171,6 @@ class IMServerTest {
         netClient0.close()
         async0.complete()
       }
-    }
-
-  }
-  //双用户登录发送好友请求验证
-
-  @Test
-  fun testUserLogin_01(context: TestContext) {
-    val async = context.async()
-    vertx.createNetClient().connect(config.getInteger("tcp-port"), config.getString("host")) {
-      val socket = it.result()
-      socket.write(JsonObject()
-        .put("type", "user")
-        .put("action", "login")
-        .put("user", "yangkui2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562127").toString().plus("\r\n")
-      )
-
-      socket.handler {
-        var result = it.toJsonObject()
-        if (result.getString("type") != "propel") {
-          println(result)
-          context.assertTrue(result.getString("info") != "Server error！")
-          async.complete()
-        }
-
-        if (result.getBoolean("login")==true) {
-          socket.write(JsonObject("""{
-          "type":"friend",
-          "action":"request",
-          "to":"zxj2017",
-          "message":"请添加我为你的好友，我是yangkui",
-          "version":0.1
-        }""").toString().plus("\r\n"))
-        }
-
-      }
-      socket.exceptionHandler {
-        socket.close()
-      }
-    }
-  }
-
-  @Test
-  fun testUserLogin_02(context: TestContext) {
-    val async = context.async()
-    vertx.createNetClient().connect(config.getInteger("tcp-port"), config.getString("host")) {
-      val socket = it.result()
-      socket.handler {
-        val result = it.toJsonObject()
-        val type = result.getString("type")
-        when (type) {
-          "friend" -> {
-            if (result.getString("type") == "friend" && result.getString("action") == "request") {
-              print("to" + result.getString("to"))
-              socket.write(JsonObject("""{
-            "type":"friend",
-            "action":"response",
-            "to":"${result.getString("from")}",
-            "accept":true,
-            "version":0.1
-          }""").toString().plus("\r\n"))
-            }
-          }
-          "propel" -> {
-            println(it.toJsonObject())
-            context.assertTrue(result.getString("info") != "Server error！")
-          }
-        }
-
-      }
-      socket.write(JsonObject()
-        .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562127").toString().plus("\r\n")
-      )
     }
   }
 }
