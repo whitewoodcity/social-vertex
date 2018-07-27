@@ -19,7 +19,6 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
 import java.io.File
-import java.util.*
 
 class IMMessageVerticle : AbstractVerticle() {
 
@@ -195,7 +194,7 @@ class IMMessageVerticle : AbstractVerticle() {
       msg.reply(JsonObject().put(JsonKeys.INFO, "please check key `from` and `to`."))
     }
 
-    val host = json.getString("host") ?: "test.net.cn"
+    val host = config().getString("host")
     if (sameDomain(from, to, host)) {
       val fs = vertx.fileSystem()
       val sendDir = config().getString("dir") + File.separator + "user"+
