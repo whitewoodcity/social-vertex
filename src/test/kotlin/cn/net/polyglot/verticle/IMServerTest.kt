@@ -30,8 +30,8 @@ class IMServerTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
-      /* if (vertx.fileSystem().existsBlocking(config.getString("dir")))
-         vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)*/
+      if (vertx.fileSystem().existsBlocking(config.getString("dir")))
+         vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -63,6 +63,20 @@ class IMServerTest {
         context.assertTrue(response.result().body().toJsonObject().getBoolean("register"))
         async.complete()
       }
+
+    val async1 = context.async()
+    webClient.post(config.getInteger("http-port"), "localhost", "/user")
+      .sendJsonObject(JsonObject()
+        .put("type", "user")
+        .put("action", "register")
+        .put("user", "yangkui")
+        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .put("version", 0.1)
+      ) { response ->
+        println(response.result().body())
+        context.assertTrue(response.result().body().toJsonObject().getBoolean("register"))
+        async1.complete()
+      }
   }
 
   @Test
@@ -87,7 +101,7 @@ class IMServerTest {
           print("Error:${it.cause?.message}")
         }
         socket.write(json)
-        //async.complete()
+        async.complete()
       } else {
         print("failed:${it.cause()}")
       }
