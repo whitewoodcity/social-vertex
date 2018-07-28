@@ -98,7 +98,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         }
       }
     } catch (e: Exception) {
-      socket.write(result.put("info", e.message).toBuffer())
+      socket.write(result.put("info", "${e.message}").toBuffer())
     }
   }
 

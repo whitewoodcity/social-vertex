@@ -6,7 +6,6 @@ import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
-import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
@@ -42,8 +41,7 @@ class IMMessageVerticle : AbstractVerticle() {
         if (e is ClassCastException) {
           it.reply(JsonObject().put("info", "value type error"))
         } else {
-          // e.message 应该算是危险写法, 有可能有注入风险
-          it.reply(JsonObject().put("info", e.message ?: "other error"))
+          it.reply(JsonObject().put("info", "${e.message}"))
         }
         return@consumer
       }
@@ -112,7 +110,7 @@ class IMMessageVerticle : AbstractVerticle() {
         }
       }
     } catch (e: Exception) {
-      return result.put("info", e.message)
+      return result.put("info", "${e.message}")
     }
   }
 
@@ -133,7 +131,7 @@ class IMMessageVerticle : AbstractVerticle() {
       return result.put(action, resJson)
 
     } catch (e: Exception) {
-      return result.put("info", e.message)
+      return result.put("info", "${e.message}")
     }
   }
 
