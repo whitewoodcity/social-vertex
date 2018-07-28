@@ -80,7 +80,6 @@ class IMServerTest {
       }
   }
 
-  //todo friend和message，都是单向信息流动，不需要任何的response和reply，所有的响应都以相反方向单向发送，请依照此设计完善unit tests
   @Test
   fun testAccountsAddFriend(context: TestContext) {
     val async = context.async()
@@ -109,16 +108,13 @@ class IMServerTest {
               .put("version", 0.1).toString().plus("\r\n"))
           }
           "friend" -> {
-            //todo  添加收到好友响应时候的文件检查，可参考下面的代码
-            if (result.getString("action") == "response") {
-              context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
-                + File.separator + ".send" + File.separator + "zxj2017.json"))
+            context.assertEquals(result.getString("action"), "response")
+            context.assertTrue(vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
+              + File.separator + "zxj2017" + File.separator + "zxj2017.json"))
 
-              context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "zxj2017"
-                + File.separator + ".receive" + File.separator + "yangkui.json"))
-            }
+            context.assertTrue(vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "zxj2017"
+              + File.separator + "yangkui" + File.separator + "yangkui.json"))
 
-            //------------------把代码写在上面
             client0.close()//一旦收到好友响应，确认硬盘上文件存在，便关闭两个clients，并结束该unit test
             client1.close()
             async.complete()
@@ -159,8 +155,6 @@ class IMServerTest {
             context.assertTrue(vertx.fileSystem().existsBlocking(
               config.getString("dir") + separator + "zxj2017" + separator + ".receive" + separator + "yangkui.json"))
 
-
-            //todo 实现该测试案例的逻辑
             socket.write(JsonObject().put("type", "friend")
               .put("action", "response")
               .put("to", result.getString("from"))
@@ -170,6 +164,11 @@ class IMServerTest {
         }
       }
     }
+  }
+
+  @Test
+  fun testAccountsAddFriendCrossDomain(context: TestContext) {
+    //todo 实现跨域添加好友和响应
   }
 
   @Test

@@ -182,15 +182,15 @@ class IMMessageVerticle : AbstractVerticle() {
             val fileDir = "$dir$from$separator$to$separator$to.json"
             fs.createFileBlocking(fileDir)
             fs.writeFileBlocking(fileDir, JsonObject()
-              .put("id", "$to")
-              .put("nickName", "$to")
+              .put("id", to)
+              .put("nickName", to)
               .toBuffer())
             fs.mkdirsBlocking("$dir$to$separator$from")
             val fileDir1 = "$dir$to$separator$from$separator$from.json"
             fs.createFileBlocking(fileDir1)
             fs.writeFileBlocking(fileDir1, JsonObject()
-              .put("id", "$from")
-              .put("nickName", "$from")
+              .put("id", from)
+              .put("nickName", from)
               .toBuffer())
           }
           fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
