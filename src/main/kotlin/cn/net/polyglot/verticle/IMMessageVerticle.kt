@@ -182,7 +182,6 @@ class IMMessageVerticle : AbstractVerticle() {
           fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
           if (json.getBoolean("accept")) {
             fs.mkdirsBlocking("$dir$from$separator$to")
-            //todo 需要检查一下，该文件是否存在，如果存在，需要先将其删除，否则已经存在的文件会导致异常
             val fileDir = "$dir$from$separator$to$separator$to.json"
             fs.createFileBlocking(fileDir)
             fs.writeFileBlocking(fileDir, JsonObject()
