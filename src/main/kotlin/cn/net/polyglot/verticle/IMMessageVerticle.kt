@@ -7,10 +7,6 @@ import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
-import cn.net.polyglot.handler.defaultMessage
-import cn.net.polyglot.handler.handleFriendDelete
-import cn.net.polyglot.handler.handleFriendList
-import cn.net.polyglot.handler.handleFriendResponse
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
@@ -19,6 +15,7 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
 import java.io.File
+import java.io.File.separator
 
 class IMMessageVerticle : AbstractVerticle() {
 
@@ -55,8 +52,8 @@ class IMMessageVerticle : AbstractVerticle() {
       launch(vertx.dispatcher()) {
         when (json.getString("type")) {
         // future reply
-          FRIEND -> friend(it.body(), it)
-          MESSAGE -> message(it.body(), it)
+          FRIEND -> friend(it.body())
+          MESSAGE -> message(it.body())
         // synchronization reply
           USER -> it.reply(user(it.body()))
           SEARCH -> it.reply(search(it.body()))
@@ -93,15 +90,14 @@ class IMMessageVerticle : AbstractVerticle() {
         return result.put("info", "秘钥格式错误")
       }
 
-      val dir = config().getString("dir") + File.separator + USER + File.separator + user
-      val friendsDir = dir + File.separator + FRIENDS
+      val dir = config().getString("dir") + File.separator + user
 
       when (action) {
         "register" -> {
           if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
             return result.put("info", "用户已存在")
           }
-          vertx.fileSystem().mkdirsBlocking(friendsDir)
+          vertx.fileSystem().mkdirsBlocking(dir)
           vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
           json.removeAll { it.key in arrayOf("type", "action") }
           vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
@@ -142,55 +138,38 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  fun friend(json: JsonObject, msg: Message<JsonObject>) {
+  fun friend(json: JsonObject) {
     val action = json.getString(JsonKeys.ACTION)
     val from = json.getString(JsonKeys.FROM)
     val to = json.getString(JsonKeys.TO)
-    val fs = vertx.fileSystem()
-    val checkValid = json.containsKey(JsonKeys.FROM)
-    val retJson = json.copy()
-    if (!checkValid) {
-      retJson.put(JsonKeys.INFO, "lack json key `from`")
-      msg.reply(retJson)
-      return
-    }
 
-    // list friends don't need neither `to` nor a Web Connection.
-    if (action == ActionConstants.LIST) {
-      msg.reply(handleFriendList(fs, json, from))
+    if (from == null) {
       return
     }
 
     when (action) {
-      ActionConstants.DELETE -> handleFriendDelete(fs, retJson, from, to) {
-        val oppositeJson = json.copy()
-        oppositeJson.put(JsonKeys.FROM, to)
-        oppositeJson.put(JsonKeys.TO, from)
-        handleFriendDelete(fs, oppositeJson, to, from)
-        msg.reply(retJson)
+      ActionConstants.DELETE -> {
       }
-//   request to be friends
-      ActionConstants.REQUEST -> message(json, msg)
-//   reply whether to accept the request
+      ActionConstants.REQUEST -> {
+        val dir = config().getString("dir") + separator
+        vertx.fileSystem().mkdirsBlocking("$dir$from$separator.send")
+        if(vertx.fileSystem().existsBlocking("$dir$from$separator.send$separator$to.json"))
+          vertx.fileSystem().deleteBlocking("$dir$from$separator.send$separator$to.json")
+        vertx.fileSystem().createFileBlocking("$dir$from$separator.send$separator$to.json")
+        vertx.fileSystem().writeFileBlocking("$dir$from$separator.send$separator$to.json",json.toBuffer())
+
+      }
       ActionConstants.RESPONSE -> {
-        val result = handleFriendResponse(fs, retJson, from, to,config())
-        vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name,result){
-          if (it.succeeded()){
-            println(it.result().body())
-          }else{
-            println("failed:${it.cause()}")
-          }
-        }
       }
-      else -> defaultMessage(fs, retJson)
+      else -> {}
     }
   }
 
-  fun message(json: JsonObject, msg: Message<JsonObject>) {
+  fun message(json: JsonObject) {
     val from = json.getString("from")
     val to = json.getString("to")
     if (from == null || to == null) {
-      msg.reply(JsonObject().put(JsonKeys.INFO, "please check key `from` and `to`."))
+      return
     }
 
     val host = config().getString("host")
@@ -200,10 +179,6 @@ class IMMessageVerticle : AbstractVerticle() {
         File.separator + json.getString("from")+File.separator+ ".send"
       val status = saveSendRecord(fs, sendDir, json)
       if (!status){
-        msg.reply(JsonObject()
-          .put("status","500")
-          .put("info","Server error!")
-        )
         return
       }
       vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
@@ -232,7 +207,6 @@ class IMMessageVerticle : AbstractVerticle() {
         if (it.succeeded()) {
           val result = it.result()
           println(result.bodyAsJsonObject())
-          msg.reply(result.bodyAsJsonObject())
         }
       }
     }

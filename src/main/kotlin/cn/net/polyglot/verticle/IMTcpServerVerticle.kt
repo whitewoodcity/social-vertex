@@ -112,10 +112,10 @@ class IMTcpServerVerticle : AbstractVerticle() {
       val json = JsonObject(jsonString).put("from", socketMap[socket])
 
       when (json.getString("type")) {
-        "user" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
+        "user","search" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
           val resultJson = it.result().body()
 
-          if (resultJson.getBoolean("login"))
+          if (resultJson.containsKey("login")&&resultJson.getBoolean("login"))
              socketMap[socket] = json.getString("user")
 
           resultJson.put("type","user").put("action","login")
@@ -123,14 +123,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
           socket.write(resultJson.toBuffer())
         }
         else -> {
-          vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
-            if (it.succeeded()) {
-              val ret = it.result().body()
-              socket.write(ret.toString().plus("\r\n"))
-            } else {
-              socket.write(JsonObject().put("info", "no response").toBuffer())
-            }
-          }
+          vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
         }
       }
     } catch (e: Exception) {

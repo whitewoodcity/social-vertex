@@ -98,7 +98,7 @@ class IMServerTest {
         println(result)
         when (result.getString("type")) {
           "user" -> {
-            context.assertTrue(result.getBoolean("login"))
+            context.assertTrue(result.getBoolean("login"))//登陆成功
             socket.write(JsonObject().put("type", "friend")
               .put("action", "request")
               .put("to", "zxj2017")
@@ -107,8 +107,12 @@ class IMServerTest {
           }
           "friend" -> {
             //todo  添加收到好友响应时候的文件检查，可参考下面的代码
+
+            //------------------把代码写在上面
+            async.complete()
           }
           else -> {
+
           }
         }
       }
@@ -119,14 +123,26 @@ class IMServerTest {
     }
     vertx.createNetClient().connect(config.getInteger("tcp-port"), config.getString("host")) {
       val socket = it.result()
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "zxj2017")
+        .put("crypto", "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
+      )
+
       socket.handler {
         val result = it.toJsonObject()
+        println(result)
         val type = result.getString("type")
         when (type) {
+          "user" -> {
+            context.assertTrue(it.toJsonObject().getBoolean("login"))//登陆成功
+          }
           "friend" -> {
             //检查yangkui/.send/zxj2017.json 和 zxj2017/.receive/yangkui.json 两个文件存在
             context.assertTrue(vertx.fileSystem().existsBlocking(
               config.getString("dir") + separator + "yangkui" + separator + ".send" + separator + "zxj2017.json"))
+
             context.assertTrue(vertx.fileSystem().existsBlocking(
               config.getString("dir") + separator + "zxj2017" + separator + ".receive" + separator + "yangkui.json"))
 
@@ -136,12 +152,6 @@ class IMServerTest {
               .put("to", result.getString("from"))
               .put("accept", true)
               .put("version", 0.1).toString().plus("\r\n"))
-          }
-          "propel" -> {
-            println(it.toJsonObject())
-            context.assertTrue(result.getString("info") != "Server error！")
-            socket.close()
-            async.complete()
           }
         }
 
@@ -179,4 +189,5 @@ class IMServerTest {
       }
     }
   }
+
 }
