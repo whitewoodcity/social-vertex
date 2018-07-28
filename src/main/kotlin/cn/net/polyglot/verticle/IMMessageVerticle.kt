@@ -160,6 +160,7 @@ class IMMessageVerticle : AbstractVerticle() {
         vertx.fileSystem().writeFileBlocking("$dir$from$separator.send$separator$to.json",json.toBuffer())
 
         if(to.contains("@")){
+          json.put("from", json.getString("from")+"@"+config().getString("host"))//把from加上域名
           webClient.post(config().getInteger("http-verticle"), to.substringAfterLast("@"), "/user").sendJsonObject(json){}
         }else{
           vertx.fileSystem().mkdirsBlocking("$dir$to$separator.receive")

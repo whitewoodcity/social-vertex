@@ -144,6 +144,7 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))//登陆成功
           }
           "friend" -> {
+            context.assertTrue(it.toJsonObject().containsKey("request"))
             //检查yangkui/.send/zxj2017.json 和 zxj2017/.receive/yangkui.json 两个文件存在
             context.assertTrue(vertx.fileSystem().existsBlocking(
               config.getString("dir") + separator + "yangkui" + separator + ".send" + separator + "zxj2017.json"))
