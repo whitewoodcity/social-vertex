@@ -109,6 +109,13 @@ class IMServerTest {
           }
           "friend" -> {
             context.assertEquals(result.getString("action"), "response")
+
+            context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
+              + File.separator + ".send" + File.separator + "zxj2017.json"))
+
+            context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "zxj2017"
+              + File.separator + ".receive" + File.separator + "yangkui.json"))
+
             context.assertTrue(vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
               + File.separator + "zxj2017" + File.separator + "zxj2017.json"))
 
