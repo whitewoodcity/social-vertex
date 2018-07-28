@@ -175,11 +175,12 @@ class IMServerTest {
 
   @Test
   fun testAccountsCommunication(context: TestContext) {//依赖前一个方法
-    val netClient0 = vertx.createNetClient()
+    val netClient = vertx.createNetClient()
+    val netClient1 = vertx.createNetClient()
 
-    val async0 = context.async()
+    val async = context.async()
 
-    netClient0.connect(config.getInteger("tcp-port"), "localhost") {
+    netClient.connect(config.getInteger("tcp-port"), "localhost") {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
@@ -189,12 +190,81 @@ class IMServerTest {
         .toString().plus("\r\n"))
 
       socket.handler {
-        println(it.toString())
-        context.assertTrue(it.toJsonObject().getBoolean("login"))
-        socket.close()
-        netClient0.close()
-        async0.complete()
+        val result = it.toJsonObject()
+        val type = result.getString("type")
+        when (type) {
+          "user" -> {
+            context.assertTrue(it.toJsonObject().getBoolean("login"))
+          }
+          "message" -> {
+            socket.close()
+            netClient.close()
+            netClient1.close()
+            async.complete()
+          }
+
+        }
       }
+    }
+
+    netClient1.connect(config.getInteger("tcp-port"), "localhost") {
+      val socket = it.result()
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "yangkui")
+        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .toString().plus("\r\n"))
+
+      socket.handler {
+        val result = it.toJsonObject()
+        val type = result.getString("type")
+        when (type) {
+          "user" -> {
+            context.assertTrue(it.toJsonObject().getBoolean("login"))
+            socket.write(JsonObject("""{
+              "type":"message",
+              "to":"zxj2017",
+              "body":"你好吗？",
+              "version":0.1
+            }""").toString().plus("\r\n"))
+          }
+        }
+      }
+
+    }
+  }
+
+  @Test
+  fun testAccountsOfflineCommunication(context: TestContext) {
+    val netClient = vertx.createNetClient()
+    val async = context.async()
+    netClient.connect(config.getInteger("tcp-port"), "localhost") {
+      val socket = it.result()
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "yangkui")
+        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .toString().plus("\r\n"))
+
+      socket.handler {
+        val result = it.toJsonObject()
+        val type = result.getString("type")
+        when (type) {
+          "user" -> {
+            context.assertTrue(it.toJsonObject().getBoolean("login"))
+            socket.write(JsonObject("""{
+              "type":"message",
+              "to":"zxj2017",
+              "body":"你好吗？",
+              "version":0.1
+            }""").toString().plus("\r\n"))
+          }
+        }
+        async.complete()
+      }
+
     }
   }
 

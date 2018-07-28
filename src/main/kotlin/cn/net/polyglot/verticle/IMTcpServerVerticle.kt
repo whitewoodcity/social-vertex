@@ -4,9 +4,11 @@ import com.google.common.collect.HashBiMap
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
+import java.io.File
 
 /**
  * @author zxj5470
@@ -36,6 +38,26 @@ class IMTcpServerVerticle : AbstractVerticle() {
               val socketMap = socketMap.inverse()
               socketMap[target]?.write(it.body().toString().plus("\r\n"))
             }
+          }
+        }
+        "message" -> {
+          val target = it.body().getString("to")
+          val socketMap = socketMap.inverse()
+          val socket = socketMap[target]
+          if (socket != null) {
+            socket.write(it.body().toBuffer())
+          } else {
+            val fs = vertx.fileSystem()
+            val dir = config().getString("dir") + File.separator + it.body().getString("to") +
+              File.separator + ".message"
+            if (!fs.existsBlocking(dir)) {
+              fs.mkdirBlocking(dir)
+            }
+            if (!fs.existsBlocking(dir + File.separator + it.body().getString("from") + ".sv")) {
+              fs.createFileBlocking(dir + File.separator + it.body().getString("from") + ".sv")
+            }
+            fs.openBlocking(dir + File.separator + it.body().getString("from") + ".sv",
+              OpenOptions().setAppend(true)).write(it.body().toBuffer())
           }
         }
       }

@@ -8,12 +8,15 @@ import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.file.FileSystem
+import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
 import java.io.File
 import java.io.File.separator
+import java.text.SimpleDateFormat
+import java.util.*
 
 class IMMessageVerticle : AbstractVerticle() {
 
@@ -35,7 +38,7 @@ class IMMessageVerticle : AbstractVerticle() {
           if (json.getString("type") != MESSAGE) {
             it.reply(JsonObject().putNull("action"))
           }
-          return@consumer
+          // return@consumer
         }
       } catch (e: Exception) {
         if (e is ClassCastException) {
@@ -214,12 +217,7 @@ class IMMessageVerticle : AbstractVerticle() {
     val host = config().getString("host")
     if (sameDomain(from, to, host)) {
       val fs = vertx.fileSystem()
-      val sendDir = config().getString("dir") + File.separator + "user" +
-        File.separator + json.getString("from") + File.separator + ".send"
-      val status = saveSendRecord(fs, sendDir, json)
-      if (!status) {
-        return
-      }
+      saveSendRecord(fs, json)
       vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
         if (it.succeeded()) {
           val result = it.result().body()
@@ -267,21 +265,23 @@ class IMMessageVerticle : AbstractVerticle() {
     return json
   }
 
-  private fun saveSendRecord(fs: FileSystem, dir: String, json: JsonObject): Boolean {
-    val fileDir = dir + File.separator + json.getString("to") + ".json"
+  private fun saveSendRecord(fs: FileSystem, json: JsonObject): Boolean {   //将该条消息分别写入双方的发送记录中
     try {
-      if (!fs.existsBlocking(dir)) {
-        fs.mkdirsBlocking(dir)
-      }
-      if (!fs.existsBlocking(fileDir)) {
-        fs.createFileBlocking(fileDir)
-      }
-      fs.writeFileBlocking(fileDir, json.toBuffer())
-      return true
+      val today = SimpleDateFormat("YYYY-MM-DD").format(Date())
+      val dir = config().getString("dir") + File.separator
+      val from = json.getString("from")
+      val to = json.getString("to")
+      val separator = File.separator
+      val senderDir = "$dir$from$separator$to$separator$today.sv"
+      val receiverDir = "$dir$to$separator$from$separator$today.sv"
+      if (!fs.existsBlocking(senderDir)) fs.createFileBlocking(senderDir)
+      if (!fs.existsBlocking(receiverDir)) fs.createFileBlocking(receiverDir)
+      fs.openBlocking(senderDir, OpenOptions().setAppend(true)).write(json.toBuffer())
+      fs.openBlocking(receiverDir, OpenOptions().setAppend(true)).write(json.toBuffer())
     } catch (e: Exception) {
-      println("Save failed:${e.message}")
+      return false
     }
-    return false
+    return true
   }
 }
 
