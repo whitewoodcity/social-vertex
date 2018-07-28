@@ -1,14 +1,12 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.ActionConstants
-import cn.net.polyglot.config.FileSystemConstants.FRIENDS
 import cn.net.polyglot.config.JsonKeys
 import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.eventbus.Message
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
@@ -121,7 +119,7 @@ class IMMessageVerticle : AbstractVerticle() {
     val action = json.getString("action")
     val result = JsonObject().putNull(action)
 
-    val dir = config().getString("dir") + File.separator + USER + File.separator + json.getString("keyword")
+    val dir = config().getString("dir") + File.separator + json.getString("keyword")
     val userFile = dir + File.separator + "user.json"
 
     try {

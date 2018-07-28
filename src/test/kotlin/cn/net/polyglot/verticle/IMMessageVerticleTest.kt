@@ -193,19 +193,20 @@ class IMMessageVerticleTest {
     }
   }
 
-  @Test
-  fun testUserFriendList(context: TestContext) {
-    val async = context.async()
-    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
-      JsonObject()
-        .put("type", "friend")
-        .put("action", "list")
-        .put("from", "zxj2017")
-        .put("version", 0.1)) {
-      println(it.result().body())
-      async.complete()
-    }
-  }
+  //friendlist跟login合并
+//  @Test
+//  fun testUserFriendList(context: TestContext) {
+//    val async = context.async()
+//    vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
+//      JsonObject()
+//        .put("type", "friend")
+//        .put("action", "list")
+//        .put("from", "zxj2017")
+//        .put("version", 0.1)) {
+//      println(it.result().body())
+//      async.complete()
+//    }
+//  }
 }
 
 
