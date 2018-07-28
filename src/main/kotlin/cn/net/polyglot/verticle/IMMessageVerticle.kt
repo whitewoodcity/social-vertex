@@ -136,12 +136,14 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  fun friend(json: JsonObject) {
+  private fun friend(json: JsonObject) {
     val action = json.getString(JsonKeys.ACTION)
     val from = json.getString(JsonKeys.FROM)
     val to = json.getString(JsonKeys.TO)
 
-    if (from == null) {
+    if (from == null||to == null) {
+      //不做处理，不需要反复确认，因为io层次一多，反复确认会导致代码和性能上的浪费，不值得花大力气去确保这点意外
+      //确保错误情况不会影响系统便可
       return
     }
 
@@ -150,12 +152,24 @@ class IMMessageVerticle : AbstractVerticle() {
       }
       ActionConstants.REQUEST -> {
         val dir = config().getString("dir") + separator
+
         vertx.fileSystem().mkdirsBlocking("$dir$from$separator.send")
         if(vertx.fileSystem().existsBlocking("$dir$from$separator.send$separator$to.json"))
           vertx.fileSystem().deleteBlocking("$dir$from$separator.send$separator$to.json")
         vertx.fileSystem().createFileBlocking("$dir$from$separator.send$separator$to.json")
         vertx.fileSystem().writeFileBlocking("$dir$from$separator.send$separator$to.json",json.toBuffer())
 
+        if(to.contains("@")){
+          webClient.post(config().getInteger("http-verticle"), to.substringAfterLast("@"), "/user").sendJsonObject(json){}
+        }else{
+          vertx.fileSystem().mkdirsBlocking("$dir$to$separator.receive")
+          if(vertx.fileSystem().existsBlocking("$dir$to$separator.receive$separator$from.json"))
+            vertx.fileSystem().deleteBlocking("$dir$to$separator.receive$separator$from.json")
+          vertx.fileSystem().createFileBlocking("$dir$to$separator.receive$separator$from.json")
+          vertx.fileSystem().writeFileBlocking("$dir$to$separator.receive$separator$from.json",json.toBuffer())
+          //尝试投递
+          vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
+        }
       }
       ActionConstants.RESPONSE -> {
       }

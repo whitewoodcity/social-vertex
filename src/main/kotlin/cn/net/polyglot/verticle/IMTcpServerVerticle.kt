@@ -29,26 +29,8 @@ class IMTcpServerVerticle : AbstractVerticle() {
             "request" -> {
               val target = it.body().getString("to")
               val socketMap = socketMap.inverse()
-              val socket = socketMap[target]
-              if (socket != null) {
-                socket.write(it.body().toString().plus("\r\n"))
-                it.reply(JsonObject()
-                  .put("type", "friend")
-                  .put("to","$target")
-                  .put("action", "response")
-                  .put("status", true)
-                  .put("info", "succeed")
-                )
-              } else {
-                it.reply(JsonObject()
-                  .put("type", "friend")
-                  .put("to","$target")
-                  .put("action", "response")
-                  .put("status", false)
-                  .put("info", "offline"))
-              }
+              socketMap[target]?.write(it.body().toString().plus("\r\n"))
             }
-
           }
         }
         "propel"->{

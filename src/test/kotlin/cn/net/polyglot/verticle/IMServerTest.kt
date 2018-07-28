@@ -146,6 +146,7 @@ class IMServerTest {
             context.assertTrue(vertx.fileSystem().existsBlocking(
               config.getString("dir") + separator + "zxj2017" + separator + ".receive" + separator + "yangkui.json"))
 
+
             //todo 实现该测试案例的逻辑
             socket.write(JsonObject().put("type", "friend")
               .put("action", "response")

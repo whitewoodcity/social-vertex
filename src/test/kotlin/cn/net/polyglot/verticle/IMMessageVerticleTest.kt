@@ -5,7 +5,6 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.kotlin.core.DeploymentOptions
-import io.vertx.kotlin.core.json.get
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -208,11 +207,3 @@ class IMMessageVerticleTest {
 //    }
 //  }
 }
-
-
-
-
-
-
-
-
