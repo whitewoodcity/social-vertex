@@ -31,23 +31,12 @@ class IMTcpServerVerticle : AbstractVerticle() {
               val socketMap = socketMap.inverse()
               socketMap[target]?.write(it.body().toString().plus("\r\n"))
             }
-          }
-        }
-        "propel"->{
-          val result = it.body()
-          val infomTarget = result.getJsonArray("target")
-          val socketMap   = socketMap.inverse()
-          for (json in infomTarget){
-            val target = json as JsonObject
-            val socket = socketMap[target.getString("id")]
-            if (socket!=null){
-              socket.write(result.toString().plus("\r\n"))
-            }else{
-              it.reply(JsonObject()
-                .put("status","succeed"))
+            "response" -> {
+              val target = it.body().getString("to")
+              val socketMap = socketMap.inverse()
+              socketMap[target]?.write(it.body().toString().plus("\r\n"))
             }
           }
-
         }
       }
     }
@@ -94,13 +83,13 @@ class IMTcpServerVerticle : AbstractVerticle() {
       val json = JsonObject(jsonString).put("from", socketMap[socket])
 
       when (json.getString("type")) {
-        "user","search" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
+        "user", "search" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
           val resultJson = it.result().body()
 
-          if (resultJson.containsKey("login")&&resultJson.getBoolean("login"))
-             socketMap[socket] = json.getString("user")
+          if (resultJson.containsKey("login") && resultJson.getBoolean("login"))
+            socketMap[socket] = json.getString("user")
 
-          resultJson.put("type","user").put("action","login")
+          resultJson.put("type", "user").put("action", "login")
 
           socket.write(resultJson.toBuffer())
         }

@@ -6,6 +6,7 @@ import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
+import cn.net.polyglot.utils.tryJson
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.file.FileSystem
 import io.vertx.core.json.JsonObject
@@ -141,7 +142,7 @@ class IMMessageVerticle : AbstractVerticle() {
     val from = json.getString(JsonKeys.FROM)
     val to = json.getString(JsonKeys.TO)
 
-    if (from == null||to == null) {
+    if (from == null || to == null) {
       //不做处理，不需要反复确认，因为io层次一多，反复确认会导致代码和性能上的浪费，不值得花大力气去确保这点意外
       //确保错误情况不会影响系统便可
       return
@@ -154,27 +155,54 @@ class IMMessageVerticle : AbstractVerticle() {
         val dir = config().getString("dir") + separator
 
         vertx.fileSystem().mkdirsBlocking("$dir$from$separator.send")
-        if(vertx.fileSystem().existsBlocking("$dir$from$separator.send$separator$to.json"))
+        if (vertx.fileSystem().existsBlocking("$dir$from$separator.send$separator$to.json"))
           vertx.fileSystem().deleteBlocking("$dir$from$separator.send$separator$to.json")
         vertx.fileSystem().createFileBlocking("$dir$from$separator.send$separator$to.json")
-        vertx.fileSystem().writeFileBlocking("$dir$from$separator.send$separator$to.json",json.toBuffer())
+        vertx.fileSystem().writeFileBlocking("$dir$from$separator.send$separator$to.json", json.toBuffer())
 
-        if(to.contains("@")){
-          json.put("from", json.getString("from")+"@"+config().getString("host"))//把from加上域名
-          webClient.post(config().getInteger("http-verticle"), to.substringAfterLast("@"), "/user").sendJsonObject(json){}
-        }else{
+        if (to.contains("@")) {
+          json.put("from", json.getString("from") + "@" + config().getString("host"))//把from加上域名
+          webClient.post(config().getInteger("http-verticle"), to.substringAfterLast("@"), "/user").sendJsonObject(json) {}
+        } else {
           vertx.fileSystem().mkdirsBlocking("$dir$to$separator.receive")
-          if(vertx.fileSystem().existsBlocking("$dir$to$separator.receive$separator$from.json"))
+          if (vertx.fileSystem().existsBlocking("$dir$to$separator.receive$separator$from.json"))
             vertx.fileSystem().deleteBlocking("$dir$to$separator.receive$separator$from.json")
           vertx.fileSystem().createFileBlocking("$dir$to$separator.receive$separator$from.json")
-          vertx.fileSystem().writeFileBlocking("$dir$to$separator.receive$separator$from.json",json.toBuffer())
+          vertx.fileSystem().writeFileBlocking("$dir$to$separator.receive$separator$from.json", json.toBuffer())
           //尝试投递
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
         }
       }
       ActionConstants.RESPONSE -> {
+        val dir = config().getString("dir") + separator
+        val fs = vertx.fileSystem()
+
+        if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json") &&
+          fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
+          if (json.getBoolean("accept")) {
+            fs.mkdirsBlocking("$dir$from$separator$to")
+            val fileDir = "$dir$from$separator$to$separator$to.json"
+            fs.createFileBlocking(fileDir)
+            fs.writeFileBlocking(fileDir, JsonObject()
+              .put("id", "$to")
+              .put("nickName", "$to")
+              .toBuffer())
+            fs.mkdirsBlocking("$dir$to$separator$from")
+            val fileDir1 = "$dir$to$separator$from$separator$from.json"
+            fs.createFileBlocking(fileDir1)
+            fs.writeFileBlocking(fileDir1, JsonObject()
+              .put("id", "$from")
+              .put("nickName", "$from")
+              .toBuffer())
+          }
+          fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
+          fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
+          vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
+        }
+
       }
-      else -> {}
+      else -> {
+      }
     }
   }
 
@@ -188,10 +216,10 @@ class IMMessageVerticle : AbstractVerticle() {
     val host = config().getString("host")
     if (sameDomain(from, to, host)) {
       val fs = vertx.fileSystem()
-      val sendDir = config().getString("dir") + File.separator + "user"+
-        File.separator + json.getString("from")+File.separator+ ".send"
+      val sendDir = config().getString("dir") + File.separator + "user" +
+        File.separator + json.getString("from") + File.separator + ".send"
       val status = saveSendRecord(fs, sendDir, json)
-      if (!status){
+      if (!status) {
         return
       }
       vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {

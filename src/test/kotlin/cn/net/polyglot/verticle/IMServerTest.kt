@@ -110,6 +110,13 @@ class IMServerTest {
           }
           "friend" -> {
             //todo  添加收到好友响应时候的文件检查，可参考下面的代码
+            if (result.getString("action") == "response") {
+              context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
+                + File.separator + ".send" + File.separator + "zxj2017.json"))
+
+              context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "zxj2017"
+                + File.separator + ".receive" + File.separator + "yangkui.json"))
+            }
 
             //------------------把代码写在上面
             client0.close()//一旦收到好友响应，确认硬盘上文件存在，便关闭两个clients，并结束该unit test
@@ -144,7 +151,7 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))//登陆成功
           }
           "friend" -> {
-            context.assertTrue(it.toJsonObject().containsKey("request"))
+            context.assertTrue(it.toJsonObject().getString("action") == "request")
             //检查yangkui/.send/zxj2017.json 和 zxj2017/.receive/yangkui.json 两个文件存在
             context.assertTrue(vertx.fileSystem().existsBlocking(
               config.getString("dir") + separator + "yangkui" + separator + ".send" + separator + "zxj2017.json"))
