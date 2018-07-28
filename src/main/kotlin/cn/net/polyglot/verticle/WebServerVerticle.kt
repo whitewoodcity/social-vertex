@@ -26,7 +26,7 @@ class WebServerVerticle : AbstractVerticle() {
         val json = routingContext.bodyAsJson
         val type = json.getString("type")
         when (type) {
-          "message" -> {
+          "friend","message" -> {
             vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
             routingContext.response().end()
           }
