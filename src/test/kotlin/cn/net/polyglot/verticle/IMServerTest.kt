@@ -115,6 +115,8 @@ class IMServerTest {
             context.assertTrue(vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "zxj2017"
               + File.separator + "yangkui" + File.separator + "yangkui.json"))
 
+            context.assertTrue(result.getBoolean("accept"))
+
             client0.close()//一旦收到好友响应，确认硬盘上文件存在，便关闭两个clients，并结束该unit test
             client1.close()
             async.complete()
