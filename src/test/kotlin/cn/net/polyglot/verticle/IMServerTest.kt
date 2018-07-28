@@ -84,7 +84,10 @@ class IMServerTest {
   @Test
   fun testAccountsAddFriend(context: TestContext) {
     val async = context.async()
-    vertx.createNetClient().connect(config.getInteger("tcp-port"), config.getString("host")) {
+    val client0 = vertx.createNetClient()
+    val client1 = vertx.createNetClient()
+
+    client0.connect(config.getInteger("tcp-port"), config.getString("host")) {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
@@ -109,6 +112,8 @@ class IMServerTest {
             //todo  添加收到好友响应时候的文件检查，可参考下面的代码
 
             //------------------把代码写在上面
+            client0.close()//一旦收到好友响应，确认硬盘上文件存在，便关闭两个clients，并结束该unit test
+            client1.close()
             async.complete()
           }
           else -> {
@@ -121,7 +126,7 @@ class IMServerTest {
         socket.close()
       }
     }
-    vertx.createNetClient().connect(config.getInteger("tcp-port"), config.getString("host")) {
+    client1.connect(config.getInteger("tcp-port"), config.getString("host")) {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
@@ -155,14 +160,7 @@ class IMServerTest {
               .put("version", 0.1).toString().plus("\r\n"))
           }
         }
-
       }
-      socket.write(JsonObject()
-        .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
-      )
     }
   }
 
