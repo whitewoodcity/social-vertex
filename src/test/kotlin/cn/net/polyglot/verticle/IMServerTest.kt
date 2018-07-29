@@ -274,10 +274,9 @@ class IMServerTest {
     }
     val path = config.getString("dir") + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
     await().until{
-      return@until vertx.fileSystem().existsBlocking(path)
+      vertx.fileSystem().existsBlocking(path)
     }
     val file = vertx.fileSystem().readFileBlocking(path)
-    context.assertTrue(file.toJsonObject().containsKey("from"))
     context.assertTrue(file.toJsonObject().getString("from")=="yangkui")
     async.complete()
   }
