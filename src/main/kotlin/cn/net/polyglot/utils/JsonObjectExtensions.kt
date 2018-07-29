@@ -17,7 +17,7 @@ import io.vertx.kotlin.core.json.array
  */
 fun JsonObject.putNullable(key: String, value: Any?): JsonObject {
   if (value == null) {
-    if (this.getValue(key) != null) {
+    if (this.containsKey(key)) {
       this.remove(key)
     }
     this.putNull(key)

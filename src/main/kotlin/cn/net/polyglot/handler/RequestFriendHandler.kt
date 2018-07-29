@@ -7,12 +7,8 @@ import cn.net.polyglot.utils.getUserDirAndFile
 import cn.net.polyglot.utils.putNullable
 import cn.net.polyglot.utils.toJsonArray
 import io.vertx.core.file.FileSystem
-import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.json.JsonObject
-import io.vertx.kotlin.core.json.get
 import java.io.File
-import java.io.IOException
 
 /**
  * @author zxj5470
@@ -28,6 +24,7 @@ import java.io.IOException
  * @param deletedFriendSide () -> Unit, which we can delete each other
  * @return JsonObject
  */
+@Deprecated("unused")
 fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: String?, deletedFriendSide: () -> Unit = {}): JsonObject {
   if (from == null || to == null) {
     json.put("info", "failed")
@@ -54,12 +51,14 @@ fun handleFriendDelete(fs: FileSystem, json: JsonObject, from: String?, to: Stri
   }
 }
 
+@Deprecated("unused")
 fun handleFriendRequest(fs: FileSystem, json: JsonObject, action: () -> Unit = {}): JsonObject {
   json.put("info", "请求信息已发送")
   action()
   return json
 }
 
+@Deprecated("unused")
 fun handleFriendResponse(fs: FileSystem, json: JsonObject, from: String?, to: String?, config: JsonObject):JsonObject {
   val accept = json.getBoolean("accept")
   if (accept == null || from == null || to == null) {

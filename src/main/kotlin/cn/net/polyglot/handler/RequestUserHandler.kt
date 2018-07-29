@@ -57,6 +57,7 @@ private fun authorizeLogin(resJson: JsonObject, id: String?, crypto: String?) =
   resJson.getString("user") == id &&
     resJson.getString("crypto") == crypto
 
+@Deprecated("unused")
 private fun userExistBefore(json: JsonObject): JsonObject {
   json.remove(JsonKeys.CRYPTO)
   json.put(JsonKeys.INFO, "user has already existed.")
