@@ -269,10 +269,13 @@ class IMServerTest {
             }""").toString().plus("\r\n"))
           }
         }
-        async.complete()
       }
-
     }
+
+    Thread.sleep(100)
+    val path = config.getString("dir") + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
+    context.assertTrue(vertx.fileSystem().existsBlocking(path))
+    async.complete()
   }
 
 }
