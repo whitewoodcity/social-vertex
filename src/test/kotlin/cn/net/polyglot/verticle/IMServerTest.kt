@@ -276,7 +276,9 @@ class IMServerTest {
     await().until{
       return@until vertx.fileSystem().existsBlocking(path)
     }
-    context.assertTrue(vertx.fileSystem().existsBlocking(path))
+    val file = vertx.fileSystem().readFileBlocking(path)
+    context.assertTrue(file.toJsonObject().containsKey("from"))
+    context.assertTrue(file.toJsonObject().getString("from")=="yangkui")
     async.complete()
   }
 
