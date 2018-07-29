@@ -130,7 +130,7 @@ class IMServerTest {
             async.complete()
           }
           else -> {
-
+            throw Exception("unexpected type")
           }
         }
       }
@@ -210,7 +210,9 @@ class IMServerTest {
             netClient1.close()
             async.complete()
           }
-
+          else->{
+            context.assertTrue(false)
+          }
         }
       }
     }
@@ -232,10 +234,14 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))
             socket.write(JsonObject("""{
               "type":"message",
+              "action":"text",
               "to":"zxj2017",
               "body":"你好吗？",
               "version":0.1
             }""").toString().plus("\r\n"))
+          }
+          else->{
+            context.assertTrue(false)
           }
         }
       }
@@ -264,10 +270,14 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))
             socket.write(JsonObject("""{
               "type":"message",
+              "action":"text",
               "to":"zxj2017",
               "body":"你好吗？",
               "version":0.1
             }""").toString().plus("\r\n"))
+          }
+          else->{
+            throw Exception("unexpected type")
           }
         }
       }

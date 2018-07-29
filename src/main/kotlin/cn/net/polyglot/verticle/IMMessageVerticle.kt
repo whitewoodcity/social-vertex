@@ -35,10 +35,8 @@ class IMMessageVerticle : AbstractVerticle() {
         }
         if (!json.containsKey("action")) {
           // type `message` doesn't need `action` key
-          if (json.getString("type") != MESSAGE) {
-            it.reply(JsonObject().putNull("action"))
-          }
-          // return@consumer
+          it.reply(JsonObject().putNull("action"))
+          return@consumer
         }
       } catch (e: Exception) {
         if (e is ClassCastException) {

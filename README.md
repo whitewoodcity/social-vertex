@@ -116,6 +116,7 @@ type类型有：
 ```json
 {
 "type":"message",
+"action":"text",
 "to":"yangkui",
 "body":"你好吗？",
 "version":0.1
