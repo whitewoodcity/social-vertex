@@ -6,6 +6,7 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.DeploymentOptions
+import org.awaitility.Awaitility.await
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -271,9 +272,10 @@ class IMServerTest {
         }
       }
     }
-
-    Thread.sleep(100)
     val path = config.getString("dir") + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
+    await().until{
+      return@until vertx.fileSystem().existsBlocking(path)
+    }
     context.assertTrue(vertx.fileSystem().existsBlocking(path))
     async.complete()
   }
