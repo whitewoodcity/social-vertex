@@ -178,7 +178,6 @@ class IMServerTest {
 
   @Test
   fun testAccountsAddFriendCrossDomain(context: TestContext) {
-    //todo 实现跨域添加好友和响应
     val async = context.async()
     val client1 = vertx.createNetClient()
     val client2 = vertx.createNetClient()
@@ -193,7 +192,6 @@ class IMServerTest {
             socket.write(JsonObject()
               .put("type", "friend")
               .put("action", "request")
-              .put("from", "yangkui")
               .put("to", "zxj2017@127.0.0.1")
               .put("message", "请添加我为你的好友，我是yangkui")
               .put("version", "0.1")
@@ -248,7 +246,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testAccountsCommunication(context: TestContext) {//依赖前一个方法
+  fun testAccountsCommunication(context: TestContext) {
     val netClient = vertx.createNetClient()
     val netClient1 = vertx.createNetClient()
 
