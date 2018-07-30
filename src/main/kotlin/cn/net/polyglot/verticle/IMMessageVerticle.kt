@@ -185,7 +185,7 @@ class IMMessageVerticle : AbstractVerticle() {
           json.put("from", "$from@127.0.0.1")
           webClient.post(config().getInteger("http-port"), to.substringAfterLast("@"), "/user")
             .sendJson(json.put("to", to.substringBeforeLast("@"))
-              .put("last_domain", "${to.substringAfterLast("@")}")) {}
+              .put("last_domain", to.substringAfterLast("@"))) {}
         } else {
 
           val domain: String? = json.getString("last_domain")
