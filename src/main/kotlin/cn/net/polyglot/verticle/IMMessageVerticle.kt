@@ -150,63 +150,104 @@ class IMMessageVerticle : AbstractVerticle() {
       ActionConstants.DELETE -> {
       }
       ActionConstants.REQUEST -> {
-        if (to.contains("@")) {
-          json.put("from", json.getString("from") + "@" + config().getString("host"))//把from加上域名
-          webClient.post(config().getInteger("http-port"), to.substringAfterLast("@"), "/user").sendJsonObject(json) {}
-        } else {
-          if (json.getString("from").contains('@')) {
-            from = from.substringBeforeLast('@')
-          }
-          val dir = config().getString("dir") + separator
+        val dir = config().getString("dir") + separator
+        if (!json.getString("from").contains('@')) {    //本地保存发送记录
+
           vertx.fileSystem().mkdirsBlocking("$dir$from$separator.send")
-          if (vertx.fileSystem().existsBlocking("$dir$from$separator.send$separator$to.json"))
+          if (vertx.fileSystem().existsBlocking("$dir$from$separator.send$separator$to.json")) {
             vertx.fileSystem().deleteBlocking("$dir$from$separator.send$separator$to.json")
+          }
           vertx.fileSystem().createFileBlocking("$dir$from$separator.send$separator$to.json")
           vertx.fileSystem().writeFileBlocking("$dir$from$separator.send$separator$to.json", json.toBuffer())
 
+        }
+        if (to.contains("@")) {    //如果跨域，转发给你相应的服务器
+          json.put("from", json.getString("from") + "@" + config().getString("host"))//把from加上域名
+          webClient.post(config().getInteger("http-port"), to.substringAfterLast("@"), "/user")
+            .sendJsonObject(json.put("to", to.substringBeforeLast('@'))) {}
+        } else {    //接受是其他服务器发送过来的请求
 
           vertx.fileSystem().mkdirsBlocking("$dir$to$separator.receive")
-          if (vertx.fileSystem().existsBlocking("$dir$to$separator.receive$separator$from.json"))
+          if (vertx.fileSystem().existsBlocking("$dir$to$separator.receive$separator$from.json")) {
             vertx.fileSystem().deleteBlocking("$dir$to$separator.receive$separator$from.json")
+          }
           vertx.fileSystem().createFileBlocking("$dir$to$separator.receive$separator$from.json")
           vertx.fileSystem().writeFileBlocking("$dir$to$separator.receive$separator$from.json", json.toBuffer())
           //尝试投递
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
+
         }
       }
       ActionConstants.RESPONSE -> {
-        if (json.getString("to").contains('@')) {
-          webClient.post(config().getInteger("http-port"), json.getString("to").substringAfterLast('@'), "/user").sendJson(json) {}
+        val dir = config().getString("dir") + separator
+        val fs = vertx.fileSystem()
+        if (to.contains('@')) {
+          json.put("from", "$from@127.0.0.1")
+          webClient.post(config().getInteger("http-port"), to.substringAfterLast("@"), "/user")
+            .sendJson(json.put("to", to.substringBeforeLast("@"))
+              .put("last_domain", "${to.substringAfterLast("@")}")) {}
         } else {
-          val dir = config().getString("dir") + separator
-          val fs = vertx.fileSystem()
 
-          if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json") &&
-            fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
-            if (json.getBoolean("accept")) {
-              if (!fs.existsBlocking("$dir$from$separator$to")) {
-                fs.mkdirsBlocking("$dir$from$separator$to")
-                val fileDir = "$dir$from$separator$to$separator$to.json"
-                fs.createFileBlocking(fileDir)
-                fs.writeFileBlocking(fileDir, JsonObject()
-                  .put("id", to)
-                  .put("nickName", to)
-                  .toBuffer())
+          val domain: String? = json.getString("last_domain")
+          if (domain != null) { //处理其他服务器发过来的回复
+            if (fs.existsBlocking("$dir$to$separator.send$separator$from.json") &&
+              fs.existsBlocking("$dir${from.substringBeforeLast("@")}$separator.receive$separator$to@$domain.json")) {
+              val senderDir = "$dir$to$separator$from$separator"
+              val receiverDir = "$dir${from.substringBeforeLast("@")}$separator$to@$domain$separator"
+              if (!fs.existsBlocking(senderDir)) {
+                fs.mkdirBlocking(senderDir)
+                fs.createFileBlocking("$senderDir$from.json")
               }
-              if (!fs.existsBlocking("$dir$to$separator$from")) {
-                fs.mkdirsBlocking("$dir$to$separator$from")
-                val fileDir1 = "$dir$to$separator$from$separator$from.json"
-                fs.createFileBlocking(fileDir1)
-                fs.writeFileBlocking(fileDir1, JsonObject()
-                  .put("id", from)
-                  .put("nickName", from)
-                  .toBuffer())
+              fs.writeFileBlocking("$senderDir$from.json", JsonObject()
+                .put("id", from)
+                .put("nickName", from)
+                .toBuffer())
+              if (!fs.existsBlocking(receiverDir)) {
+                fs.mkdirBlocking(receiverDir)
+                fs.createFileBlocking("$receiverDir$to@$domain.json")
               }
+              fs.writeFileBlocking("$receiverDir$to@$domain.json", JsonObject()
+                .put("id", "$to@$domain")
+                .put("nickName", "$to@$domain")
+                .toBuffer())
+
+              fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
+              fs.deleteBlocking("$dir${from.substringBeforeLast("@")}$separator.receive$separator$to@$domain.json")
+
             }
-            fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
-            fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
-            vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
+
+          } else {
+
+            if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json") &&
+              fs.existsBlocking("$dir${to.substringBefore('@')}$separator.send$separator$from.json")) {
+              if (json.getBoolean("accept")) {
+                if (!fs.existsBlocking("$dir$from$separator$to")) {
+                  fs.mkdirsBlocking("$dir$from$separator$to")
+                  val fileDir = "$dir$from$separator$to$separator$to.json"
+                  fs.createFileBlocking(fileDir)
+                  fs.writeFileBlocking(fileDir, JsonObject()
+                    .put("id", to)
+                    .put("nickName", to)
+                    .toBuffer())
+                }
+                if (!fs.existsBlocking("$dir$to$separator$from")) {
+                  fs.mkdirsBlocking("$dir$to$separator$from")
+                  val fileDir1 = "$dir$to$separator$from$separator$from.json"
+                  fs.createFileBlocking(fileDir1)
+                  fs.writeFileBlocking(fileDir1, JsonObject()
+                    .put("id", from)
+                    .put("nickName", from)
+                    .toBuffer())
+                }
+              }
+              fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
+              fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
+            }
+
           }
+
+
+          vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
         }
       }
       else -> {

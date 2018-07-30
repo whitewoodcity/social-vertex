@@ -202,7 +202,7 @@ class IMServerTest {
           }
           "friend" -> {
             if (result.getString("action") == "response") {
-              context.assertTrue(result.getBoolean("accept")==true)
+              context.assertTrue(result.getBoolean("accept") == true)
             }
             client1.close()
             client2.close()
@@ -233,7 +233,7 @@ class IMServerTest {
               .put("accept", true)
               .put("version", 0.1).toString().plus("\r\n"))
           }
-          "user"->{
+          "user" -> {
             context.assertTrue(result.getBoolean("login"))
           }
         }
@@ -244,10 +244,7 @@ class IMServerTest {
         .put("user", "zxj2017")
         .put("crypto", "431fe828b9b8e8094235dee515562247")
         .toString().plus("\r\n"))
-
     }
-
-
   }
 
   @Test
