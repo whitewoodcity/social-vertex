@@ -27,6 +27,9 @@ class WebServerVerticle : AbstractVerticle() {
         val type = json.getString("type")
         when (type) {
           "friend","message" -> {
+            if (json.getString("to").contains('@')) {
+              json.put("to", json.getString("to").substringBeforeLast('@'))
+            }
             vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
             routingContext.response().end()
           }

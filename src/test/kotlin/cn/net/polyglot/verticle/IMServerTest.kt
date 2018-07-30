@@ -179,6 +179,75 @@ class IMServerTest {
   @Test
   fun testAccountsAddFriendCrossDomain(context: TestContext) {
     //todo 实现跨域添加好友和响应
+    val async = context.async()
+    val client1 = vertx.createNetClient()
+    val client2 = vertx.createNetClient()
+    client1.connect(config.getInteger("tcp-port"), "localhost") {
+      val socket = it.result()
+      socket.handler {
+        val result = it.toJsonObject()
+        val type = result.getString("type")
+        when (type) {
+          "user" -> {
+            context.assertTrue(result.getBoolean("login"))
+            socket.write(JsonObject()
+              .put("type", "friend")
+              .put("action", "request")
+              .put("from", "yangkui")
+              .put("to", "zxj2017@127.0.0.1")
+              .put("message", "请添加我为你的好友，我是yangkui")
+              .put("version", "0.1")
+              .toString().plus("\r\n")
+            )
+          }
+          "friend" -> {
+            if (result.getString("action") == "response") {
+              context.assertTrue(result.getBoolean("accept")==true)
+            }
+            client1.close()
+            client2.close()
+            async.complete()
+          }
+        }
+
+      }
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "yangkui")
+        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .toString().plus("\r\n"))
+
+    }
+
+    client2.connect(config.getInteger("tcp-port"), "localhost") {
+      val socket = it.result()
+      socket.handler {
+        val result = it.toJsonObject()
+        val type = result.getString("type")
+        when (type) {
+          "friend" -> {
+            socket.write(JsonObject().put("type", "friend")
+              .put("action", "response")
+              .put("to", result.getString("from"))
+              .put("accept", true)
+              .put("version", 0.1).toString().plus("\r\n"))
+          }
+          "user"->{
+            context.assertTrue(result.getBoolean("login"))
+          }
+        }
+      }
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "zxj2017")
+        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .toString().plus("\r\n"))
+
+    }
+
+
   }
 
   @Test
@@ -210,7 +279,7 @@ class IMServerTest {
             netClient1.close()
             async.complete()
           }
-          else->{
+          else -> {
             context.assertTrue(false)
           }
         }
@@ -240,12 +309,11 @@ class IMServerTest {
               "version":0.1
             }""").toString().plus("\r\n"))
           }
-          else->{
+          else -> {
             context.assertTrue(false)
           }
         }
       }
-
     }
   }
 
@@ -276,18 +344,18 @@ class IMServerTest {
               "version":0.1
             }""").toString().plus("\r\n"))
           }
-          else->{
+          else -> {
             throw Exception("unexpected type")
           }
         }
       }
     }
     val path = config.getString("dir") + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
-    await().until{
+    await().until {
       vertx.fileSystem().existsBlocking(path)
     }
     val file = vertx.fileSystem().readFileBlocking(path)
-    context.assertTrue(file.toJsonObject().getString("from")=="yangkui")
+    context.assertTrue(file.toJsonObject().getString("from") == "yangkui")
     async.complete()
   }
 
