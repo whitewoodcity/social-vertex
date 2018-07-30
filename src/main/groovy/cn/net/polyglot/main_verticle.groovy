@@ -42,9 +42,10 @@ retriever.getConfig { ar ->
       vertx.fileSystem().mkdirBlocking(config.getString("dir"))
     }
 
-    vertx.deployVerticle(WebServerVerticle.class.name, new DeploymentOptions().setConfig(config))
-    vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
-    vertx.deployVerticle(IMMessageVerticle.class.name, new DeploymentOptions().setConfig(config))
+    def option = new DeploymentOptions().setConfig(config)
+    vertx.deployVerticle(WebServerVerticle.class.name, option)
+    vertx.deployVerticle(IMTcpServerVerticle.class.name, option)
+    vertx.deployVerticle(IMMessageVerticle.class.name, option)
 
   } catch (Exception e) {
     e.printStackTrace()
