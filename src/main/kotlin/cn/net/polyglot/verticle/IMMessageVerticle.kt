@@ -212,11 +212,8 @@ class IMMessageVerticle : AbstractVerticle() {
 
               fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
               fs.deleteBlocking("$dir${from.substringBeforeLast("@")}$separator.receive$separator$to@$domain.json")
-
             }
-
           } else {
-
             if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json") &&
               fs.existsBlocking("$dir${to.substringBefore('@')}$separator.send$separator$from.json")) {
               if (json.getBoolean("accept")) {
@@ -242,10 +239,7 @@ class IMMessageVerticle : AbstractVerticle() {
               fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
               fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
             }
-
           }
-
-
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
         }
       }
@@ -298,16 +292,6 @@ class IMMessageVerticle : AbstractVerticle() {
           }
         }
       }
-    }
-  }
-
-  private fun sameDomain(from: String, to: String, host: String): Boolean {
-    return when {
-      '@' !in from || '@' !in to -> true
-      else ->
-        from.substringAfterLast("@").let {
-          it == to.substringAfterLast("@") && it == host
-        }
     }
   }
 
