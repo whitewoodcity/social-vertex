@@ -178,7 +178,6 @@ class IMServerTest {
 
   @Test
   fun testAccountsAddFriendCrossDomain(context: TestContext) {
-    //todo 实现跨域添加好友和响应
     val async = context.async()
     val client1 = vertx.createNetClient()
     val client2 = vertx.createNetClient()
@@ -312,6 +311,64 @@ class IMServerTest {
         }
       }
     }
+  }
+
+  @Test
+  fun testAccountsCommunicationCrossDomain(context: TestContext) {
+    val netClient1 = vertx.createNetClient()
+    val netClient2 = vertx.createNetClient()
+    val async = context.async()
+    netClient1.connect(config.getInteger("tcp-port"), config.getString("host")) {
+      val socket = it.result()
+      socket.handler {
+        val type = it.toJsonObject().getString("type")
+        when (type) {
+          "user" -> {
+            context.assertTrue(it.toJsonObject().getBoolean("login"))
+            socket.write(JsonObject("""{
+              "type":"message",
+              "action":"text",
+              "to":"yangkui@localhost",
+              "body":"你好吗？",
+              "version":0.1
+            }""").toString().plus("\r\n"))
+
+          }
+        }
+      }
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "zxj2017")
+        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .toString().plus("\r\n"))
+    }
+    netClient2.connect(config.getInteger("tcp-port"), config.getString("host")) {
+      val socket = it.result()
+      socket.handler {
+        val type = it.toJsonObject().getString("type")
+        when (type) {
+          "user" -> {
+            context.assertTrue(it.toJsonObject().getBoolean("login"))
+
+          }
+          "message" -> {
+            println(it.toJsonObject())
+            netClient1.close()
+            netClient2.close()
+            async.complete()
+          }
+        }
+
+      }
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "yangkui")
+        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .toString().plus("\r\n"))
+    }
+
   }
 
   @Test
