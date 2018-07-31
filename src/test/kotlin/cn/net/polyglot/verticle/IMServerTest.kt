@@ -311,7 +311,48 @@ class IMServerTest {
       }
     }
   }
+  @Test
+  fun testAccountsOfflineCommunication(context: TestContext) {
+    val netClient = vertx.createNetClient()
+    val async = context.async()
+    netClient.connect(config.getInteger("tcp-port"), "localhost") {
+      val socket = it.result()
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "yangkui")
+        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .toString().plus("\r\n"))
 
+      socket.handler {
+        val result = it.toJsonObject()
+        val type = result.getString("type")
+        when (type) {
+          "user" -> {
+            context.assertTrue(it.toJsonObject().getBoolean("login"))
+            socket.write(JsonObject("""{
+              "type":"message",
+              "action":"text",
+              "to":"zxj2017",
+              "body":"你好吗？",
+              "version":0.1
+            }""").toString().plus("\r\n"))
+          }
+          else -> {
+            throw Exception("unexpected type")
+          }
+        }
+      }
+    }
+    val path = config.getString("dir") + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
+    await().until {
+      vertx.fileSystem().existsBlocking(path)
+    }
+    val file = vertx.fileSystem().readFileBlocking(path)
+    context.assertTrue(file.toJsonObject().getString("from") == "yangkui")
+    netClient.close()
+    async.complete()
+  }
   @Test
   fun testAccountsCommunicationCrossDomain(context: TestContext) {
     val netClient1 = vertx.createNetClient()
@@ -369,47 +410,46 @@ class IMServerTest {
     }
 
   }
-
   @Test
-  fun testAccountsOfflineCommunication(context: TestContext) {
-    val netClient = vertx.createNetClient()
+  fun testAccountsOfflineCommunicationCrossDomain(context: TestContext) {
+    val netClient1 = vertx.createNetClient()
     val async = context.async()
-    netClient.connect(config.getInteger("tcp-port"), "localhost") {
+    netClient1.connect(config.getInteger("tcp-port"), config.getString("host")) {
       val socket = it.result()
-      socket.write(JsonObject()
-        .put("type", "user")
-        .put("action", "login")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248")
-        .toString().plus("\r\n"))
-
       socket.handler {
-        val result = it.toJsonObject()
-        val type = result.getString("type")
+        val type = it.toJsonObject().getString("type")
         when (type) {
           "user" -> {
             context.assertTrue(it.toJsonObject().getBoolean("login"))
             socket.write(JsonObject("""{
               "type":"message",
               "action":"text",
-              "to":"zxj2017",
+              "to":"yangkui@localhost",
               "body":"你好吗？",
               "version":0.1
             }""").toString().plus("\r\n"))
           }
-          else -> {
-            throw Exception("unexpected type")
+          else->{
           }
         }
       }
+      socket.write(JsonObject()
+        .put("type", "user")
+        .put("action", "login")
+        .put("user", "zxj2017")
+        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .toString().plus("\r\n"))
     }
-    val path = config.getString("dir") + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
+    val fs = vertx.fileSystem()
+    val path = config.getString("dir") + separator + "yangkui" + separator + ".message" + separator + "zxj2017@127.0.0.1.sv"
     await().until {
-      vertx.fileSystem().existsBlocking(path)
+      fs.existsBlocking(path)
     }
-    val file = vertx.fileSystem().readFileBlocking(path)
-    context.assertTrue(file.toJsonObject().getString("from") == "yangkui")
-    async.complete()
+    val file = fs.readFileBlocking(path)
+      context.assertTrue(file.toJsonObject().getString("from") == "zxj2017@127.0.0.1")
+      netClient1.close()
+      async.complete()
+
   }
 
 }

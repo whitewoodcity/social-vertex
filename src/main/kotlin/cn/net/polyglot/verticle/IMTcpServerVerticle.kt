@@ -47,6 +47,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
           if (socket != null) {
             socket.write(it.body().toBuffer())
           } else {
+            val json = it.body()
             val fs = vertx.fileSystem()
             val dir = config().getString("dir") + File.separator + it.body().getString("to") +
               File.separator + ".message"

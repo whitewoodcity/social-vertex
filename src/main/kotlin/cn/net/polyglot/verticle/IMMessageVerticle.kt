@@ -274,25 +274,7 @@ class IMMessageVerticle : AbstractVerticle() {
         val fs = vertx.fileSystem()
         saveSendRecord(fs, json, domain)
         json.remove("last_domain")
-        vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
-          if (it.succeeded()) {
-            val result = it.result().body()
-            if (!result.getBoolean("status")) {
-              val target = result.getString("to")
-              val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".receive"
-              if (!fs.existsBlocking(dir)) {
-                fs.mkdirBlocking(dir)
-              }
-              val filePath = dir + File.separator + to + ".json"
-              if (!fs.existsBlocking(filePath)) {
-                fs.createFileBlocking(filePath)
-              }
-              fs.writeFileBlocking(filePath, it.result().body().toBuffer())
-            } else {
-              println("status:" + it.result().body().getString("info"))
-            }
-          }
-        }
+        vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {}
 
       } else {      //同一域名下的消息发送
         val fs = vertx.fileSystem()
