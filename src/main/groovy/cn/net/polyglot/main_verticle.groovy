@@ -1,58 +1,54 @@
 package cn.net.polyglot
 
-import cn.net.polyglot.config.ConfigLoader
-import cn.net.polyglot.verticle.IMHttpServerVerticle
-import cn.net.polyglot.verticle.IMTcpServerVerticle
+import cn.net.polyglot.verticle.*
 import io.vertx.config.ConfigRetriever
+import io.vertx.config.ConfigRetrieverOptions
+import io.vertx.config.ConfigStoreOptions
 import io.vertx.core.DeploymentOptions
+import io.vertx.core.Launcher
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 
 Vertx vertx = vertx
 
-/**
- * load `config.json` at the place where in the same directory as the jar file ,
- * and it'll load inner file if `config.json` not exists
- * or the file is in a wrong json format.
- */
-options = ConfigLoader.options
-ConfigLoader.makeAppDirs(vertx)
+JsonObject config = new JsonObject()
+  .put("version",0.1d)
+  .put("dir", new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + File.separator + "social-vertex")
+  .put("host", "localhost")
+  .put("tcp-port", 7373)
+  .put("http-port",7575)
+
+ConfigStoreOptions fileStore = new ConfigStoreOptions()
+  .setType("file")
+  .setConfig(new JsonObject().put("path", "config.json"))
+
+ConfigRetrieverOptions options = new ConfigRetrieverOptions().addStore(fileStore)
 
 ConfigRetriever retriever = ConfigRetriever.create(vertx, options)
 
 retriever.getConfig { ar ->
 
-  if (ar.failed()) {
-    failedDefault()
-  } else {
+  try {
 
-    JsonObject config = ar.result()
-    if (ConfigLoader.checkPortValidFromConfig(config)) {
-
-      deployVerticles(config)
-
+    if (ar.succeeded()) {
+      config.mergeIn(JsonObject.mapFrom(ar.result()))
     } else {
-      failedDefault()
+      System.out.println("The configuration file: config.json does not exist or in wrong format, use default config.")
     }
+
+    retriever.close()
+
+    if (!vertx.fileSystem().existsBlocking(config.getString("dir"))) {
+      vertx.fileSystem().mkdirBlocking(config.getString("dir"))
+    }
+
+    def option = new DeploymentOptions().setConfig(config)
+    vertx.deployVerticle(WebServerVerticle.class.name, option)
+    vertx.deployVerticle(IMTcpServerVerticle.class.name, option)
+    vertx.deployVerticle(IMMessageVerticle.class.name, option)
+
+  } catch (Exception e) {
+    e.printStackTrace()
   }
-}
 
-private void deployVerticles(JsonObject config) {
-//   8081
-  ConfigLoader.portInc(config)
-  vertx.deployVerticle(IMHttpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
-
-//  8082
-  ConfigLoader.portInc(config)
-  vertx.deployVerticle(IMTcpServerVerticle.class.name, new DeploymentOptions().setConfig(config))
-
-}
-
-private void failedDefault() {
-
-  System.out.println("The configuration file: config.json does not exist or in wrong format, use default config.")
-
-  JsonObject config = ConfigLoader.defaultJsonObject
-
-  deployVerticles(config)
 }

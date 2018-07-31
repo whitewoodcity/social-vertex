@@ -5,4 +5,5 @@ target/
 
 .vertx/
 
-.social-vertex/
+# app data dir
+social-vertex/
