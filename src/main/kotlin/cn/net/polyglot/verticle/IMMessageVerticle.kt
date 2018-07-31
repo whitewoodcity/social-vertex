@@ -138,8 +138,8 @@ class IMMessageVerticle : AbstractVerticle() {
 
   private fun friend(json: JsonObject) {
     val action = json.getString(JsonKeys.ACTION)
-    var from = json.getString(JsonKeys.FROM)
-    var to = json.getString(JsonKeys.TO)
+    val from = json.getString(JsonKeys.FROM)
+    val to = json.getString(JsonKeys.TO)
     if (from == null || to == null) {
       //不做处理，不需要反复确认，因为io层次一多，反复确认会导致代码和性能上的浪费，不值得花大力气去确保这点意外
       //确保错误情况不会影响系统便可
@@ -185,7 +185,7 @@ class IMMessageVerticle : AbstractVerticle() {
           json.put("from", "$from@127.0.0.1")
           webClient.post(config().getInteger("http-port"), to.substringAfterLast("@"), "/user")
             .sendJson(json.put("to", to.substringBeforeLast("@"))
-              .put("last_domain", "${to.substringAfterLast("@")}")) {}
+              .put("last_domain", to.substringAfterLast("@"))) {}
         } else {
 
           val domain: String? = json.getString("last_domain")
