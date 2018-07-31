@@ -1,4 +1,5 @@
 [系统说明](SYSTEM.md)
+![https://circleci.com/gh/whitewoodcity/social-vertex-flutter](https://circleci.com/gh/zxj5470/social-vertex.svg?style=svg)
 
 # 服务器与服务器的即时通信协议 V0.1
 
