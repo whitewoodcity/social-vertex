@@ -1,12 +1,6 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.config.JsonKeys
-import cn.net.polyglot.config.JsonKeys.NICKNAME
-import cn.net.polyglot.config.SubtypeConstants
-import cn.net.polyglot.config.TypeConstants.FRIEND
-import cn.net.polyglot.config.TypeConstants.MESSAGE
-import cn.net.polyglot.config.TypeConstants.SEARCH
-import cn.net.polyglot.config.TypeConstants.USER
+import cn.net.polyglot.config.*
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
@@ -141,9 +135,9 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   private fun friend(json: JsonObject) {
-    val subtype = json.getString(JsonKeys.SUBTYPE)
-    val from = json.getString(JsonKeys.FROM)
-    val to = json.getString(JsonKeys.TO)
+    val subtype = json.getString(SUBTYPE)
+    val from = json.getString(FROM)
+    val to = json.getString(TO)
     if (from == null || to == null) {
       //不做处理，不需要反复确认，因为io层次一多，反复确认会导致代码和性能上的浪费，不值得花大力气去确保这点意外
       //确保错误情况不会影响系统便可
@@ -151,9 +145,9 @@ class IMMessageVerticle : AbstractVerticle() {
     }
 
     when (subtype) {
-      SubtypeConstants.DELETE -> {
+      DELETE -> {
       }
-      SubtypeConstants.REQUEST -> {
+      REQUEST -> {
         val dir = config().getString("dir") + separator
         val fileSystem = vertx.fileSystem()
         if (!json.getString("from").contains('@')) {    //本地保存发送记录
@@ -183,7 +177,7 @@ class IMMessageVerticle : AbstractVerticle() {
 
         }
       }
-      SubtypeConstants.RESPONSE -> {
+      RESPONSE -> {
         val dir = config().getString("dir") + separator
         val fs = vertx.fileSystem()
         if (json.getBoolean("accept")) {
@@ -242,8 +236,8 @@ class IMMessageVerticle : AbstractVerticle() {
 
 
   private fun defaultMessage(json: JsonObject): JsonObject {
-    json.removeAll { it.key !in arrayOf(JsonKeys.VERSION, JsonKeys.TYPE) }
-    json.put(JsonKeys.INFO, "Default info, please check all sent value is correct.")
+    json.removeAll { it.key !in arrayOf(VERSION, TYPE) }
+    json.put(INFO, "Default info, please check all sent value is correct.")
     return json
   }
 
