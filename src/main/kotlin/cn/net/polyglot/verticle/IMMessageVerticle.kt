@@ -56,7 +56,7 @@ class IMMessageVerticle : AbstractVerticle() {
     println("${this::class.java.name} is deployed")
   }
 
-  fun user(json: JsonObject): JsonObject {
+  private fun user(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
     val result = JsonObject().put(subtype, false)
 
@@ -115,7 +115,7 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  fun search(json: JsonObject): JsonObject {
+  private fun search(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
     val result = JsonObject().putNull(subtype)
 
@@ -215,7 +215,7 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  fun message(json: JsonObject) {
+  private fun message(json: JsonObject) {
     val from = json.getString(FROM)
     val to = json.getString(TO)
     if (from == null || to == null) {
