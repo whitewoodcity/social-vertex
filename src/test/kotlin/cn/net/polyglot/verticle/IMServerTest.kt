@@ -1,5 +1,6 @@
 package cn.net.polyglot.verticle
 
+import cn.net.polyglot.config.*
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -22,18 +23,18 @@ import java.nio.file.Paths
 class IMServerTest {
   companion object {
     private val config = JsonObject()
-      .put("version", 0.1)
-      .put("dir", Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
-      .put("tcp-port", 7373)
-      .put("http-port", 7575)
-      .put("host", "localhost")
+      .put(VERSION, 0.1)
+      .put(DIR, Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
+      .put(TCP_PORT, 7373)
+      .put(HTTP_PORT, 7575)
+      .put(HOST, "localhost")
     private val vertx = Vertx.vertx()
 
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
-      if (vertx.fileSystem().existsBlocking(config.getString("dir")))
-        vertx.fileSystem().deleteRecursiveBlocking(config.getString("dir"), true)
+      if (vertx.fileSystem().existsBlocking(config.getString(DIR)))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle(IMTcpServerVerticle::class.java.name, option, context.asyncAssertSuccess())
@@ -53,30 +54,30 @@ class IMServerTest {
   @Test
   fun testAccountRegister(context: TestContext) {
     val async = context.async()
-    webClient.post(config.getInteger("http-port"), "localhost", "/user")
+    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
       .sendJsonObject(JsonObject()
-        .put("type", "user")
-        .put("subtype", "register")
-        .put("id", "zxj2017")
-        .put("password", "431fe828b9b8e8094235dee515562247")
-        .put("version", 0.1)
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
+        .put(ID, "zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(VERSION, 0.1)
       ) { response ->
         println(response.result().body())
-        context.assertTrue(response.result().body().toJsonObject().getBoolean("register"))
+        context.assertTrue(response.result().body().toJsonObject().getBoolean(REGISTER))
         async.complete()
       }
 
     val async1 = context.async()
-    webClient.post(config.getInteger("http-port"), "localhost", "/user")
+    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
       .sendJsonObject(JsonObject()
-        .put("type", "user")
-        .put("subtype", "register")
-        .put("id", "yangkui")
-        .put("password", "431fe828b9b8e8094235dee515562248")
-        .put("version", 0.1)
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
+        .put(ID, "yangkui")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+        .put(VERSION, 0.1)
       ) { response ->
         println(response.result().body())
-        context.assertTrue(response.result().body().toJsonObject().getBoolean("register"))
+        context.assertTrue(response.result().body().toJsonObject().getBoolean(REGISTER))
         async1.complete()
       }
   }
@@ -87,43 +88,43 @@ class IMServerTest {
     val client0 = vertx.createNetClient()
     val client1 = vertx.createNetClient()
 
-    client0.connect(config.getInteger("tcp-port"), config.getString("host")) {
+    client0.connect(config.getInteger(TCP_PORT), config.getString(HOST)) {
       val socket = it.result()
       socket.write(JsonObject()
-        .put("type", "user")
-        .put("subtype", "login")
-        .put("id", "yangkui")
-        .put("password", "431fe828b9b8e8094235dee515562248").toString().plus("\r\n")
+        .put(TYPE, USER)
+        .put(SUBTYPE, LOGIN)
+        .put(ID, "yangkui")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248").toString().plus("\r\n")
       )
 
       socket.handler {
         val result = it.toJsonObject()
         println(result)
-        when (result.getString("type")) {
-          "user" -> {
-            context.assertTrue(result.getBoolean("login"))//登陆成功
-            socket.write(JsonObject().put("type", "friend")
-              .put("subtype", "request")
-              .put("to", "zxj2017")
-              .put("message", "请添加我为你的好友，我是yangkui")
-              .put("version", 0.1).toString().plus("\r\n"))
+        when (result.getString(TYPE)) {
+          USER -> {
+            context.assertTrue(result.getBoolean(LOGIN))//登陆成功
+            socket.write(JsonObject().put(TYPE, FRIEND)
+              .put(SUBTYPE, REQUEST)
+              .put(TO, "zxj2017")
+              .put(MESSAGE, "请添加我为你的好友，我是yangkui")
+              .put(VERSION, 0.1).toString().plus("\r\n"))
           }
-          "friend" -> {
-            context.assertEquals(result.getString("subtype"), "response")
+          FRIEND -> {
+            context.assertEquals(result.getString(SUBTYPE), RESPONSE)
 
-            context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
+            context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString(DIR) + File.separator + "yangkui"
               + File.separator + ".send" + File.separator + "zxj2017.json"))
 
-            context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "zxj2017"
+            context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString(DIR) + File.separator + "zxj2017"
               + File.separator + ".receive" + File.separator + "yangkui.json"))
 
-            context.assertTrue(vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
+            context.assertTrue(vertx.fileSystem().existsBlocking(config.getString(DIR) + File.separator + "yangkui"
               + File.separator + "zxj2017" + File.separator + "zxj2017.json"))
 
-            context.assertTrue(vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "zxj2017"
+            context.assertTrue(vertx.fileSystem().existsBlocking(config.getString(DIR) + File.separator + "zxj2017"
               + File.separator + "yangkui" + File.separator + "yangkui.json"))
 
-            context.assertTrue(result.getBoolean("accept"))
+            context.assertTrue(result.getBoolean(ACCEPT))
 
             client0.close()//一旦收到好友响应，确认硬盘上文件存在，便关闭两个clients，并结束该unit test
             client1.close()
@@ -139,37 +140,37 @@ class IMServerTest {
         socket.close()
       }
     }
-    client1.connect(config.getInteger("tcp-port"), config.getString("host")) {
+    client1.connect(config.getInteger(TCP_PORT), config.getString(HOST)) {
       val socket = it.result()
       socket.write(JsonObject()
-        .put("type", "user")
-        .put("subtype", "login")
-        .put("id", "zxj2017")
-        .put("password", "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
+        .put(TYPE, USER)
+        .put(SUBTYPE, LOGIN)
+        .put(ID, "zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
       )
 
       socket.handler {
         val result = it.toJsonObject()
         println(result)
-        val type = result.getString("type")
+        val type = result.getString(TYPE)
         when (type) {
-          "user" -> {
-            context.assertTrue(it.toJsonObject().getBoolean("login"))//登陆成功
+          USER -> {
+            context.assertTrue(it.toJsonObject().getBoolean(LOGIN))//登陆成功
           }
-          "friend" -> {
-            context.assertTrue(it.toJsonObject().getString("subtype") == "request")
+          FRIEND -> {
+            context.assertTrue(it.toJsonObject().getString(SUBTYPE) == REQUEST)
             //检查yangkui/.send/zxj2017.json 和 zxj2017/.receive/yangkui.json 两个文件存在
             context.assertTrue(vertx.fileSystem().existsBlocking(
-              config.getString("dir") + separator + "yangkui" + separator + ".send" + separator + "zxj2017.json"))
+              config.getString(DIR) + separator + "yangkui" + separator + ".send" + separator + "zxj2017.json"))
 
             context.assertTrue(vertx.fileSystem().existsBlocking(
-              config.getString("dir") + separator + "zxj2017" + separator + ".receive" + separator + "yangkui.json"))
+              config.getString(DIR) + separator + "zxj2017" + separator + ".receive" + separator + "yangkui.json"))
 
-            socket.write(JsonObject().put("type", "friend")
-              .put("subtype", "response")
-              .put("to", result.getString("from"))
-              .put("accept", true)
-              .put("version", 0.1).toString().plus("\r\n"))
+            socket.write(JsonObject().put(TYPE, FRIEND)
+              .put(SUBTYPE, RESPONSE)
+              .put(TO, result.getString("from"))
+              .put(ACCEPT, true)
+              .put(VERSION, 0.1).toString().plus("\r\n"))
           }
         }
       }
@@ -183,23 +184,23 @@ class IMServerTest {
 
     val async = context.async()
 
-    netClient.connect(config.getInteger("tcp-port"), "localhost") {
+    netClient.connect(config.getInteger(TCP_PORT), "localhost") {
       val socket = it.result()
       socket.write(JsonObject()
-        .put("type", "user")
-        .put("subtype", "login")
-        .put("id", "zxj2017")
-        .put("password", "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, USER)
+        .put(SUBTYPE, LOGIN)
+        .put(ID, "zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .toString().plus("\r\n"))
 
       socket.handler {
         val result = it.toJsonObject()
-        val type = result.getString("type")
+        val type = result.getString(TYPE)
         when (type) {
-          "user" -> {
-            context.assertTrue(it.toJsonObject().getBoolean("login"))
+          USER -> {
+            context.assertTrue(it.toJsonObject().getBoolean(LOGIN))
           }
-          "message" -> {
+          MESSAGE -> {
             socket.close()
             netClient.close()
             netClient1.close()
@@ -212,28 +213,26 @@ class IMServerTest {
       }
     }
 
-    netClient1.connect(config.getInteger("tcp-port"), "localhost") {
+    netClient1.connect(config.getInteger(TCP_PORT), "localhost") {
       val socket = it.result()
       socket.write(JsonObject()
-        .put("type", "user")
-        .put("subtype", "login")
-        .put("id", "yangkui")
-        .put("password", "431fe828b9b8e8094235dee515562248")
+        .put(TYPE, USER)
+        .put(SUBTYPE, LOGIN)
+        .put(ID, "yangkui")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
         .toString().plus("\r\n"))
 
       socket.handler {
         val result = it.toJsonObject()
-        val type = result.getString("type")
+        val type = result.getString(TYPE)
         when (type) {
-          "user" -> {
-            context.assertTrue(it.toJsonObject().getBoolean("login"))
-            socket.write(JsonObject("""{
-              "type":"message",
-              "subtype":"text",
-              "to":"zxj2017",
-              "body":"你好吗？",
-              "version":0.1
-            }""").toString().plus("\r\n"))
+          USER -> {
+            context.assertTrue(it.toJsonObject().getBoolean(LOGIN))
+            socket.write(JsonObject().put(TYPE,MESSAGE)
+              .put(SUBTYPE,TEXT)
+              .put(TO,"zxj2017" )
+              .put(BODY,"你好吗？")
+              .put(VERSION,0.1).toString().plus("\r\n"))
           }
           else -> {
             context.assertTrue(false)
@@ -247,28 +246,26 @@ class IMServerTest {
   fun testAccountsOfflineCommunication(context: TestContext) {
     val netClient = vertx.createNetClient()
     val async = context.async()
-    netClient.connect(config.getInteger("tcp-port"), "localhost") {
+    netClient.connect(config.getInteger(TCP_PORT), "localhost") {
       val socket = it.result()
       socket.write(JsonObject()
-        .put("type", "user")
-        .put("subtype", "login")
-        .put("id", "yangkui")
-        .put("password", "431fe828b9b8e8094235dee515562248")
+        .put(TYPE, USER)
+        .put(SUBTYPE, LOGIN)
+        .put(ID, "yangkui")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
         .toString().plus("\r\n"))
 
       socket.handler {
         val result = it.toJsonObject()
-        val type = result.getString("type")
+        val type = result.getString(TYPE)
         when (type) {
-          "user" -> {
-            context.assertTrue(it.toJsonObject().getBoolean("login"))
-            socket.write(JsonObject("""{
-              "type":"message",
-              "subtype":"text",
-              "to":"zxj2017",
-              "body":"你好吗？",
-              "version":0.1
-            }""").toString().plus("\r\n"))
+          USER -> {
+            context.assertTrue(it.toJsonObject().getBoolean(LOGIN))
+            socket.write(JsonObject().put(TYPE,MESSAGE)
+              .put(SUBTYPE,TEXT)
+              .put(TO,"zxj2017")
+              .put(BODY,"你好吗？")
+              .put(VERSION,0.1).toString().plus("\r\n"))
           }
           else -> {
             context.assertTrue(false)
@@ -276,7 +273,7 @@ class IMServerTest {
         }
       }
     }
-    val path = config.getString("dir") + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
+    val path = config.getString(DIR) + separator + "zxj2017" + separator + ".message" + separator + "yangkui.sv"
     await().until {
       vertx.fileSystem().existsBlocking(path)
     }
