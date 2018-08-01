@@ -205,8 +205,8 @@ class IMMessageVerticle : AbstractVerticle() {
             }
             fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
           }
-          vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
         }
+        vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
       }
       else -> {
       }

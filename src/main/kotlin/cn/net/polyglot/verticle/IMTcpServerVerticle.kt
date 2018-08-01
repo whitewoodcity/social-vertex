@@ -4,9 +4,11 @@ import com.google.common.collect.HashBiMap
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
+import java.io.File
 
 /**
  * @author zxj5470
@@ -21,11 +23,19 @@ class IMTcpServerVerticle : AbstractVerticle() {
     val port = config().getInteger("tcp-port")
 
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
+      val type = it.body().getString("type")
       val target = it.body().getString("to")
-      if(socketMap.containsValue(target)){
+      if (socketMap.containsValue(target)) {
         socketMap.inverse()[target]!!.write(it.body().toString().plus("\r\n"))
-      }else{
+      } else {
         //todo 写入文件系统
+        val targetDir = config().getString("dir") + File.separator + it.body().getString("to") + File.separator + ".message"
+        val fs = vertx.fileSystem()
+        if (!fs.existsBlocking(targetDir)) fs.mkdirBlocking(targetDir)
+        if (!fs.existsBlocking("$targetDir${File.separator}${it.body().getString("from")}.sv"))
+          fs.createFileBlocking("$targetDir${File.separator}${it.body().getString("from")}.sv")
+        fs.openBlocking("$targetDir${File.separator}${it.body().getString("from")}.sv", OpenOptions().setAppend(true))
+          .write(it.body().toBuffer())
       }
     }
     vertx.createNetServer(NetServerOptions().setTcpKeepAlive(true)).connectHandler { socket ->
@@ -69,7 +79,11 @@ class IMTcpServerVerticle : AbstractVerticle() {
     val result = JsonObject()
     try {
       val json = JsonObject(jsonString).put("from", socketMap[socket])
-      vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
+      vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
+        val result = it.result().body()
+        if (result.getBoolean("login")) socketMap[socket] = json.getString("id")
+        socket.write(it.result().body().put("type", "user").put("subtype", "login").toBuffer())
+      }
     } catch (e: Exception) {
       socket.write(result.put("info", "${e.message}").toBuffer())
     }
