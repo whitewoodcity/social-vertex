@@ -186,9 +186,8 @@ class IMMessageVerticle : AbstractVerticle() {
       ActionConstants.RESPONSE -> {
         val dir = config().getString("dir") + separator
         val fs = vertx.fileSystem()
-        if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json") &&
-          fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
-          if (json.getBoolean("accept")) {
+        if (json.getBoolean("accept")) {
+          if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json")) {
             if (!fs.existsBlocking("$dir$from$separator$to")) {
               fs.mkdirsBlocking("$dir$from$separator$to")
               val fileDir = "$dir$from$separator$to$separator$to.json"
@@ -198,6 +197,9 @@ class IMMessageVerticle : AbstractVerticle() {
                 .put("nickName", to)
                 .toBuffer())
             }
+            fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
+          }
+          if (fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
             if (!fs.existsBlocking("$dir$to$separator$from")) {
               fs.mkdirsBlocking("$dir$to$separator$from")
               val fileDir1 = "$dir$to$separator$from$separator$from.json"
@@ -207,10 +209,8 @@ class IMMessageVerticle : AbstractVerticle() {
                 .put("nickName", from)
                 .toBuffer())
             }
+            fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
           }
-          fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
-          fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
-
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
         }
       }
