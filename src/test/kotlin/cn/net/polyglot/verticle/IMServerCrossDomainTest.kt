@@ -48,7 +48,7 @@ class IMServerCrossDomainTest {
   }
 
   private val webClient = WebClient.create(vertx)
-
+/**
   @Test
   fun testAccountRegister(context: TestContext) {
     val async = context.async()
@@ -247,5 +247,5 @@ class IMServerCrossDomainTest {
     async.complete()
   }
 
-
+*/
 }
