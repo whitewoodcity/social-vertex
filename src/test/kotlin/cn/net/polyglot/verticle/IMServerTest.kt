@@ -130,7 +130,7 @@ class IMServerTest {
             async.complete()
           }
           else -> {
-            throw Exception("unexpected type")
+            context.assertTrue(false)
           }
         }
       }
@@ -271,7 +271,7 @@ class IMServerTest {
             }""").toString().plus("\r\n"))
           }
           else -> {
-            throw Exception("unexpected type")
+            context.assertTrue(false)
           }
         }
       }
