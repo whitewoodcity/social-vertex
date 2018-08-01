@@ -4,12 +4,9 @@ import com.google.common.collect.HashBiMap
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.file.FileSystem
-import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
-import java.io.File
 
 /**
  * @author zxj5470
