@@ -155,14 +155,15 @@ class IMMessageVerticle : AbstractVerticle() {
       }
       ActionConstants.REQUEST -> {
         val dir = config().getString("dir") + separator
+        val fileSystem = vertx.fileSystem()
         if (!json.getString("from").contains('@')) {    //本地保存发送记录
 
-          vertx.fileSystem().mkdirsBlocking("$dir$from$separator.send")
-          if (vertx.fileSystem().existsBlocking("$dir$from$separator.send$separator$to.json")) {
-            vertx.fileSystem().deleteBlocking("$dir$from$separator.send$separator$to.json")
+          fileSystem.mkdirsBlocking("$dir$from$separator.send")
+          if (fileSystem.existsBlocking("$dir$from$separator.send$separator$to.json")) {
+            fileSystem.deleteBlocking("$dir$from$separator.send$separator$to.json")
           }
-          vertx.fileSystem().createFileBlocking("$dir$from$separator.send$separator$to.json")
-          vertx.fileSystem().writeFileBlocking("$dir$from$separator.send$separator$to.json", json.toBuffer())
+          fileSystem.createFileBlocking("$dir$from$separator.send$separator$to.json")
+          fileSystem.writeFileBlocking("$dir$from$separator.send$separator$to.json", json.toBuffer())
 
         }
         if (to.contains("@")) {    //如果跨域，转发给你相应的服务器
@@ -171,12 +172,12 @@ class IMMessageVerticle : AbstractVerticle() {
             .sendJsonObject(json.put("to", to.substringBeforeLast('@'))) {}
         } else {    //接受是其他服务器发送过来的请求
 
-          vertx.fileSystem().mkdirsBlocking("$dir$to$separator.receive")
-          if (vertx.fileSystem().existsBlocking("$dir$to$separator.receive$separator$from.json")) {
-            vertx.fileSystem().deleteBlocking("$dir$to$separator.receive$separator$from.json")
+          fileSystem.mkdirsBlocking("$dir$to$separator.receive")
+          if (fileSystem.existsBlocking("$dir$to$separator.receive$separator$from.json")) {
+            fileSystem.deleteBlocking("$dir$to$separator.receive$separator$from.json")
           }
-          vertx.fileSystem().createFileBlocking("$dir$to$separator.receive$separator$from.json")
-          vertx.fileSystem().writeFileBlocking("$dir$to$separator.receive$separator$from.json", json.toBuffer())
+          fileSystem.createFileBlocking("$dir$to$separator.receive$separator$from.json")
+          fileSystem.writeFileBlocking("$dir$to$separator.receive$separator$from.json", json.toBuffer())
           //尝试投递
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
 
@@ -186,7 +187,7 @@ class IMMessageVerticle : AbstractVerticle() {
         val dir = config().getString("dir") + separator
         val fs = vertx.fileSystem()
         if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json") &&
-          fs.existsBlocking("$dir${to.substringBefore('@')}$separator.send$separator$from.json")) {
+          fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
           if (json.getBoolean("accept")) {
             if (!fs.existsBlocking("$dir$from$separator$to")) {
               fs.mkdirsBlocking("$dir$from$separator$to")
@@ -225,7 +226,17 @@ class IMMessageVerticle : AbstractVerticle() {
       return
     }
     val fs = vertx.fileSystem()
-    saveSendRecord(fs, json)
+
+    val today = SimpleDateFormat("yyyy-MM-dd").format(Date())
+    val dir = config().getString("dir") + File.separator
+    val separator = File.separator
+    val senderDir = "$dir$from$separator$to$separator$today.sv"
+    val receiverDir = "$dir$to$separator$from$separator$today.sv"
+    if (!fs.existsBlocking(senderDir)) fs.createFileBlocking(senderDir)
+    if (!fs.existsBlocking(receiverDir)) fs.createFileBlocking(receiverDir)
+    fs.openBlocking(senderDir, OpenOptions().setAppend(true)).write(json.toBuffer())
+    fs.openBlocking(receiverDir, OpenOptions().setAppend(true)).write(json.toBuffer())
+
     vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
       if (it.succeeded()) {
         val result = it.result().body()
@@ -247,15 +258,6 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun sameDomain(from: String, to: String, host: String): Boolean {
-    return when {
-      '@' !in from || '@' !in to -> true
-      else ->
-        from.substringAfterLast("@").let {
-          it == to.substringAfterLast("@") && it == host
-        }
-    }
-  }
 
   private fun defaultMessage(json: JsonObject): JsonObject {
     json.removeAll { it.key !in arrayOf(JsonKeys.VERSION, JsonKeys.TYPE) }
@@ -263,18 +265,5 @@ class IMMessageVerticle : AbstractVerticle() {
     return json
   }
 
-  private fun saveSendRecord(fs: FileSystem, json: JsonObject) {   //将该条消息分别写入双方的发送记录中
-    val today = SimpleDateFormat("yyyy-MM-dd").format(Date())
-    val dir = config().getString("dir") + File.separator
-    val from = json.getString("from")
-    val to = json.getString("to")
-    val separator = File.separator
-    val senderDir = "$dir$from$separator$to$separator$today.sv"
-    val receiverDir = "$dir$to$separator$from$separator$today.sv"
-    if (!fs.existsBlocking(senderDir)) fs.createFileBlocking(senderDir)
-    if (!fs.existsBlocking(receiverDir)) fs.createFileBlocking(receiverDir)
-    fs.openBlocking(senderDir, OpenOptions().setAppend(true)).write(json.toBuffer())
-    fs.openBlocking(receiverDir, OpenOptions().setAppend(true)).write(json.toBuffer())
-  }
 }
 
