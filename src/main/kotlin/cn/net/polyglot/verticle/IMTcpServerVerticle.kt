@@ -26,8 +26,8 @@ class IMTcpServerVerticle : AbstractVerticle() {
       val type = it.body().getString("type")
       when (type) {
         "friend" -> {
-          val action = it.body().getString("action")
-          when (action) {
+          val subtype = it.body().getString("subtype")
+          when (subtype) {
             "request" -> {
               val target = it.body().getString("to")
               val socketMap = socketMap.inverse()
@@ -110,9 +110,10 @@ class IMTcpServerVerticle : AbstractVerticle() {
           val resultJson = it.result().body()
 
           if (resultJson.containsKey("login") && resultJson.getBoolean("login"))
-            socketMap[socket] = json.getString("user")
+            //todo 检查是否有离线消息和好友请求
+            socketMap[socket] = json.getString("id")
 
-          resultJson.put("type", "user").put("action", "login")
+          resultJson.put("type", "user").put("subtype", "login")
 
           socket.write(resultJson.toBuffer())
         }

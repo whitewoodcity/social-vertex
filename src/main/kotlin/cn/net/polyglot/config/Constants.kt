@@ -44,7 +44,7 @@ object FileSystemConstants {
 
 object JsonKeys {
   const val TYPE = "type"
-  const val ACTION = "action"
+  const val SUBTYPE = "subtype"
   const val VERSION = "version"
 
   const val FROM = "from"
