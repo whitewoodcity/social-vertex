@@ -109,22 +109,6 @@ class IMTcpServerVerticle : AbstractVerticle() {
       when (json.getString("type")) {
         "user", "search" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
           val resultJson = it.result().body()
-          val isLeft = it.result().body().containsKey("left")
-          if (isLeft && it.result().body().getBoolean("left")) {
-            val result = JsonObject().put("left", true)
-            val id = it.result().body().getString("id")
-            val messageDir = config().getString("dir") + File.separator + id + File.separator + ".message"
-            val receiveDir = config().getString("dir") + File.separator + id + File.separator + ".receive"
-            val fs = vertx.fileSystem()
-            if (fs.existsBlocking(messageDir)) {
-
-
-            }
-            if (fs.existsBlocking(receiveDir)) {
-
-            }
-
-          }
 
           if (resultJson.containsKey("login") && resultJson.getBoolean("login"))
 
