@@ -1,5 +1,6 @@
 package cn.net.polyglot.verticle
 
+import cn.net.polyglot.config.*
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -48,38 +49,39 @@ class IMServerCrossDomainTest {
   }
 
   private val webClient = WebClient.create(vertx)
-/**
+
   @Test
   fun testAccountRegister(context: TestContext) {
     val async = context.async()
-    webClient.post(config.getInteger("http-port"), "localhost", "/user")
+    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
       .sendJsonObject(JsonObject()
-        .put("type", "user")
-        .put("action", "register")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247")
-        .put("version", 0.1)
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
+        .put(ID, "zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(VERSION, 0.1)
       ) { response ->
         println(response.result().body())
-        context.assertTrue(response.result().body().toJsonObject().getBoolean("register"))
+        context.assertTrue(response.result().body().toJsonObject().getBoolean(REGISTER))
         async.complete()
       }
 
     val async1 = context.async()
-    webClient.post(config.getInteger("http-port"), "localhost", "/user")
+    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
       .sendJsonObject(JsonObject()
-        .put("type", "user")
-        .put("action", "register")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248")
-        .put("version", 0.1)
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
+        .put(ID, "yangkui")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+        .put(VERSION, 0.1)
       ) { response ->
         println(response.result().body())
-        context.assertTrue(response.result().body().toJsonObject().getBoolean("register"))
+        context.assertTrue(response.result().body().toJsonObject().getBoolean(REGISTER))
         async1.complete()
       }
   }
 
+/**
   @Test
   fun testAccountsAddFriendCrossDomain(context: TestContext) {
     val async = context.async()
@@ -246,6 +248,5 @@ class IMServerCrossDomainTest {
     netClient1.close()
     async.complete()
   }
-
 */
 }

@@ -1,5 +1,6 @@
 package cn.net.polyglot.verticle
 
+import cn.net.polyglot.config.*
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.http.HttpMethod
@@ -17,16 +18,16 @@ class WebServerVerticle : AbstractVerticle() {
     router.route().handler(CookieHandler.create())
     router.route().handler(BodyHandler.create().setBodyLimit(1 * MB))
 
-    router.route("/user").handler{ routingContext ->
+    router.route("/user").handler { routingContext ->
       if (routingContext.request().method() != HttpMethod.POST) {
         routingContext.response().end("request method is not POST")
         return@handler
       }
       try {
         val json = routingContext.bodyAsJson
-        val type = json.getString("type")
+        val type = json.getString(TYPE)
         when (type) {
-          "friend","message" -> {
+          FRIEND, MESSAGE -> {
             vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
             routingContext.response().end()
           }
@@ -38,13 +39,13 @@ class WebServerVerticle : AbstractVerticle() {
             }
           }
         }
-      }catch (e:Exception){
+      } catch (e: Exception) {
         routingContext.response().end(e.message)
         return@handler
       }
     }
 
-    httpServer.requestHandler(router::accept).listen(config().getInteger("http-port")) {
+    httpServer.requestHandler(router::accept).listen(config().getInteger(HTTP_PORT)) {
       if (it.succeeded()) {
         println("${this::class.java.name} is deployed")
       } else {

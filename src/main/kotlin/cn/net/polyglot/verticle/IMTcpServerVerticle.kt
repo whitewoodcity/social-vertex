@@ -1,5 +1,6 @@
 package cn.net.polyglot.verticle
 
+import cn.net.polyglot.config.*
 import com.google.common.collect.HashBiMap
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
@@ -20,21 +21,20 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private var buffer = Buffer.buffer()
 
   override fun start() {
-    val port = config().getInteger("tcp-port")
+    val port = config().getInteger(TCP_PORT)
 
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
-      val type = it.body().getString("type")
-      val target = it.body().getString("to")
+      val type = it.body().getString(TYPE)
+      val target = it.body().getString(TO)
       if (socketMap.containsValue(target)) {
         socketMap.inverse()[target]!!.write(it.body().toString().plus("\r\n"))
       } else {
-        //todo 写入文件系统
-        val targetDir = config().getString("dir") + File.separator + it.body().getString("to") + File.separator + ".message"
+        val targetDir = config().getString(DIR) + File.separator + it.body().getString(TO) + File.separator + ".message"
         val fs = vertx.fileSystem()
         if (!fs.existsBlocking(targetDir)) fs.mkdirBlocking(targetDir)
-        if (!fs.existsBlocking("$targetDir${File.separator}${it.body().getString("from")}.sv"))
-          fs.createFileBlocking("$targetDir${File.separator}${it.body().getString("from")}.sv")
-        fs.openBlocking("$targetDir${File.separator}${it.body().getString("from")}.sv", OpenOptions().setAppend(true))
+        if (!fs.existsBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv"))
+          fs.createFileBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv")
+        fs.openBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv", OpenOptions().setAppend(true))
           .write(it.body().toBuffer())
       }
     }
@@ -78,14 +78,22 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private fun processJsonString(jsonString: String, socket: NetSocket) {
     val result = JsonObject()
     try {
-      val json = JsonObject(jsonString).put("from", socketMap[socket])
-      vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
-        val result = it.result().body()
-        if (result.getBoolean("login")) socketMap[socket] = json.getString("id")
-        socket.write(it.result().body().put("type", "user").put("subtype", "login").toBuffer())
+      val json = JsonObject(jsonString).put(FROM, socketMap[socket])
+      when (json.getString(TYPE)) {
+        USER, SEARCH -> {
+          vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
+            val jsonObject = it.result().body()
+            if (jsonObject.getBoolean(LOGIN)) socketMap[socket] = json.getString(ID)
+            jsonObject.mergeIn(json).remove(PASSWORD)
+            socket.write(jsonObject.toBuffer())
+          }
+        }
+        else -> {
+          vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
+        }
       }
     } catch (e: Exception) {
-      socket.write(result.put("info", "${e.message}").toBuffer())
+      socket.write(result.put(INFO, "${e.message}").toBuffer())
     }
   }
 }

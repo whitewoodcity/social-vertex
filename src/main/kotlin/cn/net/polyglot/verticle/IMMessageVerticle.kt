@@ -23,26 +23,26 @@ class IMMessageVerticle : AbstractVerticle() {
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val json = it.body()
       try {
-        if (!json.containsKey("type")) {
-          it.reply(JsonObject().putNull("type"))
+        if (!json.containsKey(TYPE)) {
+          it.reply(JsonObject().putNull(TYPE))
           return@consumer
         }
-        if (!json.containsKey("subtype")) {
+        if (!json.containsKey(SUBTYPE)) {
           // type `message` doesn't need `action` key
-          it.reply(JsonObject().putNull("subtype"))
+          it.reply(JsonObject().putNull(SUBTYPE))
           return@consumer
         }
       } catch (e: Exception) {
         if (e is ClassCastException) {
-          it.reply(JsonObject().put("info", "value type error"))
+          it.reply(JsonObject().put(INFO, "value type error"))
         } else {
-          it.reply(JsonObject().put("info", "${e.message}"))
+          it.reply(JsonObject().put(INFO, "${e.message}"))
         }
         return@consumer
       }
 
       launch(vertx.dispatcher()) {
-        when (json.getString("type")) {
+        when (json.getString(TYPE)) {
         // future reply
           FRIEND -> friend(it.body())
           MESSAGE -> message(it.body())
@@ -57,15 +57,15 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   fun user(json: JsonObject): JsonObject {
-    val subtype = json.getString("subtype")
+    val subtype = json.getString(SUBTYPE)
     val result = JsonObject().put(subtype, false)
 
-    if (!json.containsKey("id") || !json.containsKey("password")) {
+    if (!json.containsKey(ID) || !json.containsKey(PASSWORD)) {
       return result
     }
     try {
-      val id = json.getString("id")
-      val password = json.getString("password")
+      val id = json.getString(ID)
+      val password = json.getString(PASSWORD)
 
       //validate id
       val validId = when {
@@ -75,23 +75,23 @@ class IMMessageVerticle : AbstractVerticle() {
       }
 
       if (!validId)
-        return result.put("info", "用户名格式错误，仅允许不以数字开头的数字和字母组合，长度在4到20位之间")
+        return result.put(INFO, "用户名格式错误，仅允许不以数字开头的数字和字母组合，长度在4到20位之间")
 
       //validate password
       if (password == null || password.length != 32) {
-        return result.put("info", "秘钥格式错误")
+        return result.put(INFO, "秘钥格式错误")
       }
 
-      val dir = config().getString("dir") + File.separator + id
+      val dir = config().getString(DIR) + File.separator + id
 
       when (subtype) {
-        "register" -> {
+        REGISTER -> {
           if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
-            return result.put("info", "用户已存在")
+            return result.put(INFO, "用户已存在")
           }
           vertx.fileSystem().mkdirsBlocking(dir)
           vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
-          json.removeAll { it.key in arrayOf("type", "subtype") }
+          json.removeAll { it.key in arrayOf(TYPE, SUBTYPE) }
           vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
 
           return result.put(subtype, true)
@@ -101,23 +101,23 @@ class IMMessageVerticle : AbstractVerticle() {
             return result.put(subtype, false)
           }
           val userJson = vertx.fileSystem().readFileBlocking(dir + File.separator + "user.json").toJsonObject()
-          if (subtype == "left") {
-            return result.put(subtype, userJson.getString("password") == json.getString("password"))
-              .put("id", json.getString("id"))
+          if (subtype == LEFT) {
+            return result.put(subtype, userJson.getString(PASSWORD) == json.getString(PASSWORD))
+              .put(ID, json.getString(ID))
           }
-          return result.put(subtype, userJson.getString("password") == json.getString("password"))
+          return result.put(subtype, userJson.getString(PASSWORD) == json.getString(PASSWORD))
         }
       }
     } catch (e: Exception) {
-      return result.put("info", "${e.message}")
+      return result.put(INFO, "${e.message}")
     }
   }
 
   fun search(json: JsonObject): JsonObject {
-    val subtype = json.getString("subtype")
+    val subtype = json.getString(SUBTYPE)
     val result = JsonObject().putNull(subtype)
 
-    val dir = config().getString("dir") + File.separator + json.getString("keyword")
+    val dir = config().getString(DIR) + File.separator + json.getString(KEYWORD)
     val userFile = dir + File.separator + "user.json"
 
     try {
@@ -126,11 +126,11 @@ class IMMessageVerticle : AbstractVerticle() {
 
       val buffer = vertx.fileSystem().readFileBlocking(userFile)
       val resJson = buffer.toJsonObject()
-      resJson.removeAll { it.key in arrayOf("password") }
+      resJson.removeAll { it.key in arrayOf(PASSWORD) }
       return result.put(subtype, resJson)
 
     } catch (e: Exception) {
-      return result.put("info", "${e.message}")
+      return result.put(INFO, "${e.message}")
     }
   }
 
@@ -148,9 +148,9 @@ class IMMessageVerticle : AbstractVerticle() {
       DELETE -> {
       }
       REQUEST -> {
-        val dir = config().getString("dir") + separator
+        val dir = config().getString(DIR) + separator
         val fileSystem = vertx.fileSystem()
-        if (!json.getString("from").contains('@')) {    //本地保存发送记录
+        if (!json.getString(FROM).contains('@')) {    //本地保存发送记录
 
           fileSystem.mkdirsBlocking("$dir$from$separator.send")
           if (fileSystem.existsBlocking("$dir$from$separator.send$separator$to.json")) {
@@ -161,9 +161,9 @@ class IMMessageVerticle : AbstractVerticle() {
 
         }
         if (to.contains("@")) {    //如果跨域，转发给你相应的服务器
-          json.put("from", json.getString("from") + "@" + config().getString("host"))//把from加上域名
+          json.put(FROM, json.getString(FROM) + "@" + config().getString("host"))//把from加上域名
           webClient.post(config().getInteger("http-port"), to.substringAfterLast("@"), "/user")
-            .sendJsonObject(json.put("to", to.substringBeforeLast('@'))) {}
+            .sendJsonObject(json.put(TO, to.substringBeforeLast('@'))) {}
         } else {    //接受是其他服务器发送过来的请求
 
           fileSystem.mkdirsBlocking("$dir$to$separator.receive")
@@ -178,17 +178,17 @@ class IMMessageVerticle : AbstractVerticle() {
         }
       }
       RESPONSE -> {
-        val dir = config().getString("dir") + separator
+        val dir = config().getString(DIR) + separator
         val fs = vertx.fileSystem()
-        if (json.getBoolean("accept")) {
+        if (json.getBoolean(ACCEPT)) {
           if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json")) {
             if (!fs.existsBlocking("$dir$from$separator$to")) {
               fs.mkdirsBlocking("$dir$from$separator$to")
               val fileDir = "$dir$from$separator$to$separator$to.json"
               fs.createFileBlocking(fileDir)
               fs.writeFileBlocking(fileDir, JsonObject()
-                .put("id", to)
-                .put("nickName", json.getString(NICKNAME))
+                .put(ID, to)
+                .put(NICKNAME, json.getString(NICKNAME))
                 .toBuffer())
             }
             fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
@@ -199,8 +199,8 @@ class IMMessageVerticle : AbstractVerticle() {
               val fileDir1 = "$dir$to$separator$from$separator$from.json"
               fs.createFileBlocking(fileDir1)
               fs.writeFileBlocking(fileDir1, JsonObject()
-                .put("id", from)
-                .put("nickName", json.getString(NICKNAME))
+                .put(ID, from)
+                .put(NICKNAME, json.getString(NICKNAME))
                 .toBuffer())
             }
             fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
@@ -214,15 +214,15 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   fun message(json: JsonObject) {
-    val from = json.getString("from")
-    val to = json.getString("to")
+    val from = json.getString(FROM)
+    val to = json.getString(TO)
     if (from == null || to == null) {
       return
     }
     val fs = vertx.fileSystem()
 
     val today = SimpleDateFormat("yyyy-MM-dd").format(Date())
-    val dir = config().getString("dir") + File.separator
+    val dir = config().getString(DIR) + File.separator
     val separator = File.separator
     val senderDir = "$dir$from$separator$to$separator$today.sv"
     val receiverDir = "$dir$to$separator$from$separator$today.sv"
