@@ -21,8 +21,6 @@ class IMTcpServerVerticle : AbstractVerticle() {
     val port = config().getInteger("tcp-port")
 
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
-      val type = it.body().getString("type")
-
       val target = it.body().getString("to")
       if(socketMap.containsValue(target)){
         socketMap.inverse()[target]!!.write(it.body().toString().plus("\r\n"))
@@ -76,6 +74,4 @@ class IMTcpServerVerticle : AbstractVerticle() {
       socket.write(result.put("info", "${e.message}").toBuffer())
     }
   }
-
-
 }

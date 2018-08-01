@@ -1,13 +1,13 @@
 package cn.net.polyglot.verticle
 
-import cn.net.polyglot.config.ActionConstants
 import cn.net.polyglot.config.JsonKeys
+import cn.net.polyglot.config.JsonKeys.NICKNAME
+import cn.net.polyglot.config.SubtypeConstants
 import cn.net.polyglot.config.TypeConstants.FRIEND
 import cn.net.polyglot.config.TypeConstants.MESSAGE
 import cn.net.polyglot.config.TypeConstants.SEARCH
 import cn.net.polyglot.config.TypeConstants.USER
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.file.FileSystem
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
@@ -151,9 +151,9 @@ class IMMessageVerticle : AbstractVerticle() {
     }
 
     when (subtype) {
-      ActionConstants.DELETE -> {
+      SubtypeConstants.DELETE -> {
       }
-      ActionConstants.REQUEST -> {
+      SubtypeConstants.REQUEST -> {
         val dir = config().getString("dir") + separator
         val fileSystem = vertx.fileSystem()
         if (!json.getString("from").contains('@')) {    //本地保存发送记录
@@ -183,7 +183,7 @@ class IMMessageVerticle : AbstractVerticle() {
 
         }
       }
-      ActionConstants.RESPONSE -> {
+      SubtypeConstants.RESPONSE -> {
         val dir = config().getString("dir") + separator
         val fs = vertx.fileSystem()
         if (json.getBoolean("accept")) {
@@ -194,7 +194,7 @@ class IMMessageVerticle : AbstractVerticle() {
               fs.createFileBlocking(fileDir)
               fs.writeFileBlocking(fileDir, JsonObject()
                 .put("id", to)
-                .put("nickName", to)
+                .put("nickName", json.getString(NICKNAME))
                 .toBuffer())
             }
             fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")
@@ -206,7 +206,7 @@ class IMMessageVerticle : AbstractVerticle() {
               fs.createFileBlocking(fileDir1)
               fs.writeFileBlocking(fileDir1, JsonObject()
                 .put("id", from)
-                .put("nickName", from)
+                .put("nickName", json.getString(NICKNAME))
                 .toBuffer())
             }
             fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
