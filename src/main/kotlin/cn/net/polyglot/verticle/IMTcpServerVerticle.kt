@@ -4,6 +4,7 @@ import com.google.common.collect.HashBiMap
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.file.FileSystem
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
@@ -108,9 +109,25 @@ class IMTcpServerVerticle : AbstractVerticle() {
       when (json.getString("type")) {
         "user", "search" -> vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
           val resultJson = it.result().body()
+          val isLeft = it.result().body().containsKey("left")
+          if (isLeft && it.result().body().getBoolean("left")) {
+            val result = JsonObject().put("left", true)
+            val id = it.result().body().getString("id")
+            val messageDir = config().getString("dir") + File.separator + id + File.separator + ".message"
+            val receiveDir = config().getString("dir") + File.separator + id + File.separator + ".receive"
+            val fs = vertx.fileSystem()
+            if (fs.existsBlocking(messageDir)) {
+
+
+            }
+            if (fs.existsBlocking(receiveDir)) {
+
+            }
+
+          }
 
           if (resultJson.containsKey("login") && resultJson.getBoolean("login"))
-            //todo 检查是否有离线消息和好友请求
+
             socketMap[socket] = json.getString("id")
 
           resultJson.put("type", "user").put("subtype", "login")
@@ -124,6 +141,10 @@ class IMTcpServerVerticle : AbstractVerticle() {
     } catch (e: Exception) {
       socket.write(result.put("info", "${e.message}").toBuffer())
     }
+  }
+
+  private fun readFile(json: JsonObject, fs: FileSystem) {
+
   }
 
 }

@@ -88,7 +88,7 @@ class IMMessageVerticle : AbstractVerticle() {
         return result.put("info", "秘钥格式错误")
       }
 
-      val dir = config().getString("dir") + File.separator +id
+      val dir = config().getString("dir") + File.separator + id
 
       when (subtype) {
         "register" -> {
@@ -107,6 +107,10 @@ class IMMessageVerticle : AbstractVerticle() {
             return result.put(subtype, false)
           }
           val userJson = vertx.fileSystem().readFileBlocking(dir + File.separator + "user.json").toJsonObject()
+          if (subtype == "left") {
+            return result.put(subtype, userJson.getString("password") == json.getString("password"))
+              .put("id", json.getString("id"))
+          }
           return result.put(subtype, userJson.getString("password") == json.getString("password"))
         }
       }
@@ -246,7 +250,6 @@ class IMMessageVerticle : AbstractVerticle() {
 
           }
 
-
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
         }
       }
@@ -258,45 +261,27 @@ class IMMessageVerticle : AbstractVerticle() {
   fun message(json: JsonObject) {
     val from = json.getString("from")
     val to = json.getString("to")
-    val domain: String? = json.getString("last_domain")
     if (from == null || to == null) {
       return
     }
-    if (json.getString("to").contains('@')) {      //处理跨域消息
-      val host = json.getString("to").substringAfterLast('@')
-      webClient.post(config().getInteger("http-port"), host, "/user").sendJson(json
-        .put("to", to.substringBeforeLast('@'))
-        .put("last_domain", to.substringAfterLast('@'))
-        .put("from", "$from@127.0.0.1")) {}
-
-    } else {
-      if (domain != null) {    //其他域名发过来的消息
-        val fs = vertx.fileSystem()
-        saveSendRecord(fs, json, domain)
-        json.remove("last_domain")
-        vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {}
-
-      } else {      //同一域名下的消息发送
-        val fs = vertx.fileSystem()
-        saveSendRecord(fs, json, domain)
-        vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
-          if (it.succeeded()) {
-            val result = it.result().body()
-            if (!result.getBoolean("status")) {
-              val target = result.getString("to")
-              val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".receive"
-              if (!fs.existsBlocking(dir)) {
-                fs.mkdirBlocking(dir)
-              }
-              val filePath = dir + File.separator + to + ".json"
-              if (!fs.existsBlocking(filePath)) {
-                fs.createFileBlocking(filePath)
-              }
-              fs.writeFileBlocking(filePath, it.result().body().toBuffer())
-            } else {
-              println("status:" + it.result().body().getString("info"))
-            }
+    val fs = vertx.fileSystem()
+    saveSendRecord(fs, json)
+    vertx.eventBus().send<JsonObject>(IMTcpServerVerticle::class.java.name, json) {
+      if (it.succeeded()) {
+        val result = it.result().body()
+        if (!result.getBoolean("status")) {
+          val target = result.getString("to")
+          val dir = config().getString("dir") + File.separator + "user" + File.separator + target + File.separator + ".receive"
+          if (!fs.existsBlocking(dir)) {
+            fs.mkdirBlocking(dir)
           }
+          val filePath = dir + File.separator + to + ".json"
+          if (!fs.existsBlocking(filePath)) {
+            fs.createFileBlocking(filePath)
+          }
+          fs.writeFileBlocking(filePath, it.result().body().toBuffer())
+        } else {
+          println("status:" + it.result().body().getString("info"))
         }
       }
     }
@@ -318,28 +303,18 @@ class IMMessageVerticle : AbstractVerticle() {
     return json
   }
 
-  private fun saveSendRecord(fs: FileSystem, json: JsonObject, lastDomain: String?) {   //将该条消息分别写入双方的发送记录中
+  private fun saveSendRecord(fs: FileSystem, json: JsonObject) {   //将该条消息分别写入双方的发送记录中
     val today = SimpleDateFormat("yyyy-MM-dd").format(Date())
     val dir = config().getString("dir") + File.separator
     val from = json.getString("from")
     val to = json.getString("to")
     val separator = File.separator
-    if (lastDomain != null) {
-      json.remove("last_domain")
-      val senderDir = "$dir${from.substringBeforeLast('@')}$separator$to@$lastDomain$separator$today.sv"
-      val receiverDir = "$dir$to$separator$from$separator$today.sv"
-      if (!fs.existsBlocking(senderDir)) fs.createFileBlocking(senderDir)
-      if (!fs.existsBlocking(receiverDir)) fs.createFileBlocking(receiverDir)
-      fs.openBlocking(senderDir, OpenOptions().setAppend(true)).write(json.toBuffer())
-      fs.openBlocking(receiverDir, OpenOptions().setAppend(true)).write(json.toBuffer())
-    } else {
-      val senderDir = "$dir$from$separator$to$separator$today.sv"
-      val receiverDir = "$dir$to$separator$from$separator$today.sv"
-      if (!fs.existsBlocking(senderDir)) fs.createFileBlocking(senderDir)
-      if (!fs.existsBlocking(receiverDir)) fs.createFileBlocking(receiverDir)
-      fs.openBlocking(senderDir, OpenOptions().setAppend(true)).write(json.toBuffer())
-      fs.openBlocking(receiverDir, OpenOptions().setAppend(true)).write(json.toBuffer())
-    }
+    val senderDir = "$dir$from$separator$to$separator$today.sv"
+    val receiverDir = "$dir$to$separator$from$separator$today.sv"
+    if (!fs.existsBlocking(senderDir)) fs.createFileBlocking(senderDir)
+    if (!fs.existsBlocking(receiverDir)) fs.createFileBlocking(receiverDir)
+    fs.openBlocking(senderDir, OpenOptions().setAppend(true)).write(json.toBuffer())
+    fs.openBlocking(receiverDir, OpenOptions().setAppend(true)).write(json.toBuffer())
   }
 }
 
