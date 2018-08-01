@@ -96,15 +96,17 @@ class IMMessageVerticle : AbstractVerticle() {
 
           return result.put(subtype, true)
         }
+        LEFT ->{
+          //todo 完成left子类型的实现
+          return result.put(subtype, false)
+            .put(ID, json.getString(ID))
+        }
         else -> {//login as default subtype
           if (!vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
             return result.put(subtype, false)
           }
           val userJson = vertx.fileSystem().readFileBlocking(dir + File.separator + "user.json").toJsonObject()
-          if (subtype == LEFT) {
-            return result.put(subtype, userJson.getString(PASSWORD) == json.getString(PASSWORD))
-              .put(ID, json.getString(ID))
-          }
+
           return result.put(subtype, userJson.getString(PASSWORD) == json.getString(PASSWORD))
         }
       }
