@@ -33,9 +33,9 @@ class IMMessageVerticle : AbstractVerticle() {
           it.reply(JsonObject().putNull("type"))
           return@consumer
         }
-        if (!json.containsKey("action")) {
+        if (!json.containsKey("subtype")) {
           // type `message` doesn't need `action` key
-          it.reply(JsonObject().putNull("action"))
+          it.reply(JsonObject().putNull("subtype"))
           return@consumer
         }
       } catch (e: Exception) {
@@ -63,51 +63,51 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   fun user(json: JsonObject): JsonObject {
-    val action = json.getString("action")
-    val result = JsonObject().put(action, false)
+    val subtype = json.getString("subtype")
+    val result = JsonObject().put(subtype, false)
 
-    if (!json.containsKey("user") || !json.containsKey("crypto")) {
+    if (!json.containsKey("id") || !json.containsKey("password")) {
       return result
     }
     try {
-      val user = json.getString("user")
-      val crypto = json.getString("crypto")
+      val id = json.getString("id")
+      val password = json.getString("password")
 
-      //validate user
-      val validUser = when {
-        user.length < 4 || user.length > 20 -> false
-        user[0].isDigit() -> false
-        else -> user.all { it.isLetterOrDigit() }
+      //validate id
+      val validId = when {
+        id.length < 4 || id.length > 20 -> false
+        id[0].isDigit() -> false
+        else -> id.all { it.isLetterOrDigit() }
       }
 
-      if (!validUser)
+      if (!validId)
         return result.put("info", "用户名格式错误，仅允许不以数字开头的数字和字母组合，长度在4到20位之间")
 
-      //validate crypto
-      if (crypto == null || crypto.length != 32) {
+      //validate password
+      if (password == null || password.length != 32) {
         return result.put("info", "秘钥格式错误")
       }
 
-      val dir = config().getString("dir") + File.separator + user
+      val dir = config().getString("dir") + File.separator +id
 
-      when (action) {
+      when (subtype) {
         "register" -> {
           if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
             return result.put("info", "用户已存在")
           }
           vertx.fileSystem().mkdirsBlocking(dir)
           vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
-          json.removeAll { it.key in arrayOf("type", "action") }
+          json.removeAll { it.key in arrayOf("type", "subtype") }
           vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
 
-          return result.put(action, true)
+          return result.put(subtype, true)
         }
-        else -> {//login as default action
+        else -> {//login as default subtype
           if (!vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
-            return result.put(action, false)
+            return result.put(subtype, false)
           }
           val userJson = vertx.fileSystem().readFileBlocking(dir + File.separator + "user.json").toJsonObject()
-          return result.put(action, userJson.getString("crypto") == json.getString("crypto"))
+          return result.put(subtype, userJson.getString("password") == json.getString("password"))
         }
       }
     } catch (e: Exception) {
@@ -116,20 +116,20 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   fun search(json: JsonObject): JsonObject {
-    val action = json.getString("action")
-    val result = JsonObject().putNull(action)
+    val subtype = json.getString("subtype")
+    val result = JsonObject().putNull(subtype)
 
     val dir = config().getString("dir") + File.separator + json.getString("keyword")
     val userFile = dir + File.separator + "user.json"
 
     try {
       if (!vertx.fileSystem().existsBlocking(userFile))
-        return result.putNull(action)
+        return result.putNull(subtype)
 
       val buffer = vertx.fileSystem().readFileBlocking(userFile)
       val resJson = buffer.toJsonObject()
-      resJson.removeAll { it.key in arrayOf("crypto") }
-      return result.put(action, resJson)
+      resJson.removeAll { it.key in arrayOf("password") }
+      return result.put(subtype, resJson)
 
     } catch (e: Exception) {
       return result.put("info", "${e.message}")
@@ -137,7 +137,7 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
   private fun friend(json: JsonObject) {
-    val action = json.getString(JsonKeys.ACTION)
+    val subtype = json.getString(JsonKeys.SUBTYPE)
     val from = json.getString(JsonKeys.FROM)
     val to = json.getString(JsonKeys.TO)
     if (from == null || to == null) {
@@ -146,7 +146,7 @@ class IMMessageVerticle : AbstractVerticle() {
       return
     }
 
-    when (action) {
+    when (subtype) {
       ActionConstants.DELETE -> {
       }
       ActionConstants.REQUEST -> {

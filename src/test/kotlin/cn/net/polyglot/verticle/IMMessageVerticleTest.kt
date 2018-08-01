@@ -56,8 +56,8 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject().put("type", "user")) {
       println(it.result().body())
-      context.assertTrue(it.result().body().containsKey("action"))
-      context.assertNull(it.result().body().getValue("action"))
+      context.assertTrue(it.result().body().containsKey("subtype"))
+      context.assertNull(it.result().body().getValue("subtype"))
       async2.complete()
     }
 
@@ -66,7 +66,7 @@ class IMMessageVerticleTest {
       JsonObject().put("type", 123)) {
       println(it.result().body())
       context.assertNull(it.result().body().getValue("type"))
-      context.assertNull(it.result().body().getValue("action"))
+      context.assertNull(it.result().body().getValue("subtype"))
       async3.complete()
     }
   }
@@ -77,9 +77,9 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action", "register")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
+        .put("subtype", "register")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(it.result().body().getBoolean("register"))
@@ -93,9 +93,9 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action", "register")
-        .put("user", "zxj2017")
-        .put("crypto", "abcd")) {
+        .put("subtype", "register")
+        .put("id", "zxj2017")
+        .put("password", "abcd")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(!it.result().body().getBoolean("register"))
@@ -106,9 +106,9 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action", "register")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
+        .put("subtype", "register")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("register"))
       context.assertTrue(!it.result().body().getBoolean("register"))
@@ -122,9 +122,9 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
+        .put("subtype", "login")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("login"))
       context.assertTrue(it.result().body().getBoolean("login"))
@@ -138,9 +138,9 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2018")
-        .put("crypto", "431fe828b9b8e8094235dee515562127")) {
+        .put("subtype", "login")
+        .put("id", "zxj2018")
+        .put("password", "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("login"))
       context.assertTrue(!it.result().body().getBoolean("login"))
@@ -151,9 +151,9 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562126")) {
+        .put("subtype", "login")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562126")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey("login"))
       context.assertTrue(!it.result().body().getBoolean("login"))
@@ -167,7 +167,7 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "search")
-        .put("action", "user")
+        .put("subtype", "user")
         .put("keyword", "zxj2017")
         .put("version", 0.1)
     ) {
@@ -181,7 +181,7 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put("type", "search")
-        .put("action", "user")
+        .put("subtype", "user")
         .put("keyword", "zxj2018")
         .put("version", 0.1)
     ) {

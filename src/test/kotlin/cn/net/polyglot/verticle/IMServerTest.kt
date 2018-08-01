@@ -56,9 +56,9 @@ class IMServerTest {
     webClient.post(config.getInteger("http-port"), "localhost", "/user")
       .sendJsonObject(JsonObject()
         .put("type", "user")
-        .put("action", "register")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .put("subtype", "register")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562247")
         .put("version", 0.1)
       ) { response ->
         println(response.result().body())
@@ -70,9 +70,9 @@ class IMServerTest {
     webClient.post(config.getInteger("http-port"), "localhost", "/user")
       .sendJsonObject(JsonObject()
         .put("type", "user")
-        .put("action", "register")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .put("subtype", "register")
+        .put("id", "yangkui")
+        .put("password", "431fe828b9b8e8094235dee515562248")
         .put("version", 0.1)
       ) { response ->
         println(response.result().body())
@@ -91,9 +91,9 @@ class IMServerTest {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248").toString().plus("\r\n")
+        .put("subtype", "login")
+        .put("id", "yangkui")
+        .put("password", "431fe828b9b8e8094235dee515562248").toString().plus("\r\n")
       )
 
       socket.handler {
@@ -103,13 +103,13 @@ class IMServerTest {
           "user" -> {
             context.assertTrue(result.getBoolean("login"))//登陆成功
             socket.write(JsonObject().put("type", "friend")
-              .put("action", "request")
+              .put("subtype", "request")
               .put("to", "zxj2017")
               .put("message", "请添加我为你的好友，我是yangkui")
               .put("version", 0.1).toString().plus("\r\n"))
           }
           "friend" -> {
-            context.assertEquals(result.getString("action"), "response")
+            context.assertEquals(result.getString("subtype"), "response")
 
             context.assertTrue(!vertx.fileSystem().existsBlocking(config.getString("dir") + File.separator + "yangkui"
               + File.separator + ".send" + File.separator + "zxj2017.json"))
@@ -143,9 +143,9 @@ class IMServerTest {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
+        .put("subtype", "login")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
       )
 
       socket.handler {
@@ -157,7 +157,7 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))//登陆成功
           }
           "friend" -> {
-            context.assertTrue(it.toJsonObject().getString("action") == "request")
+            context.assertTrue(it.toJsonObject().getString("subtype") == "request")
             //检查yangkui/.send/zxj2017.json 和 zxj2017/.receive/yangkui.json 两个文件存在
             context.assertTrue(vertx.fileSystem().existsBlocking(
               config.getString("dir") + separator + "yangkui" + separator + ".send" + separator + "zxj2017.json"))
@@ -166,7 +166,7 @@ class IMServerTest {
               config.getString("dir") + separator + "zxj2017" + separator + ".receive" + separator + "yangkui.json"))
 
             socket.write(JsonObject().put("type", "friend")
-              .put("action", "response")
+              .put("subtype", "response")
               .put("to", result.getString("from"))
               .put("accept", true)
               .put("version", 0.1).toString().plus("\r\n"))
@@ -191,7 +191,7 @@ class IMServerTest {
             context.assertTrue(result.getBoolean("login"))
             socket.write(JsonObject()
               .put("type", "friend")
-              .put("action", "request")
+              .put("subtype", "request")
               .put("to", "zxj2017@127.0.0.1")
               .put("message", "请添加我为你的好友，我是yangkui")
               .put("version", "0.1")
@@ -199,7 +199,7 @@ class IMServerTest {
             )
           }
           "friend" -> {
-            if (result.getString("action") == "response") {
+            if (result.getString("subtype") == "response") {
               context.assertTrue(result.getBoolean("accept") == true)
             }
             client1.close()
@@ -211,9 +211,9 @@ class IMServerTest {
       }
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .put("subtype", "login")
+        .put("id", "yangkui")
+        .put("password", "431fe828b9b8e8094235dee515562248")
         .toString().plus("\r\n"))
 
     }
@@ -225,8 +225,9 @@ class IMServerTest {
         val type = result.getString("type")
         when (type) {
           "friend" -> {
-            socket.write(JsonObject().put("type", "friend")
-              .put("action", "response")
+            socket.write(JsonObject()
+              .put("type", "friend")
+              .put("subtype", "response")
               .put("to", result.getString("from"))
               .put("accept", true)
               .put("version", 0.1).toString().plus("\r\n"))
@@ -238,9 +239,9 @@ class IMServerTest {
       }
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .put("subtype", "login")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562247")
         .toString().plus("\r\n"))
     }
   }
@@ -256,9 +257,9 @@ class IMServerTest {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .put("subtype", "login")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562247")
         .toString().plus("\r\n"))
 
       socket.handler {
@@ -285,9 +286,9 @@ class IMServerTest {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .put("subtype", "login")
+        .put("id", "yangkui")
+        .put("password", "431fe828b9b8e8094235dee515562248")
         .toString().plus("\r\n"))
 
       socket.handler {
@@ -298,7 +299,7 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))
             socket.write(JsonObject("""{
               "type":"message",
-              "action":"text",
+              "subtype":"text",
               "to":"zxj2017",
               "body":"你好吗？",
               "version":0.1
@@ -319,9 +320,9 @@ class IMServerTest {
       val socket = it.result()
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .put("subtype", "login")
+        .put("id", "yangkui")
+        .put("password", "431fe828b9b8e8094235dee515562248")
         .toString().plus("\r\n"))
 
       socket.handler {
@@ -332,7 +333,7 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))
             socket.write(JsonObject("""{
               "type":"message",
-              "action":"text",
+              "subtype":"text",
               "to":"zxj2017",
               "body":"你好吗？",
               "version":0.1
@@ -367,7 +368,7 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))
             socket.write(JsonObject("""{
               "type":"message",
-              "action":"text",
+              "subtype":"text",
               "to":"yangkui@localhost",
               "body":"你好吗？",
               "version":0.1
@@ -378,9 +379,9 @@ class IMServerTest {
       }
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .put("subtype", "login")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562247")
         .toString().plus("\r\n"))
     }
     netClient2.connect(config.getInteger("tcp-port"), config.getString("host")) {
@@ -403,9 +404,9 @@ class IMServerTest {
       }
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "yangkui")
-        .put("crypto", "431fe828b9b8e8094235dee515562248")
+        .put("subtype", "login")
+        .put("id", "yangkui")
+        .put("password", "431fe828b9b8e8094235dee515562248")
         .toString().plus("\r\n"))
     }
 
@@ -423,7 +424,7 @@ class IMServerTest {
             context.assertTrue(it.toJsonObject().getBoolean("login"))
             socket.write(JsonObject("""{
               "type":"message",
-              "action":"text",
+              "subtype":"text",
               "to":"yangkui@localhost",
               "body":"你好吗？",
               "version":0.1
@@ -435,9 +436,9 @@ class IMServerTest {
       }
       socket.write(JsonObject()
         .put("type", "user")
-        .put("action", "login")
-        .put("user", "zxj2017")
-        .put("crypto", "431fe828b9b8e8094235dee515562247")
+        .put("subtype", "login")
+        .put("id", "zxj2017")
+        .put("password", "431fe828b9b8e8094235dee515562247")
         .toString().plus("\r\n"))
     }
     val fs = vertx.fileSystem()
