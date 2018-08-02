@@ -109,8 +109,8 @@ class IMMessageVerticle : AbstractVerticle() {
           if (fs.existsBlocking(dir + File.separator + "user.json")
             && json.getString(PASSWORD) == userJson.getString(PASSWORD)) {
             for (file in messageList) {
-              val messages = fs.readFileBlocking(file).toString().trim().split("\r\n")
-              for (message in messages) friends.add(JsonObject(message))
+              val msgs = fs.readFileBlocking(file).toString().trim().split("\r\n")
+              for (message in msgs) friends.add(JsonObject(message))
             }
             for (file in receiveList) {
               val requests = fs.readDirBlocking(file).toString().trim().split("\r\n")

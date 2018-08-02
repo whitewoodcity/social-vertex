@@ -228,11 +228,11 @@ class IMServerTest {
         when (type) {
           USER -> {
             context.assertTrue(it.toJsonObject().getBoolean(LOGIN))
-            socket.write(JsonObject().put(TYPE,MESSAGE)
-              .put(SUBTYPE,TEXT)
-              .put(TO,"zxj2017" )
-              .put(BODY,"你好吗？")
-              .put(VERSION,0.1).toString().plus("\r\n"))
+            socket.write(JsonObject().put(TYPE, MESSAGE)
+              .put(SUBTYPE, TEXT)
+              .put(TO, "zxj2017")
+              .put(BODY, "你好吗？")
+              .put(VERSION, 0.1).toString().plus("\r\n"))
           }
           else -> {
             context.assertTrue(false)
@@ -262,11 +262,11 @@ class IMServerTest {
           USER -> {
             context.assertTrue(it.toJsonObject().getBoolean(LOGIN))
             println(it.toJsonObject())
-            socket.write(JsonObject().put(TYPE,MESSAGE)
-              .put(SUBTYPE,TEXT)
-              .put(TO,"zxj2017")
-              .put(BODY,"你好吗？")
-              .put(VERSION,0.1).toString().plus("\r\n"))
+            socket.write(JsonObject().put(TYPE, MESSAGE)
+              .put(SUBTYPE, TEXT)
+              .put(TO, "zxj2017")
+              .put(BODY, "你好吗？")
+              .put(VERSION, 0.1).toString().plus("\r\n"))
           }
           else -> {
             context.assertTrue(false)
@@ -283,20 +283,21 @@ class IMServerTest {
     netClient.close()
     async.complete()
   }
+  
   @Test
-fun testAccountsOfflineInform(context: TestContext){
+  fun testAccountsOfflineInform(context: TestContext) {
     val async = context.async()
 
-    webClient.post(config.getInteger("http-port"), config.getString("host"),"/user").sendJson(
+    webClient.post(config.getInteger(HTTP_PORT), config.getString(HOST), "/user").sendJson(
       JsonObject()
         .put(TYPE, USER)
-        .put(SUBTYPE,LEFT)
+        .put(SUBTYPE, LEFT)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
-    ){
-      if (it.succeeded()){
-        val result =it.result().body().toJsonObject()
-        context.assertTrue(result.getBoolean("left"))
+    ) {
+      if (it.succeeded()) {
+        val result = it.result().body().toJsonObject()
+        context.assertTrue(result.getBoolean(LEFT))
         println(result)
         async.complete()
       }
