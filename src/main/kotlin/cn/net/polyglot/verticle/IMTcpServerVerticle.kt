@@ -35,7 +35,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         if (!fs.existsBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv"))
           fs.createFileBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv")
         fs.openBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv", OpenOptions().setAppend(true))
-          .write(it.body().toBuffer())
+          .write(it.body().toBuffer().appendString("\r\n"))
       }
     }
     vertx.createNetServer(NetServerOptions().setTcpKeepAlive(true)).connectHandler { socket ->
@@ -85,6 +85,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
             val jsonObject = it.result().body()
             if (jsonObject.getBoolean(LOGIN)) socketMap[socket] = json.getString(ID)
             jsonObject.mergeIn(json).remove(PASSWORD)
+            jsonObject.remove(FROM)
             socket.write(jsonObject.toBuffer())
           }
         }

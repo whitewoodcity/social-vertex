@@ -261,6 +261,7 @@ class IMServerTest {
         when (type) {
           USER -> {
             context.assertTrue(it.toJsonObject().getBoolean(LOGIN))
+            println(it.toJsonObject())
             socket.write(JsonObject().put(TYPE,MESSAGE)
               .put(SUBTYPE,TEXT)
               .put(TO,"zxj2017")
@@ -281,5 +282,25 @@ class IMServerTest {
     context.assertTrue(file.toJsonObject().getString("from") == "yangkui")
     netClient.close()
     async.complete()
+  }
+  @Test
+fun testAccountsOfflineInform(context: TestContext){
+    val async = context.async()
+
+    webClient.post(config.getInteger("http-port"), config.getString("host"),"/user").sendJson(
+      JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE,LEFT)
+        .put(ID, "zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+    ){
+      if (it.succeeded()){
+        val result =it.result().body().toJsonObject()
+        context.assertTrue(result.getBoolean("left"))
+        println(result)
+        async.complete()
+      }
+
+    }
   }
 }
