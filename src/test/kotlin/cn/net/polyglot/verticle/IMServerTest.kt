@@ -88,8 +88,8 @@ class IMServerTest {
     val client0 = vertx.createNetClient()
     val client1 = vertx.createNetClient()
 
-    client0.connect(config.getInteger(TCP_PORT), config.getString(HOST)) {
-      val socket = it.result()
+    client0.connect(config.getInteger(TCP_PORT), config.getString(HOST)) { asyncResult ->
+      val socket = asyncResult.result()
       socket.write(JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
@@ -140,8 +140,8 @@ class IMServerTest {
         socket.close()
       }
     }
-    client1.connect(config.getInteger(TCP_PORT), config.getString(HOST)) {
-      val socket = it.result()
+    client1.connect(config.getInteger(TCP_PORT), config.getString(HOST)) { asyncResult ->
+      val socket = asyncResult.result()
       socket.write(JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
@@ -184,8 +184,8 @@ class IMServerTest {
 
     val async = context.async()
 
-    netClient.connect(config.getInteger(TCP_PORT), "localhost") {
-      val socket = it.result()
+    netClient.connect(config.getInteger(TCP_PORT), "localhost") { asyncResult ->
+      val socket = asyncResult.result()
       socket.write(JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
@@ -213,8 +213,8 @@ class IMServerTest {
       }
     }
 
-    netClient1.connect(config.getInteger(TCP_PORT), "localhost") {
-      val socket = it.result()
+    netClient1.connect(config.getInteger(TCP_PORT), "localhost") { asyncResult ->
+      val socket = asyncResult.result()
       socket.write(JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
@@ -246,8 +246,8 @@ class IMServerTest {
   fun testAccountsOfflineCommunication(context: TestContext) {
     val netClient = vertx.createNetClient()
     val async = context.async()
-    netClient.connect(config.getInteger(TCP_PORT), "localhost") {
-      val socket = it.result()
+    netClient.connect(config.getInteger(TCP_PORT), "localhost") { asyncResult ->
+      val socket = asyncResult.result()
       socket.write(JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
