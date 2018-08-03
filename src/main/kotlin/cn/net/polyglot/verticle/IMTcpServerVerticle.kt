@@ -27,7 +27,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
       val type = it.body().getString(TYPE)
       val target = it.body().getString(TO)
       if (socketMap.containsValue(target)) {
-        socketMap.inverse()[target]!!.write(it.body().toString().plus("\r\n"))
+        socketMap.inverse()[target]!!.write(it.body().toString().plus(END))
       } else {
         val targetDir = config().getString(DIR) + File.separator + it.body().getString(TO) + File.separator + ".message"
         val fs = vertx.fileSystem()
@@ -35,7 +35,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         if (!fs.existsBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv"))
           fs.createFileBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv")
         fs.openBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv", OpenOptions().setAppend(true))
-          .write(it.body().toBuffer().appendString("\r\n"))
+          .write(it.body().toBuffer().appendString(END))
       }
     }
     vertx.createNetServer(NetServerOptions().setTcpKeepAlive(true)).connectHandler { socket ->
@@ -45,8 +45,8 @@ class IMTcpServerVerticle : AbstractVerticle() {
 
       socket.handler {
         buffer.appendBuffer(it)
-        if (buffer.toString().endsWith("\r\n")) {
-          val msgs = buffer.toString().substringBeforeLast("\r\n").split("\r\n")
+        if (buffer.toString().endsWith(END)) {
+          val msgs = buffer.toString().substringBeforeLast(END).split(END)
           for (s in msgs) {
             processJsonString(s, socket)
           }

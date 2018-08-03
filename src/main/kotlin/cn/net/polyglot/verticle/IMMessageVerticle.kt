@@ -109,15 +109,15 @@ class IMMessageVerticle : AbstractVerticle() {
           if (fs.existsBlocking(dir + File.separator + "user.json")
             && json.getString(PASSWORD) == userJson.getString(PASSWORD)) {
             for (file in messageList) {
-              val msgs = fs.readFileBlocking(file).toString().trim().split("\r\n")
+              val msgs = fs.readFileBlocking(file).toString().trim().split(END)
               for (message in msgs) friends.add(JsonObject(message))
             }
             for (file in receiveList) {
-              val requests = fs.readDirBlocking(file).toString().trim().split("\r\n")
+              val requests = fs.readDirBlocking(file).toString().trim().split(END)
               for (request in requests) messages.add(JsonObject(request))
             }
-            result.put("messages", friends)
-            result.put("friends", messages)
+            result.put(FRIENDS, friends)
+            result.put(MESSAGES, messages)
             return result.put(subtype, true)
               .put(ID, json.getString(ID))
           }
@@ -141,7 +141,7 @@ class IMMessageVerticle : AbstractVerticle() {
             }
             return result.put(subtype,true)
               .put("nickName",json.getString(ID))
-              .put("friends",friendList)
+              .put(FRIENDS,friendList)
           }
           return result.put(subtype, false)
         }
@@ -209,7 +209,7 @@ class IMMessageVerticle : AbstractVerticle() {
             fileSystem.deleteBlocking("$dir$to$separator.receive$separator$from.json")
           }
           fileSystem.createFileBlocking("$dir$to$separator.receive$separator$from.json")
-          fileSystem.writeFileBlocking("$dir$to$separator.receive$separator$from.json", json.toBuffer().appendString("\r\n"))
+          fileSystem.writeFileBlocking("$dir$to$separator.receive$separator$from.json", json.toBuffer().appendString(END))
           //尝试投递
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
 

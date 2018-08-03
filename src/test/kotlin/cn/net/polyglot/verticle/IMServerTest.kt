@@ -94,7 +94,7 @@ class IMServerTest {
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
         .put(ID, "yangkui")
-        .put(PASSWORD, "431fe828b9b8e8094235dee515562248").toString().plus("\r\n")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248").toString().plus(END)
       )
 
       socket.handler {
@@ -107,7 +107,7 @@ class IMServerTest {
               .put(SUBTYPE, REQUEST)
               .put(TO, "zxj2017")
               .put(MESSAGE, "请添加我为你的好友，我是yangkui")
-              .put(VERSION, 0.1).toString().plus("\r\n"))
+              .put(VERSION, 0.1).toString().plus(END))
           }
           FRIEND -> {
             context.assertEquals(result.getString(SUBTYPE), RESPONSE)
@@ -146,7 +146,7 @@ class IMServerTest {
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
         .put(ID, "zxj2017")
-        .put(PASSWORD, "431fe828b9b8e8094235dee515562247").toString().plus("\r\n")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247").toString().plus(END)
       )
 
       socket.handler {
@@ -170,7 +170,7 @@ class IMServerTest {
               .put(SUBTYPE, RESPONSE)
               .put(TO, result.getString("from"))
               .put(ACCEPT, true)
-              .put(VERSION, 0.1).toString().plus("\r\n"))
+              .put(VERSION, 0.1).toString().plus(END))
           }
         }
       }
@@ -191,7 +191,7 @@ class IMServerTest {
         .put(SUBTYPE, LOGIN)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
-        .toString().plus("\r\n"))
+        .toString().plus(END))
 
       socket.handler {
         val result = it.toJsonObject()
@@ -220,7 +220,7 @@ class IMServerTest {
         .put(SUBTYPE, LOGIN)
         .put(ID, "yangkui")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
-        .toString().plus("\r\n"))
+        .toString().plus(END))
 
       socket.handler {
         val result = it.toJsonObject()
@@ -232,7 +232,7 @@ class IMServerTest {
               .put(SUBTYPE, TEXT)
               .put(TO, "zxj2017")
               .put(BODY, "你好吗？")
-              .put(VERSION, 0.1).toString().plus("\r\n"))
+              .put(VERSION, 0.1).toString().plus(END))
           }
           else -> {
             context.assertTrue(false)
@@ -253,7 +253,7 @@ class IMServerTest {
         .put(SUBTYPE, LOGIN)
         .put(ID, "yangkui")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
-        .toString().plus("\r\n"))
+        .toString().plus(END))
 
       socket.handler {
         val result = it.toJsonObject()
@@ -266,7 +266,7 @@ class IMServerTest {
               .put(SUBTYPE, TEXT)
               .put(TO, "zxj2017")
               .put(BODY, "你好吗？")
-              .put(VERSION, 0.1).toString().plus("\r\n"))
+              .put(VERSION, 0.1).toString().plus(END))
           }
           else -> {
             context.assertTrue(false)

@@ -71,30 +71,52 @@ type类型有：
 "login":true,
 "nickname":"哲学家",
 "friends":[
-
-{"id":"yangkui","nickname":"杨奎"},
-{"id":"xiaopan","nickname":"小胖胖"}
-
+  {"id":"yangkui","nickname":"杨奎"},
+  {"id":"xiaopan","nickname":"小胖胖"}
   ]
 }
 
 ```
-登录结果 `d.ts` 描述
-```typescript
-class RootObject {
-    login: boolean;
-    nickname: string;
-    friends: Friend[];
-}
-class Friend {
-    id: string;
-    nickname: string;
-}
-```
+
 失败
 ```json
 {
 "login":false
+}
+```
+
+#### 用户离线消息
+```json
+{
+"type":"user",
+"subtype":"left",
+"id":"zxj5470",
+"password":"431fe828b9b8e8094235dee515562247",
+"version":0.1
+}
+```
+离线返回结果
+
+成功  
+```json
+
+{
+"left":true,
+"messages":[
+  {"type":"message","subtype":"text","from":"yangkui","body":"在吗？"},
+  {"type":"message","subtype":"text","from":"yangkui","body":"小胖胖过来了，一起吃饭"}
+  ],
+"friends":[
+  {"type":"friend","subtype":"request","from":"zhaoce","body":"请加我为好友"}
+  ]
+}
+
+```
+
+失败
+```json
+{
+"left":false
 }
 ```
 
