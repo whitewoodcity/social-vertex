@@ -10,7 +10,6 @@
 
   <properties>
     <kotlin.version>1.2.20</kotlin.version>
-    <gmavenplus.version>1.6.1</gmavenplus.version>
     <vertx.version>3.5.3</vertx.version>
     <main.class>io.vertx.core.Launcher</main.class>
     <main.verticle>cn/net/polyglot/main_verticle.groovy</main.verticle>
