@@ -299,7 +299,51 @@ class IMServerTest {
       vertx.fileSystem().existsBlocking(path)
     }
     val file = vertx.fileSystem().readFileBlocking(path)
-    context.assertTrue(file.toJsonObject().getString("from") == "yangkui")
+    context.assertEquals(file.toString().trim().split(END).size,2)
+    context.assertTrue(JsonObject(file.toString().trim().split(END)[0]).getString("from") == "yangkui")
+    netClient.close()
+    async.complete()
+  }
+
+  @Test
+  fun testAccountsOfflineFriendRequest(context: TestContext) {
+    val netClient = vertx.createNetClient()
+    val async = context.async()
+    netClient.connect(config.getInteger(TCP_PORT), "localhost") { asyncResult ->
+      val socket = asyncResult.result()
+      socket.write(JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE, LOGIN)
+        .put(ID, "zhaoce")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+        .toString().plus(END))
+
+      socket.handler {
+        val result = it.toJsonObject()
+        val type = result.getString(TYPE)
+        when (type) {
+          USER -> {
+            context.assertTrue(it.toJsonObject().getBoolean(LOGIN))
+            println(it.toJsonObject())
+            socket.write(JsonObject().put(TYPE, FRIEND)
+              .put(SUBTYPE, REQUEST)
+              .put(TO, "zxj2017")
+              .put(MESSAGE, "请加我为你的好友")
+              .put(VERSION, 0.1).toString().plus(END))
+
+          }
+          else -> {
+            context.assertTrue(false)
+          }
+        }
+      }
+    }
+    val path = config.getString(DIR) + separator + "zxj2017" + separator + ".receive" + separator + "zhaoce.json"
+    await().until {
+      vertx.fileSystem().existsBlocking(path)
+    }
+    val file = vertx.fileSystem().readFileBlocking(path)
+    context.assertTrue(file.toJsonObject().getString("from") == "zhaoce")
     netClient.close()
     async.complete()
   }
@@ -318,6 +362,8 @@ class IMServerTest {
       if (it.succeeded()) {
         val result = it.result().body().toJsonObject()
         context.assertTrue(result.getBoolean(LEFT))
+        context.assertTrue(result.containsKey(MESSAGES))
+        context.assertTrue(result.containsKey(FRIENDS))
         println(result)
         async.complete()
       }

@@ -28,7 +28,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
       val target = it.body().getString(TO)
       if (socketMap.containsValue(target)) {
         socketMap.inverse()[target]!!.write(it.body().toString().plus(END))
-      } else {
+      } else if(type == MESSAGE){//仅是message类型的时候，投递不成功会在此处存入硬盘，friend类型已经先行处理
         val targetDir = config().getString(DIR) + File.separator + it.body().getString(TO) + File.separator + ".message"
         val fs = vertx.fileSystem()
         if (!fs.existsBlocking(targetDir)) fs.mkdirBlocking(targetDir)
