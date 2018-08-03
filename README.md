@@ -107,7 +107,7 @@ type类型有：
   {"type":"message","subtype":"text","from":"yangkui","body":"小胖胖过来了，一起吃饭"}
   ],
 "friends":[
-  {"type":"friend","subtype":"request","from":"zhaoce","body":"请加我为好友"}
+  {"type":"friend","subtype":"request","from":"zhaoce","message":"请加我为好友"}
   ]
 }
 
