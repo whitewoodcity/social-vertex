@@ -80,6 +80,20 @@ class IMServerTest {
         context.assertTrue(response.result().body().toJsonObject().getBoolean(REGISTER))
         async1.complete()
       }
+
+    val async2 = context.async()
+    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
+      .sendJsonObject(JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
+        .put(ID, "zhaoce")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+        .put(VERSION, 0.1)
+      ) { response ->
+        println(response.result().body())
+        context.assertTrue(response.result().body().toJsonObject().getBoolean(REGISTER))
+        async2.complete()
+      }
   }
 
   @Test
@@ -266,6 +280,12 @@ class IMServerTest {
               .put(SUBTYPE, TEXT)
               .put(TO, "zxj2017")
               .put(BODY, "你好吗？")
+              .put(VERSION, 0.1).toString().plus(END))
+
+            socket.write(JsonObject().put(TYPE, MESSAGE)
+              .put(SUBTYPE, TEXT)
+              .put(TO, "zxj2017")
+              .put(BODY, "你收到了吗？")
               .put(VERSION, 0.1).toString().plus(END))
           }
           else -> {

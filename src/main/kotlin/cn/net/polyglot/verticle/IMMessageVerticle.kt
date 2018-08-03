@@ -110,14 +110,14 @@ class IMMessageVerticle : AbstractVerticle() {
             && json.getString(PASSWORD) == userJson.getString(PASSWORD)) {
             for (file in messageList) {
               val msgs = fs.readFileBlocking(file).toString().trim().split(END)
-              for (message in msgs) friends.add(JsonObject(message))
+              for (message in msgs) messages.add(JsonObject(message))
             }
             for (file in receiveList) {
-              val requests = fs.readDirBlocking(file).toString().trim().split(END)
-              for (request in requests) messages.add(JsonObject(request))
+              val requests = fs.readFileBlocking(file).toString().trim().split(END)
+              for (request in requests) friends.add(JsonObject(request))
             }
-            result.put(FRIENDS, friends)
-            result.put(MESSAGES, messages)
+            if(friends.size()>0) result.put(FRIENDS, friends)
+            if(messages.size()>0) result.put(MESSAGES, messages)
             return result.put(subtype, true)
               .put(ID, json.getString(ID))
           }
