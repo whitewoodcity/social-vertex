@@ -13,7 +13,7 @@
 "version":0.1
 }
 ```
-消息根据type类型分为几个大类，再根据action分为小类  
+消息根据type类型分为几个大类，再根据subtype分为小类  
 type类型有：  
 [用户类型](#1)  
 [搜索类型](#2)  
@@ -79,9 +79,20 @@ type类型有：
 }
 
 ```
-
-失败
+登录结果 `d.ts` 描述
+```typescript
+class RootObject {
+    login: boolean;
+    nickname: string;
+    friends: Friend[];
+}
+class Friend {
+    id: string;
+    nickname: string;
+}
 ```
+失败
+```json
 {
 "login":false
 }
@@ -151,26 +162,5 @@ type类型有：
 "to":"customer@w2v4.com",
 "accept":true,
 "version":0.1
-}
-```
-
-
-
-json 结果 `d.ts` 描述。
-```typescript
-class ListObject {
-  type: string;
-  action: string;
-  from: string;
-  version: number;
-  results: Result[];
-}
-class Result {
-  group: string;
-  lists: User[];
-}
-class User {
-  id: string;
-  nickname: string;
 }
 ```
