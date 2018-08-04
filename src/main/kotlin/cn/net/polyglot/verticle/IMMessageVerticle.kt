@@ -140,7 +140,7 @@ class IMMessageVerticle : AbstractVerticle() {
               }
             }
             return result.put(subtype,true)
-              .put("nickName",json.getString(ID))
+              .put(NICKNAME,json.getString(ID))
               .put(FRIENDS,friendList)
           }
           return result.put(subtype, false)
