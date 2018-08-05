@@ -46,7 +46,7 @@
   "version":0.2
 }
 ```
->传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。
+>传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
 响应  
 ```json
 {
@@ -64,18 +64,16 @@
 #### 用户登录
 ```json
 {
-"type":"user",
-"subtype":"login",
-"id":"zxj5470",
-"password":"431fe828b9b8e8094235dee515562247",
-"version":0.1
+  "type":"user",
+  "subtype":"login",
+  "id":"zxj5470",
+  "password":"431fe828b9b8e8094235dee515562247",
+  "version":0.1
 }
 ```
-登录返回结果
-
-成功  
+>传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。
+响应  
 ```json
-
 {
 "login":true,
 "nickname":"哲学家",
@@ -84,13 +82,11 @@
   {"id":"xiaopan","nickname":"小胖胖"}
   ]
 }
-
 ```
-
-失败
+或
 ```json
 {
-"login":false
+  "login":false
 }
 ```
 
