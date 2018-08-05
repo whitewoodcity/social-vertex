@@ -100,18 +100,16 @@ type类型有：
 
 成功  
 ```json
-
 {
-"left":true,
-"messages":[
-  {"type":"message","subtype":"text","from":"yangkui","body":"在吗？"},
-  {"type":"message","subtype":"text","from":"yangkui","body":"小胖胖过来了，一起吃饭"}
+  "left":true,
+  "messages":[
+    {"type":"message","subtype":"text","from":"yangkui","body":"在吗？"},
+    {"type":"message","subtype":"text","from":"yangkui","body":"小胖胖过来了，一起吃饭"}
   ],
-"friends":[
-  {"type":"friend","subtype":"request","from":"zhaoce","message":"请加我为好友"}
+  "friends":[
+    {"type":"friend","subtype":"request","from":"zhaoce","message":"请加我为好友"}
   ]
 }
-
 ```
 
 失败
@@ -160,30 +158,21 @@ type类型有：
 #### 添加好友  
 ```json
 {
-"type":"friend",
-"subtype":"request",
-"to":"customer@w2v4.com",
-"message":"请添加我为你的好友，我是哲学家",
-"version":0.1
-}
-```
-#### 删除好友  
-```json
-{
-"type":"friend",
-"subtype":"delete",
-"to":"customer@w2v4.com",
-"version":0.1
+  "type":"friend",
+  "subtype":"request",
+  "to":"customer@w2v4.com",
+  "message":"请添加我为你的好友，我是哲学家",
+  "version":0.1
 }
 ```
 #### 答复好友请求
-> 以下的 json 结果表示 `to` 用户 接受了 `from` 用户的好友请求。
+以下的 json 结果表示当前用户接受了来自`to`用户的好友请求。
 ```json
 {
-"type":"friend",
-"subtype":"response",
-"to":"customer@w2v4.com",
-"accept":true,
-"version":0.1
+  "type":"friend",
+  "subtype":"response",
+  "to":"customer@w2v4.com",
+  "accept":true,
+  "version":0.1
 }
 ```
