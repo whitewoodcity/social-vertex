@@ -16,24 +16,25 @@
 
 ```json
 {
-"type":"message",
-"to":"customer@w2v4.com",
-"body":"你好吗？",
-"version":0.1
+  "type":"message",
+  "subtype":"text",
+  "to":"customer@w2v4.com",
+  "body":"你好吗？",
+  "version":0.2
 }
 ```
 
 ## 封装协议（格式）
 
 消息使用Json格式封装，根据type类型分为大类，再根据subtype分为小类，其中type类型有：  
-[用户类型(双向消息)](#user---用户类型)  
-[搜索类型(双向消息)](#2)   
-[好友类型(单向消息)](#3)  
-[消息类型(单向消息)](#4)  
+[用户类型（双向消息）](#user---用户类型)  
+[搜索类型（双向消息）](#2)   
+[好友类型（单向消息）](#3)  
+[消息类型（单向消息）](#4)  
 
 ### user - 用户类型   
-
-传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。
+[用户注册（双向消息）](#用户注册)  
+[用户登陆（双向消息）](#用户登陆)  
 
 #### 用户注册
 ```json
@@ -42,13 +43,14 @@
   "subtype":"register",
   "id":"zxj5470",
   "password":"431fe828b9b8e8094235dee515562247",
-  "version":0.1
+  "version":0.2
 }
 ```
+>传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。
 响应  
 ```json
 {
-"register":true
+  "register":true
 }
 ```
 或
