@@ -34,7 +34,8 @@
 
 ### user - 用户类型   
 [用户注册（双向消息）](#用户注册)  
-[用户登陆（双向消息）](#用户登陆)  
+[用户登陆（双向消息）](#用户登录)  
+[离线消息（双向消息）](#离线消息)  
 
 #### 用户注册
 ```json
@@ -77,11 +78,11 @@
 响应  
 ```json
 {
-"login":true,
-"nickname":"哲学家",
-"friends":[
-  {"id":"yangkui","nickname":"杨奎"},
-  {"id":"xiaopan","nickname":"小胖胖"}
+  "login":true,
+  "nickname":"哲学家",
+  "friends":[
+    {"id":"yangkui","nickname":"杨奎"},
+    {"id":"xiaopan","nickname":"小胖胖"}
   ]
 }
 ```
@@ -92,19 +93,18 @@
 }
 ```
 
-#### 用户离线消息
+#### 离线消息
 ```json
 {
-"type":"user",
-"subtype":"left",
-"id":"zxj5470",
-"password":"431fe828b9b8e8094235dee515562247",
-"version":0.1
+  "type":"user",
+  "subtype":"left",
+  "id":"zxj5470",
+  "password":"431fe828b9b8e8094235dee515562247",
+  "version":0.2
 }
 ```
-离线返回结果
-
-成功  
+>传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
+响应  
 ```json
 {
   "left":true,
@@ -117,11 +117,10 @@
   ]
 }
 ```
-
-失败
+或
 ```json
 {
-"left":false
+  "left":false
 }
 ```
 
