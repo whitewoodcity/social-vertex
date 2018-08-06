@@ -359,7 +359,6 @@ class IMServerTest {
         println(result)
         async.complete()
       }
-
     }
   }
 }

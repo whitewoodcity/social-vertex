@@ -22,11 +22,11 @@ import java.nio.file.Paths
 class IMServerCrossDomainTest {
   companion object {
     private val config = JsonObject()
-      .put("version", 0.1)
-      .put("dir", Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
-      .put("tcp-port", 7373)
-      .put("http-port", 7575)
-      .put("host", "localhost")
+      .put(VERSION, 0.2)
+      .put(DIR, Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
+      .put(TCP_PORT, 7373)
+      .put(HTTP_PORT, 7575)
+      .put(HOST, "localhost")
     private val vertx = Vertx.vertx()
 
     @BeforeClass
@@ -53,10 +53,8 @@ class IMServerCrossDomainTest {
   @Test
   fun testAccountRegister(context: TestContext) {
     val async = context.async()
-    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
       .sendJsonObject(JsonObject()
-        .put(TYPE, USER)
-        .put(SUBTYPE, REGISTER)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(VERSION, 0.1)
@@ -67,10 +65,8 @@ class IMServerCrossDomainTest {
       }
 
     val async1 = context.async()
-    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
       .sendJsonObject(JsonObject()
-        .put(TYPE, USER)
-        .put(SUBTYPE, REGISTER)
         .put(ID, "yangkui")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
         .put(VERSION, 0.1)
