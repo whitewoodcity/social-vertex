@@ -28,7 +28,7 @@
 
 消息使用Json格式封装，根据type类型分为大类，再根据subtype分为小类，其中type类型有：  
 [用户类型（双向消息）](#user---用户类型)  
-[搜索类型（双向消息）](#2)   
+[搜索类型（双向消息）](#search---搜索类型)   
 [好友类型（单向消息）](#3)  
 [消息类型（单向消息）](#4)  
 
@@ -125,23 +125,24 @@
 }
 ```
 
-<h3 id=2> search - 搜索类型</h3>  
+### search - 搜索类型   
 
-定义搜索用户请求及响应  
+搜索请求  
 ```json
 {
 "type":"search",
-"subtype":"info",
+"subtype":"search",
 "keyword":"zxj2017",
 "version":0.1
 }
 ```
+响应
 ```json
 {
 "user":{"id":"zxj2017","nickname":"哲学家"}
 }
 ```
-查询无结果
+或
 ```json
 {
 "user":null
