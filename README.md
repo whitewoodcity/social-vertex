@@ -32,8 +32,8 @@
 消息使用Json格式封装，根据type类型分为大类，再根据subtype分为小类，其中type类型有：  
 [用户类型（双向消息）](#user---用户类型)  
 [搜索类型（双向消息）](#search---搜索类型)   
-[好友类型（单向消息）](#3)  
-[消息类型（单向消息）](#4)  
+[好友类型（单向消息）](#friend---好友类型)  
+[消息类型（单向消息）](#message---消息类型)  
 
 ### user - 用户类型   
 [用户注册（双向消息）](#用户注册)  
@@ -151,9 +151,33 @@
   "user":null
 }
 ```
-<h3 id=3> message - 消息类型</h3>  
+### friend - 好友类型  
+[添加请求（单向消息）](#添加请求)  
+[答复请求（单向消息）](#答复请求)  
 
-发送消息
+#### 添加请求  
+```json
+{
+  "type":"friend",
+  "subtype":"request",
+  "to":"customer@w2v4.com",
+  "message":"请添加我为你的好友，我是哲学家",
+  "version":0.2
+}
+```
+#### 答复请求
+以下的 json 结果表示当前用户接受了来自`to`用户的好友请求。
+```json
+{
+  "type":"friend",
+  "subtype":"response",
+  "to":"customer@w2v4.com",
+  "accept":true,
+  "version":0.2
+}
+```
+### message - 消息类型  
+
 ```json
 {
 "type":"message",
@@ -164,25 +188,4 @@
 }
 ```
 
-### friend - 好友类型  
-#### 添加好友  
-```json
-{
-  "type":"friend",
-  "subtype":"request",
-  "to":"customer@w2v4.com",
-  "message":"请添加我为你的好友，我是哲学家",
-  "version":0.1
-}
-```
-#### 答复好友请求
-以下的 json 结果表示当前用户接受了来自`to`用户的好友请求。
-```json
-{
-  "type":"friend",
-  "subtype":"response",
-  "to":"customer@w2v4.com",
-  "accept":true,
-  "version":0.1
-}
-```
+
