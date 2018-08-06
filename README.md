@@ -1,7 +1,7 @@
 
 [系统说明](SYSTEM.md)
 
-# 服务器与服务器的即时通信协议 V0.2
+# 即时通信协议 V0.2
 
 ## 术语
 
@@ -24,11 +24,14 @@
 }
 ```
 
+终端与服务器之间的通信：双向消息通过Http协议传输，单向消息通过Tcp协议传输，仅登陆等消息亦会通过Tcp协议传输  
+不同域名下服务器与服务器之间的通信：仅支持单向消息的通信，通过Http协议传输  
+
 ## 封装协议（格式）
 
 消息使用Json格式封装，根据type类型分为大类，再根据subtype分为小类，其中type类型有：  
 [用户类型（双向消息）](#user---用户类型)  
-[搜索类型（双向消息）](#2)   
+[搜索类型（双向消息）](#search---搜索类型)   
 [好友类型（单向消息）](#3)  
 [消息类型（单向消息）](#4)  
 
@@ -70,7 +73,7 @@
   "subtype":"login",
   "id":"zxj5470",
   "password":"431fe828b9b8e8094235dee515562247",
-  "version":0.1
+  "version":0.2
 }
 ```
 >传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
@@ -125,26 +128,27 @@
 }
 ```
 
-<h3 id=2> search - 搜索类型</h3>  
+### search - 搜索类型   
 
-定义搜索用户请求及响应  
+搜索请求  
 ```json
 {
-"type":"search",
-"subtype":"info",
-"keyword":"zxj2017",
-"version":0.1
+  "type":"search",
+  "subtype":"search",
+  "keyword":"zxj2017",
+  "version":0.2
 }
 ```
+响应
 ```json
 {
-"user":{"id":"zxj2017","nickname":"哲学家"}
+  "user":{"id":"zxj2017","nickname":"哲学家"}
 }
 ```
-查询无结果
+或
 ```json
 {
-"user":null
+  "user":null
 }
 ```
 <h3 id=3> message - 消息类型</h3>  
