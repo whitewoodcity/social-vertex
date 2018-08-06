@@ -11,19 +11,31 @@
 
 ## 传输协议
 
-服务器与服务器之间通信使用Http协议传输，服务器端与客户端使用Tcp和Http协议传输，当使用Http协议传输时，消息内容放在body中，以Json形式予以存放，以下便是一个消息传输实例：  
+服务器与服务器之间通信使用Http协议传输，服务器端与客户端使用Tcp和Http协议传输，当使用Http协议传输时，IM使用的方法为PUT方法，对应的路径为/:type/:subtype，其余消息内容放在body中，以Json形式予以存放，以下便是一个消息传输实例：  
 ![sample](https://user-images.githubusercontent.com/5525436/42436872-f00af064-838d-11e8-8445-4f197b88508b.png)
+
+method: PUT
+uri: /message/text
+
+```json
+{
+  "to":"yangkui@w2v4.com",
+  "body":"你好吗？",
+  "version":0.2
+}
+```
+以下是一个Tcp协议传输消息的例子：
 
 ```json
 {
   "type":"message",
   "subtype":"text",
-  "to":"customer@w2v4.com",
+  "to":"yangkui",
   "body":"你好吗？",
   "version":0.2
 }
 ```
-
+值得注意的是，通过Tcp协议传输的Json中的type和subtype必填字段，在Http协议中，替换为路径（uri）中的/:type/:subtype
 终端与服务器之间的通信：双向消息通过Http协议传输，单向消息通过Tcp协议传输，仅登陆等消息亦会通过Tcp协议传输  
 不同域名下服务器与服务器之间的通信：仅支持单向消息的通信，通过Http协议传输  
 
@@ -40,7 +52,9 @@
 [用户登陆（双向消息）](#用户登录)  
 [离线消息（双向消息）](#离线消息)  
 
-#### 用户注册
+#### 用户注册  
+method: PUT  
+uri: /user/register  
 ```json
 {
   "type":"user",
@@ -49,8 +63,8 @@
   "password":"431fe828b9b8e8094235dee515562247",
   "version":0.2
 }
-```
->传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
+```  
+>传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。    
 
 响应  
 ```json
@@ -66,7 +80,9 @@
 }
 ```
 
-#### 用户登录
+#### 用户登录  
+method: PUT  
+uri: /user/login  
 ```json
 {
   "type":"user",
@@ -96,7 +112,9 @@
 }
 ```
 
-#### 离线消息
+#### 离线消息  
+method: PUT  
+uri: /user/left  
 ```json
 {
   "type":"user",
@@ -131,6 +149,8 @@
 ### search - 搜索类型   
 
 搜索请求  
+method: PUT  
+uri: /search/search  
 ```json
 {
   "type":"search",
@@ -156,6 +176,8 @@
 [答复请求（单向消息）](#答复请求)  
 
 #### 添加请求  
+method: PUT  
+uri: /friend/request  
 ```json
 {
   "type":"friend",
@@ -167,6 +189,8 @@
 ```
 #### 答复请求
 以下的 json 结果表示当前用户接受了来自`to`用户的好友请求。
+method: PUT  
+uri: /friend/response  
 ```json
 {
   "type":"friend",
@@ -180,6 +204,8 @@
 [文本消息（单向消息）](#文本消息)  
 
 #### 文本消息  
+method: PUT  
+uri: /message/text  
 ```json
 {
   "type":"message",
