@@ -18,14 +18,14 @@ class WebServerVerticle : AbstractVerticle() {
     router.route().handler(CookieHandler.create())
     router.route().handler(BodyHandler.create().setBodyLimit(1 * MB))
 
-    router.route("/user").handler { routingContext ->
-      if (routingContext.request().method() != HttpMethod.POST) {
-        routingContext.response().end("request method is not POST")
-        return@handler
-      }
+    router.put("/:$TYPE/:$SUBTYPE").handler { routingContext ->
       try {
+        val type = routingContext.request().getParam(TYPE)
+        val subtype = routingContext.request().getParam(SUBTYPE)
+
         val json = routingContext.bodyAsJson
-        val type = json.getString(TYPE)
+          .put(TYPE, type)
+          .put(SUBTYPE, subtype)
         when (type) {
           FRIEND, MESSAGE -> {
             vertx.eventBus().send(IMMessageVerticle::class.java.name, json)

@@ -54,10 +54,8 @@ class IMServerTest {
   @Test
   fun testAccountRegister(context: TestContext) {
     val async = context.async()
-    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
       .sendJsonObject(JsonObject()
-        .put(TYPE, USER)
-        .put(SUBTYPE, REGISTER)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(VERSION, 0.1)
@@ -68,10 +66,8 @@ class IMServerTest {
       }
 
     val async1 = context.async()
-    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
       .sendJsonObject(JsonObject()
-        .put(TYPE, USER)
-        .put(SUBTYPE, REGISTER)
         .put(ID, "yangkui")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
         .put(VERSION, 0.1)
@@ -82,10 +78,8 @@ class IMServerTest {
       }
 
     val async2 = context.async()
-    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/user")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
       .sendJsonObject(JsonObject()
-        .put(TYPE, USER)
-        .put(SUBTYPE, REGISTER)
         .put(ID, "zhaoce")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
         .put(VERSION, 0.1)
@@ -352,10 +346,8 @@ class IMServerTest {
   fun testAccountsOfflineInform(context: TestContext) {
     val async = context.async()
 
-    webClient.post(config.getInteger(HTTP_PORT), config.getString(HOST), "/user").sendJson(
+    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST), "/$USER/$LEFT").sendJson(
       JsonObject()
-        .put(TYPE, USER)
-        .put(SUBTYPE, LEFT)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
     ) {
