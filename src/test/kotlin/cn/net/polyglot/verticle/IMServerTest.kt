@@ -346,14 +346,14 @@ class IMServerTest {
   fun testAccountsOfflineInform(context: TestContext) {
     val async = context.async()
 
-    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST), "/$USER/$LEFT").sendJson(
+    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST), "/$USER/$OFFLINE").sendJson(
       JsonObject()
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
     ) {
       if (it.succeeded()) {
         val result = it.result().body().toJsonObject()
-        context.assertTrue(result.getBoolean(LEFT))
+        context.assertTrue(result.getBoolean(OFFLINE))
         context.assertTrue(result.containsKey(MESSAGES))
         context.assertTrue(result.containsKey(FRIENDS))
         println(result)

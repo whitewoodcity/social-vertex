@@ -114,11 +114,11 @@ uri: /user/login
 
 #### 离线消息  
 method: PUT  
-uri: /user/left  
+uri: /user/offline  
 ```json
 {
   "type":"user",
-  "subtype":"left",
+  "subtype":"offline",
   "id":"zxj5470",
   "password":"431fe828b9b8e8094235dee515562247",
   "version":0.2
@@ -129,7 +129,7 @@ uri: /user/left
 响应  
 ```json
 {
-  "left":true,
+  "offline":true,
   "messages":[
     {"type":"message","subtype":"text","from":"yangkui","body":"在吗？"},
     {"type":"message","subtype":"text","from":"yangkui","body":"小胖胖过来了，一起吃饭"}
@@ -142,7 +142,7 @@ uri: /user/left
 或
 ```json
 {
-  "left":false
+  "offline":false
 }
 ```
 

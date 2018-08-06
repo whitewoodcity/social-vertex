@@ -98,7 +98,7 @@ class IMMessageVerticle : AbstractVerticle() {
 
           return result.put(subtype, true)
         }
-        LEFT -> {
+        OFFLINE -> {
 
           val fs = vertx.fileSystem()
           val messageList = fs.readDirBlocking("$dir$separator.message")
