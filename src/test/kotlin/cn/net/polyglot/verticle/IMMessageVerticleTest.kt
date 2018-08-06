@@ -168,7 +168,7 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put(TYPE, SEARCH)
-        .put(SUBTYPE, USER)
+        .put(SUBTYPE, INFO)
         .put(KEYWORD, "zxj2017")
         .put(VERSION, 0.1)
     ) {
@@ -182,7 +182,7 @@ class IMMessageVerticleTest {
     vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name,
       JsonObject()
         .put(TYPE, SEARCH)
-        .put(SUBTYPE, USER)
+        .put(SUBTYPE, INFO)
         .put(KEYWORD, "zxj2018")
         .put(VERSION, 0.1)
     ) {

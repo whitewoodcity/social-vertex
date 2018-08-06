@@ -153,23 +153,22 @@ class IMMessageVerticle : AbstractVerticle() {
 
   private fun search(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
-    val result = JsonObject().putNull(subtype)
 
     val dir = config().getString(DIR) + File.separator + json.getString(KEYWORD)
     val userFile = dir + File.separator + "user.json"
 
-    try {
-      if (!vertx.fileSystem().existsBlocking(userFile))
-        return result.putNull(subtype)
+    json.clear()
 
+    if(vertx.fileSystem().existsBlocking(userFile)){
       val buffer = vertx.fileSystem().readFileBlocking(userFile)
       val resJson = buffer.toJsonObject()
-      resJson.removeAll { it.key in arrayOf(PASSWORD) }
-      return result.put(subtype, resJson)
-
-    } catch (e: Exception) {
-      return result.put(INFO, "${e.message}")
+      resJson.remove(PASSWORD)
+      json.put(USER, resJson)
+    }else{
+      json.putNull(USER)
     }
+
+    return json
   }
 
   private fun friend(json: JsonObject) {
