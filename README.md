@@ -182,11 +182,11 @@
 #### 文本消息  
 ```json
 {
-"type":"message",
-"subtype":"text",
-"to":"yangkui",
-"body":"你好吗？",
-"version":0.1
+  "type":"message",
+  "subtype":"text",
+  "to":"yangkui",
+  "body":"你好吗？",
+  "version":0.2
 }
 ```
 
