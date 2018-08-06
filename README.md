@@ -14,7 +14,7 @@
 服务器与服务器之间通信使用Http协议传输，服务器端与客户端使用Tcp和Http协议传输，当使用Http协议传输时，IM使用的方法为PUT方法，对应的路径为/:type/:subtype，其余消息内容放在body中，以Json形式予以存放，以下便是一个消息传输实例：  
 ![sample](https://user-images.githubusercontent.com/5525436/42436872-f00af064-838d-11e8-8445-4f197b88508b.png)
 
-method: PUT
+method: PUT  
 uri: /message/text
 
 ```json
