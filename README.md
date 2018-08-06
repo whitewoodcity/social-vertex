@@ -73,7 +73,7 @@
   "subtype":"login",
   "id":"zxj5470",
   "password":"431fe828b9b8e8094235dee515562247",
-  "version":0.1
+  "version":0.2
 }
 ```
 >传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
@@ -133,22 +133,22 @@
 搜索请求  
 ```json
 {
-"type":"search",
-"subtype":"search",
-"keyword":"zxj2017",
-"version":0.1
+  "type":"search",
+  "subtype":"search",
+  "keyword":"zxj2017",
+  "version":0.2
 }
 ```
 响应
 ```json
 {
-"user":{"id":"zxj2017","nickname":"哲学家"}
+  "user":{"id":"zxj2017","nickname":"哲学家"}
 }
 ```
 或
 ```json
 {
-"user":null
+  "user":null
 }
 ```
 <h3 id=3> message - 消息类型</h3>  
