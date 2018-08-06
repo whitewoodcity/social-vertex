@@ -101,11 +101,13 @@ class IMMessageVerticle : AbstractVerticle() {
         OFFLINE -> {
 
           val fs = vertx.fileSystem()
-          val messageList = fs.readDirBlocking("$dir$separator.message")
-          val receiveList = fs.readDirBlocking("$dir$separator.receive")
           val messages = JsonArray()
           val friends = JsonArray()
           val userJson = fs.readFileBlocking("$dir${separator}user.json").toJsonObject()
+          if(fs.existsBlocking("$dir$separator.message")) fs.mkdirBlocking("$dir$separator.message")
+          if (fs.existsBlocking("$dir$separator.receive")) fs.mkdirBlocking("$dir$separator.receive")
+          val messageList = fs.readDirBlocking("$dir$separator.message")
+          val receiveList = fs.readDirBlocking("$dir$separator.receive")
           if (fs.existsBlocking(dir + File.separator + "user.json")
             && json.getString(PASSWORD) == userJson.getString(PASSWORD)) {
             for (file in messageList) {
