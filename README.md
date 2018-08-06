@@ -35,7 +35,7 @@ uri: /message/text
   "version":0.2
 }
 ```
-值得注意的是，通过Tcp协议传输的Json中的type和subtype必填字段，在Http协议中，替换为路径（uri）中的/:type/:subtype
+值得注意的是，通过Tcp协议传输的Json中的type和subtype必填字段，在Http协议中，替换为路径（uri）中的/:type/:subtype  
 终端与服务器之间的通信：双向消息通过Http协议传输，单向消息通过Tcp协议传输，仅登陆等消息亦会通过Tcp协议传输  
 不同域名下服务器与服务器之间的通信：仅支持单向消息的通信，通过Http协议传输  
 
