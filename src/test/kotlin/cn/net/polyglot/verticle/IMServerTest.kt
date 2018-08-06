@@ -293,8 +293,9 @@ class IMServerTest {
       vertx.fileSystem().existsBlocking(path)
     }
     val file = vertx.fileSystem().readFileBlocking(path)
+    println(file.toString())
     context.assertEquals(file.toString().trim().split(END).size,2)
-    context.assertTrue(JsonObject(file.toString().trim().split(END)[0]).getString("from") == "yangkui")
+    context.assertTrue(JsonObject(file.toString().trim().split(END)[0]).getString(FROM) == "yangkui")
     netClient.close()
     async.complete()
   }
@@ -353,10 +354,11 @@ class IMServerTest {
     ) {
       if (it.succeeded()) {
         val result = it.result().body().toJsonObject()
+        println(result)
         context.assertTrue(result.getBoolean(OFFLINE))
         context.assertTrue(result.containsKey(MESSAGES))
         context.assertTrue(result.containsKey(FRIENDS))
-        println(result)
+
         async.complete()
       }
     }
