@@ -147,14 +147,15 @@ uri: /user/offline
 ```
 
 ### search - 搜索类型   
+[搜索信息（双向消息）](#搜索信息)  
 
-搜索请求  
+#### 搜索信息  
 method: PUT  
-uri: /search/search  
+uri: /search/info  
 ```json
 {
   "type":"search",
-  "subtype":"search",
+  "subtype":"info",
   "keyword":"zxj2017",
   "version":0.2
 }
