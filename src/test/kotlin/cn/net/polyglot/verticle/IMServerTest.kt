@@ -106,7 +106,7 @@ class IMServerTest {
       )
 
       socket.handler {
-        val result = it.toJsonObject()
+        val result = JsonObject(it.toString().trim())
         println(result)
         when (result.getString(TYPE)) {
           USER -> {
@@ -202,7 +202,7 @@ class IMServerTest {
         .toString().plus(END))
 
       socket.handler {
-        val result = it.toJsonObject()
+        val result = JsonObject(it.toString().trim())
         val type = result.getString(TYPE)
         when (type) {
           USER -> {
@@ -231,7 +231,7 @@ class IMServerTest {
         .toString().plus(END))
 
       socket.handler {
-        val result = it.toJsonObject()
+        val result = JsonObject(it.toString().trim())
         val type = result.getString(TYPE)
         when (type) {
           USER -> {
@@ -264,7 +264,7 @@ class IMServerTest {
         .toString().plus(END))
 
       socket.handler {
-        val result = it.toJsonObject()
+        val result = JsonObject(it.toString().trim())
         val type = result.getString(TYPE)
         when (type) {
           USER -> {
@@ -314,7 +314,7 @@ class IMServerTest {
         .toString().plus(END))
 
       socket.handler {
-        val result = it.toJsonObject()
+        val result = JsonObject(it.toString().trim())
         val type = result.getString(TYPE)
         when (type) {
           USER -> {
