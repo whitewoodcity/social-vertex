@@ -189,7 +189,7 @@ uri: /friend/request
 }
 ```
 #### 答复请求
-以下的 json 结果表示当前用户接受了来自`to`用户的好友请求。
+以下的 json 结果表示当前用户接受了来自`to`用户的好友请求。  
 method: PUT  
 uri: /friend/response  
 ```json
