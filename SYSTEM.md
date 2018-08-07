@@ -52,14 +52,14 @@ user.json文件储存用户的信息，例如密码，昵称，手机号等，
 │   │    ├──2018-08-08.sv  
 ```
 
-后缀为json文件格式均可直接解析为json，后缀为sv文件格式则是多个json的集合，json与json之间通过/r/n区分，例如一个典型的sv文件如下：  
+后缀为json文件格式均可直接解析为Json，后缀为sv文件格式则是多个json的集合，json与json之间通过/r/n区分，例如一个典型的sv文件如下：  
 ```json
 {"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","from":"yangkui"}
 "/r/n"
 {"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","from":"yangkui"}
 "/r/n"  
 ```
-系统可根据需要用"/r/n"做切割成独立的json字符串。  
-.send和.receive文件夹下的json为好友请求json，格式可参考[即时通信协议添加请求部分](README.md#添加请求)  
+系统可根据需要用"/r/n"做切割成独立的Json字符串。  
+.send和.receive文件夹下的Json为好友请求Json，格式可参考[即时通信协议添加请求部分](README.md#添加请求)  
 好友同名文件夹下的好友同名json格式同user.json一致  
-{"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","from":"yangkui"}
+所有sv文件内Json均为消息类型，格式可参考[即时通信协议消息类型部分](README.md#message---消息类型)  
