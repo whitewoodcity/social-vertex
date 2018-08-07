@@ -91,7 +91,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
             }
             jsonObject.mergeIn(json).remove(PASSWORD)
             jsonObject.remove(FROM)
-            socket.write(jsonObject.toBuffer())
+            socket.write(jsonObject.toBuffer()).write(END)
           }
         }
         else -> {
@@ -99,7 +99,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         }
       }
     } catch (e: Exception) {
-      socket.write(result.put(INFO, "${e.message}").toBuffer())
+      socket.write(result.put(INFO, "${e.message}").toBuffer()).write(END)
     }
   }
 }
