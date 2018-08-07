@@ -49,4 +49,6 @@ java -jar social-vertex-0.1-prod.jar 1>>suc_`date +%Y%m%d`.txt 2>>err_`date +%Y%
 │   │    ├──2018-08-08.sv  
 ```
 
-后缀为json文件格式均可直接解析为json，后缀为sv文件格式则是多个json的集合，json与json之间通过/r/n区分，例如一个
+后缀为json文件格式均可直接解析为json，后缀为sv文件格式则是多个json的集合，json与json之间通过/r/n区分，例如一个典型的sv文件如下：
+{"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"}+"/r/n"+{"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"}+"/r/n"  
+系统可根据需要用"/r/n"做切割成独立的json字符串。
