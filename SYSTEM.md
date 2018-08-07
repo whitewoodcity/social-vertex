@@ -1,7 +1,7 @@
 
 [即时通信协议](README.md)
 
-# 系统配置说明
+# 系统说明
 
 ## 启动
 Unix 环境下作为后台程序启动运行 `social-vertex-0.1-prod.jar` 包。
