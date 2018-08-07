@@ -7,7 +7,7 @@
 Unix 环境下作为后台程序启动运行 `social-vertex-${version}-prod.jar` 包。
 
 ```bash
-java -jar social-vertex-0.1-prod.jar 1>>log.out 2>>err.out &
+java -jar social-vertex-${version}-prod.jar 1>>log.out 2>>err.out &
 ```
 分别将 `stdout` 和 `stderr` 的输出重定向至 `log.out` 和 `err.out` 文件。
 
@@ -16,7 +16,7 @@ java -jar social-vertex-0.1-prod.jar 1>>log.out 2>>err.out &
 
 ```json
 { 
-  "version":0.1,
+  "version":0.2,
   "dir":"./social-vertex",
   "tcp-port":7373,
   "http-port":7575,
