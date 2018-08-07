@@ -61,5 +61,5 @@ user.json文件储存用户的信息，例如密码，昵称，手机号等，
 ```
 系统可根据需要用"/r/n"做切割成独立的json字符串。  
 .send和.receive文件夹下的json为好友请求json，格式可参考[即时通信协议添加请求部分](README.md#添加请求)  
-好友同名文件夹下的json格式
+好友同名文件夹下的好友同名json格式同user.json一致  
 {"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","from":"yangkui"}
