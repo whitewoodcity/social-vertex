@@ -1,3 +1,6 @@
+
+[即时通信协议](README.md)
+
 # 系统配置说明
 
 ## 启动
@@ -16,7 +19,8 @@ java -jar social-vertex-0.1-prod.jar 1>>suc_`date +%Y%m%d`.txt 2>>err_`date +%Y%
   "version":0.1,
   "dir":"./social-vertex",
   "tcp-port":7373,
-  "http-port":7575
+  "http-port":7575,
+  "host":"localhost"
 }
 ```
 
@@ -25,9 +29,9 @@ java -jar social-vertex-0.1-prod.jar 1>>suc_`date +%Y%m%d`.txt 2>>err_`date +%Y%
 ## 用户目录
 系统中针对每一个用户，都将建立独立的文件夹，例如对于用户yangkui而言，
 系统会新建一个${dir}/yangkui文件夹，该文件夹下必需包含有user.json文件，
-可能包含有.send和.receive两个文件夹，user.json文件储存用户的信息，例如密码，昵称，手机号等，
-.send和.receive文件夹分别储存发送的好友请求以及收到的好友请求信息，
-当用户成功建立好友联系，则会在该用户文件夹下新建一个文件夹，以存储相关信息：
+可能包含有.send，.receive以及.message三个文件夹，user.json文件储存用户的信息，例如密码，昵称，手机号等，
+.send和.receive文件夹分别储存发送的好友请求以及收到的好友请求信息，.message文件夹用于储存用户离线时，收到的消息
+当用户成功建立好友联系，则会在该用户文件夹下新建一个文件夹，以存储相关信息，其中就包括$username.json以及按照日期建立的聊天日志文件：
 ```text       
 ├── yangkui    
 │   ├── user.json    
@@ -35,6 +39,14 @@ java -jar social-vertex-0.1-prod.jar 1>>suc_`date +%Y%m%d`.txt 2>>err_`date +%Y%
 │   │    ├──zxj2017.json  
 │   ├── .received  
 │   │    ├──chengenzhao.json  
+│   ├── .message  
+│   │    ├──zxj2017.sv  
 │   ├── zhang3   
+│   │    ├──zhang3.json  
+│   │    ├──2018-08-07.sv  
 │   ├── li4  
+│   │    ├──li4.json  
+│   │    ├──2018-08-08.sv  
 ```
+
+后缀为json文件格式均可直接解析为json，后缀为sv文件格式则是多个json的集合，json与json之间通过/r/n区分，例如一个
