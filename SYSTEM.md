@@ -55,8 +55,8 @@ user.json文件储存用户的信息，例如密码，昵称，手机号等，
 后缀为json文件格式均可直接解析为json，后缀为sv文件格式则是多个json的集合，json与json之间通过/r/n区分，例如一个典型的sv文件如下：  
 ```json
 {"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","from":"yangkui"}
-+"/r/n"+
+"/r/n"
 {"type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","from":"yangkui"}
-+"/r/n"  
+"/r/n"  
 ```
 系统可根据需要用"/r/n"做切割成独立的json字符串。
