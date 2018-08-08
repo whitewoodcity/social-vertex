@@ -202,7 +202,7 @@ class IMMessageVerticle : AbstractVerticle() {
         }
         if (to.contains("@")) {    //如果跨域，转发给你相应的服务器
           json.put(FROM, json.getString(FROM) + "@" + config().getString("host"))//把from加上域名
-          webClient.post(config().getInteger("http-port"), to.substringAfterLast("@"), "/user")
+          webClient.post(config().getInteger(HTTP_PORT), to.substringAfterLast("@"), "/user")
             .sendJsonObject(json.put(TO, to.substringBeforeLast('@'))) {}
         } else {    //接受是其他服务器发送过来的请求
 

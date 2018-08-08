@@ -3,7 +3,6 @@ package cn.net.polyglot.verticle
 import cn.net.polyglot.config.*
 import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
