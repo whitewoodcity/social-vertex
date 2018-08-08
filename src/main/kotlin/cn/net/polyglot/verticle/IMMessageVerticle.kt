@@ -191,7 +191,8 @@ class IMMessageVerticle : AbstractVerticle() {
         val fileSystem = vertx.fileSystem()
         if (!json.getString(FROM).contains('@')) {    //本地保存发送记录
 
-          fileSystem.mkdirsBlocking("$dir$from$separator.send")
+          if(!fileSystem.existsBlocking("$dir$from$separator.send"))
+            fileSystem.mkdirsBlocking("$dir$from$separator.send")
           if (fileSystem.existsBlocking("$dir$from$separator.send$separator$to.json")) {
             fileSystem.deleteBlocking("$dir$from$separator.send$separator$to.json")
           }
