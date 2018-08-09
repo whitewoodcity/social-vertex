@@ -28,6 +28,6 @@ const val TEXT = "text"
 const val TCP_PORT = "tcp-port"
 const val HTTP_PORT = "http-port"
 const val KEYWORD = "keyword"
-const val OFFLINE = "offiline"
+const val OFFLINE = "offline"
 
 const val END = "\r\n"
