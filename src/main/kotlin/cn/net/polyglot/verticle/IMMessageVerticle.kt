@@ -154,7 +154,7 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun search(json: JsonObject): JsonObject {
+  private suspend fun search(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
 
     val dir = config().getString(DIR) + File.separator + json.getString(KEYWORD)
@@ -174,7 +174,7 @@ class IMMessageVerticle : AbstractVerticle() {
     return json
   }
 
-  private fun friend(json: JsonObject) {
+  private suspend fun friend(json: JsonObject) {
     val subtype = json.getString(SUBTYPE)
     val from = json.getString(FROM)
     val to = json.getString(TO)
@@ -270,7 +270,7 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
-  private fun message(json: JsonObject) {
+  private suspend fun message(json: JsonObject) {
     val from = json.getString(FROM)
     val to = json.getString(TO)
     if (from == null || to == null) {
