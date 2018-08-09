@@ -9,6 +9,8 @@ import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
+import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.experimental.launch
 import java.io.File
 
 /**
@@ -21,6 +23,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private var buffer = Buffer.buffer()
 
   override fun start() {
+
     val port = config().getInteger(TCP_PORT)
 
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {

@@ -2,6 +2,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import io.vertx.core.Vertx
+import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
