@@ -121,6 +121,9 @@ class IMMessageVerticle : AbstractVerticle() {
             }
             if(friends.size()>0) result.put(FRIENDS, friends)
             if(messages.size()>0) result.put(MESSAGES, messages)
+
+            fs.deleteRecursiveBlocking("$dir$separator.message", true)
+
             return result.put(subtype, true)
               .put(ID, json.getString(ID))
           }
@@ -245,7 +248,6 @@ class IMMessageVerticle : AbstractVerticle() {
           json.put(FROM, json.getString(FROM) + "@" + config().getString(HOST))//把from加上域名
           webClient.put(config().getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$RESPONSE")
             .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
-
         }else{
           if (fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
             fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
@@ -281,14 +283,32 @@ class IMMessageVerticle : AbstractVerticle() {
     val today = SimpleDateFormat("yyyy-MM-dd").format(Date())
     val dir = config().getString(DIR) + File.separator
     val separator = File.separator
-    val senderDir = "$dir$from$separator$to$separator$today.sv"
-    val receiverDir = "$dir$to$separator$from$separator$today.sv"
-    if (!fs.existsBlocking(senderDir)) fs.createFileBlocking(senderDir)
-    if (!fs.existsBlocking(receiverDir)) fs.createFileBlocking(receiverDir)
-    fs.openBlocking(senderDir, OpenOptions().setAppend(true)).write(json.toBuffer())
-    fs.openBlocking(receiverDir, OpenOptions().setAppend(true)).write(json.toBuffer())
 
-    vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
+    if (!json.getString(FROM).contains("@")) {
+      val senderDir = "$dir$from$separator$to"
+      if(!fs.existsBlocking(senderDir)){
+        return //错误，该用户没有该好友
+      }
+      val senderFile = "$senderDir$separator$today.sv"
+      if (!fs.existsBlocking(senderFile)) fs.createFileBlocking(senderFile)
+      fs.openBlocking(senderFile, OpenOptions().setAppend(true)).write(json.toBuffer())
+    }
+
+    if (json.getString(TO).contains("@")){
+      json.put(FROM, json.getString(FROM) + "@" + config().getString(HOST))//把from加上域名
+      webClient.put(config().getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$MESSAGE/$${json.getString(SUBTYPE)}")
+        .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
+    }else{
+      val receiverDir = "$dir$to$separator$from"
+      if(!fs.existsBlocking(receiverDir)){
+        return //错误，该用户没有该好友
+      }
+      val receiverFile = "$receiverDir$separator$today.sv"
+      if (!fs.existsBlocking(receiverFile)) fs.createFileBlocking(receiverFile)
+      fs.openBlocking(receiverFile, OpenOptions().setAppend(true)).write(json.toBuffer())
+      //尝试投递
+      vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
+    }
   }
 
 
