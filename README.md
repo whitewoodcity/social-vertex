@@ -97,6 +97,8 @@ uri: /user/login
 响应  
 ```json
 {
+  "type":"user",
+  "subtype":"login",
   "login":true,
   "nickname":"哲学家",
   "friends":[
