@@ -40,7 +40,7 @@ JsonObject config = new JsonObject()
   .put("dir", new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + File.separator + "social-vertex")
   .put("host", "localhost")
   .put("tcp-port", 7373)
-  .put("http-port",7575)
+  .put("http-port",80)
 
 ConfigStoreOptions fileStore = new ConfigStoreOptions()
   .setType("file")
