@@ -54,7 +54,7 @@ class IMServerTest {
       .put(VERSION, 0.1)
       .put(DIR, Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
       .put(TCP_PORT, 7373)
-      .put(HTTP_PORT, 80)
+      .put(HTTP_PORT, 7575)
       .put(HOST, "localhost")
     private val vertx = Vertx.vertx()
 
