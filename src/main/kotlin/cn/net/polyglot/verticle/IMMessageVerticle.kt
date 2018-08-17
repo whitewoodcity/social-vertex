@@ -178,6 +178,12 @@ class IMMessageVerticle : AbstractVerticle() {
           }
           return result.put(subtype, false)
         }
+        HISTORY->{
+
+
+
+          return JsonObject()
+        }
         else -> return defaultMessage(json)
       }
     } catch (e: Exception) {

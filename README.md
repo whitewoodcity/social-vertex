@@ -126,6 +126,20 @@ uri: /user/offline
   "version":0.2
 }
 ```
+#### 获取历史消息
+method:PUT       
+uri:/user/history
+```json
+{
+ "type":"user",
+ "subtype":"history",
+ "date":"2018-08-17",
+ "id":"zxj2017",
+ "password":"431fe828b9b8e8094235dee515562247",
+ "friend":"yangkui",
+ "version":"0.2"
+}
+```
 >传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
 
 响应  
