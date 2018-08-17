@@ -26,7 +26,6 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonArray
@@ -38,7 +37,6 @@ import java.io.File
 import java.io.File.separator
 import java.text.SimpleDateFormat
 import java.util.*
-import javax.print.attribute.IntegerSyntax
 
 class IMMessageVerticle : AbstractVerticle() {
 
