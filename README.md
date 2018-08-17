@@ -51,6 +51,7 @@ uri: /message/text
 [用户注册（双向消息）](#用户注册)  
 [用户登陆（双向消息）](#用户登录)  
 [离线消息（双向消息）](#离线消息)  
+[历史消息（双向消息）](#历史消息)  
 
 #### 用户注册  
 method: PUT  
@@ -147,7 +148,7 @@ uri: /user/offline
   "offline":false
 }
 ```
-#### 获取历史消息
+#### 历史消息
 method:PUT       
 uri:/user/history
 ```json
@@ -164,20 +165,23 @@ uri:/user/history
 响应
 ```json
 {
-"history":"true",
- "messages":[
- {
- "type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"
- },
- {
- "type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"
- }
-    ]
-
+  "history":"true",
+  "messages":[
+    {
+      "type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"
+    },
+    {
+      "type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"
+    }
+  ]
 }
-```
-
-
+```  
+或
+```json
+{
+  "history":"false"
+}
+```  
 
 ### search - 搜索类型   
 [搜索信息（双向消息）](#搜索信息)  
