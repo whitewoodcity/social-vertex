@@ -19,7 +19,7 @@ java -jar social-vertex-${version}-prod.jar 1>>out.log 2>>err.log &
   "version":0.2,
   "dir":"./social-vertex",
   "tcp-port":7373,
-  "http-port":7575,
+  "http-port":80,
   "host":"localhost"
 }
 ```
