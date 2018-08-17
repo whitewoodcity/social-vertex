@@ -126,20 +126,6 @@ uri: /user/offline
   "version":0.2
 }
 ```
-#### 获取历史消息
-method:PUT       
-uri:/user/history
-```json
-{
- "type":"user",
- "subtype":"history",
- "date":"2018-08-17",
- "id":"zxj2017",
- "password":"431fe828b9b8e8094235dee515562247",
- "friend":"yangkui",
- "version":"0.2"
-}
-```
 >传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
 
 响应  
@@ -161,6 +147,37 @@ uri:/user/history
   "offline":false
 }
 ```
+#### 获取历史消息
+method:PUT       
+uri:/user/history
+```json
+{
+ "type":"user",
+ "subtype":"history",
+ "date":"2018-08-17",
+ "id":"zxj2017",
+ "password":"431fe828b9b8e8094235dee515562247",
+ "friend":"yangkui",
+ "version":"0.2"
+}
+```
+响应
+```json
+{
+"history":"true",
+ "messages":[
+ {
+ "type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"
+ },
+ {
+ "type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"
+ }
+    ]
+
+}
+```
+
+
 
 ### search - 搜索类型   
 [搜索信息（双向消息）](#搜索信息)  

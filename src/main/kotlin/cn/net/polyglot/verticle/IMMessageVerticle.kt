@@ -26,17 +26,19 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import io.vertx.core.AbstractVerticle
+import io.vertx.core.Vertx
+import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
-import io.vertx.kotlin.core.json.JsonObject
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.experimental.launch
 import java.io.File
 import java.io.File.separator
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.print.attribute.IntegerSyntax
 
 class IMMessageVerticle : AbstractVerticle() {
 
@@ -179,14 +181,45 @@ class IMMessageVerticle : AbstractVerticle() {
           return result.put(subtype, false)
         }
         HISTORY->{
-
-
-
-          return JsonObject()
+          val friend = json.getString("friend")
+          val friendDir = dir+File.separator+friend
+          val fs        = vertx.fileSystem()
+          val messageList = fs.readDirBlocking(friendDir,"\\d{4}-\\d{2}-\\d{2}\\.sv")
+          val date = json.getString("date")
+          var messagePath =""
+          val array= JsonArray()
+          result.put(subtype,false)
+          messageList.reverse()
+          if (messageList.contains("$friendDir${File.separator}$date.sv")){
+            messagePath = "$friendDir${File.separator}$date.sv"
+          }else{
+            var  distant:Long?=null
+            var a = SimpleDateFormat("yyyy-MM-dd").parse(date).time
+            for (item in messageList){
+              var b =SimpleDateFormat("yyyy-MM-dd").parse(item.substringAfterLast(File.separator).split("\\.")[0]).time
+              if (distant==null&&(a-b)/1000/60/60/24>0){
+                distant = (a-b)/1000/60/60/24
+                messagePath = item
+              }else{
+                if (distant!=null&&((a-b)/1000/60/60/24)< distant) {
+                  distant = (a-b)/1000/60/60/24
+                  messagePath = item
+                }
+              }
+            }
+          }
+          if (messagePath!=""){
+            result.put(HISTORY,true)
+            val messages = fs.readFileBlocking(messagePath).toString().trim().split(END)
+            for (message in messages) array.add(JsonObject(message))
+            result.put("messages",array)
+          }
+          return result
         }
         else -> return defaultMessage(json)
       }
     } catch (e: Exception) {
+      print(e)
       return result.put(INFO, "${e.message}")
     }
   }
@@ -325,7 +358,7 @@ class IMMessageVerticle : AbstractVerticle() {
       }
       val senderFile = "$senderDir$separator$today.sv"
       if (!fs.existsBlocking(senderFile)) fs.createFileBlocking(senderFile)
-      fs.openBlocking(senderFile, OpenOptions().setAppend(true)).write(json.toBuffer())
+      fs.openBlocking(senderFile, OpenOptions().setAppend(true)).write(json.toBuffer().appendBuffer(Buffer.buffer(END)))
     }
 
     if (json.getString(TO).contains("@")) {
@@ -339,7 +372,7 @@ class IMMessageVerticle : AbstractVerticle() {
       }
       val receiverFile = "$receiverDir$separator$today.sv"
       if (!fs.existsBlocking(receiverFile)) fs.createFileBlocking(receiverFile)
-      fs.openBlocking(receiverFile, OpenOptions().setAppend(true)).write(json.toBuffer())
+      fs.openBlocking(receiverFile, OpenOptions().setAppend(true)).write(json.toBuffer().appendBuffer(Buffer.buffer(END)))
       //尝试投递
       vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
     }

@@ -405,8 +405,8 @@ class IMServerTest {
         .put(FRIEND,"yangkui")
         .put(VERSION,0.2)
     ){
-      val result = it.result().body()
-      print(result.toString())
+      val result = it.result().body().toJsonObject()
+      assert(result.getBoolean("history"))
       async.complete()
     }
   }
