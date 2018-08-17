@@ -185,6 +185,7 @@ class IMMessageVerticle : AbstractVerticle() {
           val friendDir = dir+File.separator+friend
           val fs        = vertx.fileSystem()
           val messageList = fs.readDirBlocking(friendDir,"\\d{4}-\\d{2}-\\d{2}\\.sv")
+          messageList.sort()
           val date = json.getString(DATE)
           var messagePath =""
           val array= JsonArray()
@@ -194,9 +195,9 @@ class IMMessageVerticle : AbstractVerticle() {
             messagePath = "$friendDir${File.separator}$date.sv"
           }else{
             var  distant:Long?=null
-            var a = SimpleDateFormat("yyyy-MM-dd").parse(date).time
+            val a = SimpleDateFormat("yyyy-MM-dd").parse(date).time
             for (item in messageList){
-              var b =SimpleDateFormat("yyyy-MM-dd").parse(item.substringAfterLast(File.separator).split("\\.")[0]).time
+              val b =SimpleDateFormat("yyyy-MM-dd").parse(item.substringAfterLast(File.separator).split("\\.")[0]).time
               if (distant==null&&(a-b)/1000/60/60/24>0){
                 distant = (a-b)/1000/60/60/24
                 messagePath = item
@@ -212,7 +213,7 @@ class IMMessageVerticle : AbstractVerticle() {
             result.put(HISTORY,true)
             val messages = fs.readFileBlocking(messagePath).toString().trim().split(END)
             for (message in messages) array.add(JsonObject(message))
-            result.put("messages",array)
+            result.put(MESSAGES,array)
           }
           return result
         }
