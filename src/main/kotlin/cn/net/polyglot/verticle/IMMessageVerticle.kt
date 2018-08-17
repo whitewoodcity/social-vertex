@@ -181,11 +181,11 @@ class IMMessageVerticle : AbstractVerticle() {
           return result.put(subtype, false)
         }
         HISTORY->{
-          val friend = json.getString("friend")
+          val friend = json.getString(FRIEND)
           val friendDir = dir+File.separator+friend
           val fs        = vertx.fileSystem()
           val messageList = fs.readDirBlocking(friendDir,"\\d{4}-\\d{2}-\\d{2}\\.sv")
-          val date = json.getString("date")
+          val date = json.getString(DATE)
           var messagePath =""
           val array= JsonArray()
           result.put(subtype,false)
