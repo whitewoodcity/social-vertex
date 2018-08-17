@@ -28,6 +28,7 @@ import cn.net.polyglot.config.*
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.auth.User
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
@@ -42,6 +43,8 @@ import org.junit.runners.MethodSorters
 import java.io.File
 import java.io.File.separator
 import java.nio.file.Paths
+import java.text.SimpleDateFormat
+import java.util.*
 
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
@@ -386,6 +389,25 @@ class IMServerTest {
 
         async.complete()
       }
+    }
+  }
+  @Test
+  fun  testAccountsHistoryInform(context: TestContext){
+    var async = context.async()
+    val  date = SimpleDateFormat("yyyy-MM-dd").format(Date())
+    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST),"/$USER/$HISTORY").sendJson(
+      JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE, HISTORY)
+        .put(DATE,date)
+        .put(ID,"zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(FRIEND,"yangkui")
+        .put(VERSION,0.2)
+    ){
+      val result = it.result().body()
+      print(result.toString())
+      async.complete()
     }
   }
 }
