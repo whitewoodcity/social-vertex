@@ -114,17 +114,6 @@ class IMMessageVerticle : AbstractVerticle() {
 
       val dir = config().getString(DIR) + File.separator + id
 
-      //验证用户名和密码，有些subtype无需验证，例如注册
-      var verification = false
-
-      if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
-        val fs = vertx.fileSystem()
-        val userJson = fs.readFileBlocking(dir + File.separator + "user.json").toJsonObject()
-        if (userJson.getString(PASSWORD) == json.getString(PASSWORD)) {
-          verification = true
-        }
-      }
-
       when (subtype) {
         REGISTER -> {
           if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
@@ -138,7 +127,7 @@ class IMMessageVerticle : AbstractVerticle() {
           return result.put(subtype, true)
         }
         OFFLINE -> {//离线消息及好友请求
-          if(!verification){
+          if(!verify(dir, password)){
             return result
           }
 
@@ -172,7 +161,7 @@ class IMMessageVerticle : AbstractVerticle() {
             .put(ID, json.getString(ID))
         }
         LOGIN -> {
-          if(!verification){
+          if(!verify(dir, password)){
             return result
           }
 
@@ -191,7 +180,7 @@ class IMMessageVerticle : AbstractVerticle() {
             .put(FRIENDS, friendList)
         }
         HISTORY->{
-          if(!verification){
+          if(!verify(dir, password)){
             return result
           }
 
@@ -202,20 +191,16 @@ class IMMessageVerticle : AbstractVerticle() {
           messageList.sort()
           messageList.reverse()
           val date = json.getString(DATE)
-          var messagePath = ""
+          val array= JsonArray()
           for(msg in messageList){
             if(date >= msg){
-              messagePath = msg
-              break
+              val messages = fs.readFileBlocking(msg).toString().trim().split(END)
+              for (message in messages) array.add(JsonObject(message))
             }
+            if(array.size()>20) break
           }
-          if (messagePath!=""){
-            val array= JsonArray()
-            result.put(HISTORY,true)
-            val messages = fs.readFileBlocking(messagePath).toString().trim().split(END)
-            for (message in messages) array.add(JsonObject(message))
-            result.put(MESSAGES,array)
-          }
+          result.put(HISTORY,true)
+          result.put(MESSAGES,array)
           return result
         }
         else -> return defaultMessage(json)
@@ -226,7 +211,19 @@ class IMMessageVerticle : AbstractVerticle() {
     }
   }
 
+  //取出为独立函数，为后续搜索聊天内容做准备
+  private suspend fun verify(userDir:String, password:String):Boolean{
 
+    if (vertx.fileSystem().existsBlocking(userDir + File.separator + "user.json")) {
+      val fs = vertx.fileSystem()
+      val userJson = fs.readFileBlocking(userDir + File.separator + "user.json").toJsonObject()
+      if (userJson.getString(PASSWORD) == password) {
+        return true
+      }
+    }
+
+    return false
+  }
 
   private suspend fun search(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
