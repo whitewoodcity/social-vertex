@@ -349,8 +349,12 @@ class IMMessageVerticle : AbstractVerticle() {
     val fs = vertx.fileSystem()
 
     val today = SimpleDateFormat("yyyy-MM-dd").format(Date())
-    val dir = config().getString(DIR) + File.separator
-    val separator = File.separator
+    val instant = SimpleDateFormat("hh:mm:ss").format(Date())
+
+    json.put(DATE, today)
+    json.put(TIME, instant)
+
+    val dir = config().getString(DIR) + separator
 
     if (!json.getString(FROM).contains("@")) {
       val senderDir = "$dir$from$separator$to"

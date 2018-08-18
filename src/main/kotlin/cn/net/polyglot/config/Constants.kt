@@ -54,6 +54,7 @@ const val TCP_PORT = "tcp-port"
 const val HTTP_PORT = "http-port"
 const val KEYWORD = "keyword"
 const val OFFLINE = "offline"
-const val DATE   = "date";
+const val DATE = "date"
+const val TIME = "time"
 
 const val END = "\r\n"
