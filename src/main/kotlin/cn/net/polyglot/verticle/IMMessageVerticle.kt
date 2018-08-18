@@ -195,7 +195,14 @@ class IMMessageVerticle : AbstractVerticle() {
           for(msg in messageList){
             if(date >= msg){
               val messages = fs.readFileBlocking(msg).toString().trim().split(END)
-              for (message in messages) array.add(JsonObject(message))
+              for (message in messages){
+                try {
+                  val jsonMessage = JsonObject(message)
+                  array.add(jsonMessage)
+                }catch (e:Throwable){
+                  //可能有并发操作导致的json string不完整，直接抛弃该string
+                }
+              }
             }
             if(array.size()>20) break
           }
