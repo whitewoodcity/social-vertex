@@ -393,8 +393,8 @@ class IMServerTest {
   }
   @Test
   fun  testAccountsHistoryInform(context: TestContext){
-    var async = context.async()
-    val  date = SimpleDateFormat("yyyy-MM-dd").format(Date())
+    val async = context.async()
+    val  date = SimpleDateFormat("yyyy-MM-dd").format(Date(Date().time + (1000 * 60 * 60 * 24)))
     webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST),"/$USER/$HISTORY").sendJson(
       JsonObject()
         .put(TYPE, USER)

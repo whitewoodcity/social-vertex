@@ -114,6 +114,17 @@ class IMMessageVerticle : AbstractVerticle() {
 
       val dir = config().getString(DIR) + File.separator + id
 
+      //验证用户名和密码，有些subtype无需验证，例如注册
+      var verification = false
+
+      if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
+        val fs = vertx.fileSystem()
+        val userJson = fs.readFileBlocking(dir + File.separator + "user.json").toJsonObject()
+        if (userJson.getString(PASSWORD) == json.getString(PASSWORD)) {
+          verification = true
+        }
+      }
+
       when (subtype) {
         REGISTER -> {
           if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
@@ -127,6 +138,9 @@ class IMMessageVerticle : AbstractVerticle() {
           return result.put(subtype, true)
         }
         OFFLINE -> {//离线消息及好友请求
+          if(!verification){
+            return result
+          }
 
           val fs = vertx.fileSystem()
           val messages = JsonArray()
@@ -158,56 +172,45 @@ class IMMessageVerticle : AbstractVerticle() {
             .put(ID, json.getString(ID))
         }
         LOGIN -> {
-          if (!vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
-            return result.put(subtype, false)
+          if(!verification){
+            return result
           }
+
           val fs = vertx.fileSystem()
-          val userJson = fs.readFileBlocking(dir + File.separator + "user.json").toJsonObject()
           val friendList = JsonArray()
           val friends = fs.readDirBlocking(dir)
-          if (userJson.getString(PASSWORD) == json.getString(PASSWORD)) {
-            for (friend in friends) {
-              val friendId = friend.substringAfterLast(File.separator)
-              if (fs.lpropsBlocking(friend).isDirectory && !friendId.startsWith(".")) {
-                friendList.add(fs.readFileBlocking("$friend${File.separator}$friendId.json").toJsonObject())
-              }
+
+          for (friend in friends) {
+            val friendId = friend.substringAfterLast(File.separator)
+            if (fs.lpropsBlocking(friend).isDirectory && !friendId.startsWith(".")) {
+              friendList.add(fs.readFileBlocking("$friend${File.separator}$friendId.json").toJsonObject())
             }
-            return result.put(subtype, true)
-              .put(NICKNAME, json.getString(ID))
-              .put(FRIENDS, friendList)
           }
-          return result.put(subtype, false)
+          return result.put(subtype, true)
+            .put(NICKNAME, json.getString(ID))
+            .put(FRIENDS, friendList)
         }
         HISTORY->{
+          if(!verification){
+            return result
+          }
+
           val friend = json.getString(FRIEND)
           val friendDir = dir+File.separator+friend
           val fs        = vertx.fileSystem()
           val messageList = fs.readDirBlocking(friendDir,"\\d{4}-\\d{2}-\\d{2}\\.sv")
           messageList.sort()
-          val date = json.getString(DATE)
-          var messagePath =""
-          val array= JsonArray()
-          result.put(subtype,false)
           messageList.reverse()
-          if (messageList.contains("$friendDir${File.separator}$date.sv")){
-            messagePath = "$friendDir${File.separator}$date.sv"
-          }else{
-            var  distant:Long?=null
-            val a = SimpleDateFormat("yyyy-MM-dd").parse(date).time
-            for (item in messageList){
-              val b =SimpleDateFormat("yyyy-MM-dd").parse(item.substringAfterLast(File.separator).split("\\.")[0]).time
-              if (distant==null&&(a-b)/1000/60/60/24>0){
-                distant = (a-b)/1000/60/60/24
-                messagePath = item
-              }else{
-                if (distant!=null&&((a-b)/1000/60/60/24)< distant) {
-                  distant = (a-b)/1000/60/60/24
-                  messagePath = item
-                }
-              }
+          val date = json.getString(DATE)
+          var messagePath = ""
+          for(msg in messageList){
+            if(date >= msg){
+              messagePath = msg
+              break
             }
           }
           if (messagePath!=""){
+            val array= JsonArray()
             result.put(HISTORY,true)
             val messages = fs.readFileBlocking(messagePath).toString().trim().split(END)
             for (message in messages) array.add(JsonObject(message))
@@ -222,6 +225,8 @@ class IMMessageVerticle : AbstractVerticle() {
       return result.put(INFO, "${e.message}")
     }
   }
+
+
 
   private suspend fun search(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
