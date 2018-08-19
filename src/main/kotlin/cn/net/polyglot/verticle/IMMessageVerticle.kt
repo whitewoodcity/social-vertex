@@ -190,7 +190,11 @@ class IMMessageVerticle : AbstractVerticle() {
           val messageList = fs.readDirBlocking(friendDir,"\\d{4}-\\d{2}-\\d{2}\\.sv")
           messageList.sort()
           messageList.reverse()
-          val date = json.getString(DATE)
+          val date = if (json.containsKey(DATE))
+            json.getString(DATE)
+          else
+            SimpleDateFormat("yyyy-MM-dd").format(Date())
+
           val array= JsonArray()
           for(msg in messageList){
             if(date >= msg){
