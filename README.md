@@ -250,8 +250,8 @@ uri: /message/text
   "subtype":"text",
   "to":"yangkui",
   "body":"你好吗？",
+  "uuid":"367d76c0962011e88dcb0b109a354f54",
   "version":0.2
 }
 ```
-
-
+值得留意的是：每一个消息都建议添加uuid以便识别，虽然该域并非必需。

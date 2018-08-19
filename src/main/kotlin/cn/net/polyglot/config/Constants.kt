@@ -56,5 +56,6 @@ const val KEYWORD = "keyword"
 const val OFFLINE = "offline"
 const val DATE = "date"
 const val TIME = "time"
+const val UUID = "uuid"
 
 const val END = "\r\n"
