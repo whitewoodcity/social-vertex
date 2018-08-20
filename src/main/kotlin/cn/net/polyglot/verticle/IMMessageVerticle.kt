@@ -210,7 +210,7 @@ class IMMessageVerticle : AbstractVerticle() {
               }
               array.list.addAll(0,jsonMsgs.list)
             }
-            if(array.size()>20) break
+            if(array.size()>20 && date>msg) break//date > msg确保能够读取更早一天的记录，如果当天聊天记录超过20的话，没有该条件便会一直读取当天记录
           }
           result.put(HISTORY,true)
           result.put(MESSAGES,array)
