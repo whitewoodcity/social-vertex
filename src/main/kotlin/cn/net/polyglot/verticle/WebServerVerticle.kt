@@ -25,7 +25,6 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
-import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
@@ -39,7 +38,7 @@ class WebServerVerticle : AbstractVerticle() {
     val router = Router.router(vertx)
 
     router.route().handler(CookieHandler.create())
-    router.route().handler(BodyHandler.create().setBodyLimit(1 * MB))
+    router.route().handler(BodyHandler.create().setBodyLimit(1 * 1048576L))//1MB = 1048576L
 
     router.put("/:$TYPE/:$SUBTYPE").handler { routingContext ->
       try {

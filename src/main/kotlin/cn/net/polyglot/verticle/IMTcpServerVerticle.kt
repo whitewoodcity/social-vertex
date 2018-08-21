@@ -26,7 +26,6 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import com.google.common.collect.HashBiMap
-import com.sun.deploy.util.BufferUtil.MB
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions
@@ -76,7 +75,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
           buffer = Buffer.buffer()
         }
 
-        if (buffer.length() > 1 * MB) {
+        if (buffer.length() > 1 * 1048576L) {
           buffer = Buffer.buffer()
         }
       }
