@@ -32,8 +32,6 @@ import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
-import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.experimental.launch
 import java.io.File
 
 class IMTcpServerVerticle : AbstractVerticle() {

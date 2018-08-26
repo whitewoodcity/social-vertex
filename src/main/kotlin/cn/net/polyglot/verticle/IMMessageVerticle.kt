@@ -94,6 +94,7 @@ class IMMessageVerticle : AbstractVerticle() {
       return result
     }
     try {
+      json.put(ID, json.getString(ID).toLowerCase()) //自动全小写
       val id = json.getString(ID)
       val password = json.getString(PASSWORD)
 
