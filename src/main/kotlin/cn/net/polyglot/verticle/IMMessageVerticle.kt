@@ -25,6 +25,7 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.handler.containsSensitiveWords
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions
@@ -102,7 +103,7 @@ class IMMessageVerticle : AbstractVerticle() {
       val validId = when {
         id.length < 4 || id.length > 20 -> false
         id[0].isDigit() -> false
-        else -> id.all { it.isLetterOrDigit() }
+        else -> id.all { it.isLetterOrDigit() } && !containsSensitiveWords(id)//不包含有敏感词
       }
 
       if (!validId)

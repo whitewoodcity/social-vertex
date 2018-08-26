@@ -24,6 +24,7 @@ SOFTWARE.
 
 package cn.net.polyglot.handler
 
+import cn.net.polyglot.config.SENSITIVE_WORDS
 import java.math.BigInteger
 import java.security.MessageDigest
 
@@ -33,4 +34,8 @@ fun md5(string:String):String{
   val hex = BigInteger(1, digest.digest()).toString(16)
   // 补齐BigInteger省略的前置0
   return String(CharArray(32 - hex.length)).replace("\u0000", "0") + hex
+}
+
+fun containsSensitiveWords(string:String):Boolean{
+  return SENSITIVE_WORDS.split(" ").any { string.contains(it) }
 }

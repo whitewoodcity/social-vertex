@@ -59,3 +59,5 @@ const val TIME = "time"
 const val UUID = "uuid"
 
 const val END = "\r\n"
+
+const val SENSITIVE_WORDS = "fuck shit caonima ganniniang qunima tmd falun qnm"
