@@ -245,8 +245,8 @@ class IMMessageVerticle : AbstractVerticle() {
   private suspend fun search(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
 
-    val dir = config().getString(DIR) + File.separator + json.getString(KEYWORD)
-    val userFile = dir + File.separator + "user.json"
+    val userDir = config().getString(DIR) + File.separator + json.getString(KEYWORD).toLowerCase()
+    val userFile = userDir + File.separator + "user.json"
 
     json.clear()
 
