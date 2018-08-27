@@ -25,6 +25,7 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.handler.lowerCaseValue
 import com.google.common.collect.HashBiMap
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
@@ -98,11 +99,15 @@ class IMTcpServerVerticle : AbstractVerticle() {
   private fun processJsonString(jsonString: String, socket: NetSocket) {
     val result = JsonObject()
     try {
-      val json = JsonObject(jsonString).put(FROM, socketMap[socket])
+      val json = JsonObject(jsonString)
+        .put(FROM, socketMap[socket])
+        .lowerCaseValue(ID)
+
       when (json.getString(TYPE)) {
         USER, SEARCH -> {
           vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
             val jsonObject = it.result().body()
+
             if (jsonObject.containsKey(LOGIN)&&jsonObject.getBoolean(LOGIN)){
               if(socketMap.containsValue(json.getString(ID))&& socketMap.inverse()[json.getString(ID)] != socket){
                 socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录

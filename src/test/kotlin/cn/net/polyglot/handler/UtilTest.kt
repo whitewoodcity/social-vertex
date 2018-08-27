@@ -24,6 +24,7 @@ SOFTWARE.
 
 package cn.net.polyglot.handler
 
+import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.junit.Test
@@ -41,5 +42,16 @@ class UtilTest{
     context.assertTrue(containsSensitiveWords("shit001"))
     context.assertFalse(containsSensitiveWords("zhaoce"))
     context.assertTrue(containsSensitiveWords("fuckyou"))
+  }
+
+  @Test
+  fun testLowerCaseJsonField(context: TestContext){
+    val json = JsonObject().put("field",111)
+      .put("field0","ZHAOCE")
+      .lowerCaseValue("field")
+      .lowerCaseValue("field0")
+
+    context.assertEquals(json.getInteger("field"), 111)
+    context.assertEquals(json.getString("field0"), "zhaoce")
   }
 }

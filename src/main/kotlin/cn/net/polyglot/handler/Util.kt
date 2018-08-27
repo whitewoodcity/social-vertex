@@ -25,6 +25,7 @@ SOFTWARE.
 package cn.net.polyglot.handler
 
 import cn.net.polyglot.config.SENSITIVE_WORDS
+import io.vertx.core.json.JsonObject
 import java.math.BigInteger
 import java.security.MessageDigest
 
@@ -38,4 +39,15 @@ fun md5(string:String):String{
 
 fun containsSensitiveWords(string:String):Boolean{
   return SENSITIVE_WORDS.split(" ").any { string.contains(it) }
+}
+
+fun JsonObject.lowerCaseValue(field:String):JsonObject{
+  try{
+    if(this.getString(field)!=null){
+      this.put(field, this.getString(field).toLowerCase())
+    }
+  }catch (e:Throwable){
+    //json field may not be string
+  }
+  return this
 }

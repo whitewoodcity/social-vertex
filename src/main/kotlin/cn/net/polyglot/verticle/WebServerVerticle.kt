@@ -25,6 +25,7 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.handler.lowerCaseValue
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
@@ -48,6 +49,8 @@ class WebServerVerticle : AbstractVerticle() {
         val json = routingContext.bodyAsJson
           .put(TYPE, type)
           .put(SUBTYPE, subtype)
+          .lowerCaseValue(ID)
+
         when (type) {
           FRIEND, MESSAGE -> {
             vertx.eventBus().send(IMMessageVerticle::class.java.name, json)

@@ -26,6 +26,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.handler.containsSensitiveWords
+import cn.net.polyglot.handler.lowerCaseValue
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions
@@ -85,6 +86,8 @@ class IMMessageVerticle : AbstractVerticle() {
 
   private suspend fun user(json: JsonObject): JsonObject {
 
+    json.lowerCaseValue(ID)
+
     val subtype = json.getString(SUBTYPE)
     val result = JsonObject()
       .put(TYPE, json.getString(TYPE))
@@ -95,7 +98,6 @@ class IMMessageVerticle : AbstractVerticle() {
       return result
     }
     try {
-      json.put(ID, json.getString(ID).toLowerCase()) //自动全小写
       val id = json.getString(ID)
       val password = json.getString(PASSWORD)
 
@@ -406,4 +408,3 @@ class IMMessageVerticle : AbstractVerticle() {
   }
 
 }
-
