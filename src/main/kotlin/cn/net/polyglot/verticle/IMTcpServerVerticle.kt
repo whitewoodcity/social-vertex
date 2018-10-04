@@ -39,7 +39,7 @@ import java.io.File
 class IMTcpServerVerticle : AbstractVerticle() {
 
   private val socketMap = HashBiMap.create<NetSocket, String>()
-  private var buffer = Buffer.buffer()
+//  private var buffer = Buffer.buffer()
 
   override fun start() {
 
