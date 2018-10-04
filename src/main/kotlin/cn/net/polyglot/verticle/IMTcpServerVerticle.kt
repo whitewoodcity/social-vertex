@@ -33,6 +33,7 @@ import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
+import io.vertx.core.parsetools.RecordParser
 import java.io.File
 
 class IMTcpServerVerticle : AbstractVerticle() {
@@ -49,7 +50,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
       val target = it.body().getString(TO)
       if (socketMap.containsValue(target)) {
         socketMap.inverse()[target]!!.write(it.body().toString().plus(END))
-      } else if(type == MESSAGE){//仅是message类型的时候，投递不成功会在此处存入硬盘，friend类型已经先行处理
+      } else if (type == MESSAGE) {//仅是message类型的时候，投递不成功会在此处存入硬盘，friend类型已经先行处理
         val targetDir = config().getString(DIR) + File.separator + it.body().getString(TO) + File.separator + ".message"
         val fs = vertx.fileSystem()
         if (!fs.existsBlocking(targetDir)) fs.mkdirBlocking(targetDir)
@@ -65,19 +66,27 @@ class IMTcpServerVerticle : AbstractVerticle() {
       socketMap[socket] = socket.writeHandlerID()
 
       socket.handler {
-        buffer.appendBuffer(it)
-        if (buffer.toString().endsWith(END)) {
-          val msgs = buffer.toString().substringBeforeLast(END).split(END)
-          for (s in msgs) {
-            processJsonString(s, socket)
-          }
-          buffer = Buffer.buffer()
-        }
-
-        if (buffer.length() > 1 * 1048576L) {
-          buffer = Buffer.buffer()
-        }
+        RecordParser
+          .newDelimited(END) { buffer -> processJsonString(buffer.toString(), socket) }
+          .maxRecordSize(1048576)//max is 1MB
+          .handle(it)
       }
+
+      //going to remove in the next version
+//      socket.handler {
+//        buffer.appendBuffer(it)
+//        if (buffer.toString().endsWith(END)) {
+//          val msgs = buffer.toString().substringBeforeLast(END).split(END)
+//          for (s in msgs) {
+//            processJsonString(s, socket)
+//          }
+//          buffer = Buffer.buffer()
+//        }
+//
+//        if (buffer.length() > 1 * 1048576L) {
+//          buffer = Buffer.buffer()
+//        }
+//      }
 
       socket.closeHandler {
         socketMap.remove(socket)
@@ -108,8 +117,8 @@ class IMTcpServerVerticle : AbstractVerticle() {
           vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
             val jsonObject = it.result().body()
 
-            if (jsonObject.containsKey(LOGIN)&&jsonObject.getBoolean(LOGIN)){
-              if(socketMap.containsValue(json.getString(ID))&& socketMap.inverse()[json.getString(ID)] != socket){
+            if (jsonObject.containsKey(LOGIN) && jsonObject.getBoolean(LOGIN)) {
+              if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
                 socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
               }
               socketMap[socket] = json.getString(ID)
