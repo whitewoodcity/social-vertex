@@ -93,8 +93,8 @@ class IMTcpServerVerticle : AbstractVerticle() {
         socketMap.remove(socket)
       }
 
-      socket.exceptionHandler { e ->
-        e.printStackTrace()
+      socket.exceptionHandler {
+        it.printStackTrace()
         socket.close()
       }
     }.listen(port) {
