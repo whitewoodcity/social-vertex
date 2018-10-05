@@ -69,7 +69,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         RecordParser
           .newDelimited(END) { buffer -> processJsonString(buffer.toString(), socket) }
           .maxRecordSize(10240)//max is 10KB
-          .exceptionHandler{_ -> socket.close()}
+          .exceptionHandler { _ -> socket.close() }
           .handle(it)
       }
 
