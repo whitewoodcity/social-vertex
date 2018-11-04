@@ -22,14 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-package cn.net.polyglot.handler
+package cn.net.polyglot.module
 
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.junit.Test
 import org.junit.runner.RunWith
-import cn.net.polyglot.verticle.WebServerVerticle
 
 @RunWith(VertxUnitRunner::class)
 class UtilTest{

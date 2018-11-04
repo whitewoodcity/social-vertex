@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-package cn.net.polyglot.handler
+package cn.net.polyglot.module
 
 import cn.net.polyglot.config.SENSITIVE_WORDS
 import io.vertx.core.json.JsonObject

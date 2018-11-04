@@ -25,10 +25,9 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
-import cn.net.polyglot.handler.lowerCaseValue
+import cn.net.polyglot.module.lowerCaseValue
 import com.google.common.collect.HashBiMap
 import io.vertx.core.AbstractVerticle
-import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
@@ -69,7 +68,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
         RecordParser
           .newDelimited(END) { buffer -> processJsonString(buffer.toString(), socket) }
           .maxRecordSize(10240)//max is 10KB
-          .exceptionHandler { _ -> socket.close() }
+          .exceptionHandler { socket.close() }
           .handle(it)
       }
 

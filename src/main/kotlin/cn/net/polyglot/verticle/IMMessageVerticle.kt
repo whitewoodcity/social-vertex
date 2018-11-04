@@ -25,8 +25,8 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
-import cn.net.polyglot.handler.containsSensitiveWords
-import cn.net.polyglot.handler.lowerCaseValue
+import cn.net.polyglot.module.containsSensitiveWords
+import cn.net.polyglot.module.lowerCaseValue
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions

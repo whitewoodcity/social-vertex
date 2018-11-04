@@ -9,7 +9,7 @@
   <version>0.2</version>
 
   <properties>
-    <kotlin.version>1.2.20</kotlin.version>
+    <kotlin.version>1.2.70</kotlin.version>
     <vertx.version>3.5.4</vertx.version>
     <main.class>io.vertx.core.Launcher</main.class>
     <main.verticle>cn/net/polyglot/main_verticle.groovy</main.verticle>
@@ -98,7 +98,7 @@
         <version>${kotlin.version}</version>
         <configuration>
           <experimentalCoroutines>enable</experimentalCoroutines>
-          <jvmTarget>1.8</jvmTarget>
+          <jvmTarget>${jvmTarget}</jvmTarget>
         </configuration>
         <executions>
           <execution>
