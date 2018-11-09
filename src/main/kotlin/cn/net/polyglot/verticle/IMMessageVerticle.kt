@@ -27,24 +27,23 @@ package cn.net.polyglot.verticle
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.containsSensitiveWords
 import cn.net.polyglot.module.lowerCaseValue
-import io.vertx.core.AbstractVerticle
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
-import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.experimental.launch
+import io.vertx.kotlin.coroutines.CoroutineVerticle
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.File.separator
 import java.text.SimpleDateFormat
 import java.util.*
 
-class IMMessageVerticle : AbstractVerticle() {
+class IMMessageVerticle : CoroutineVerticle() {
 
   private lateinit var webClient: WebClient
 
-  override fun start() {
+  override suspend fun start() {
     webClient = WebClient.create(vertx)
 
     // consume messages from Http/TcpServerVerticle to IMMessageVerticle
@@ -69,7 +68,7 @@ class IMMessageVerticle : AbstractVerticle() {
         return@consumer
       }
 
-      launch(vertx.dispatcher()) {
+      launch {
         when (json.getString(TYPE)) {
           // future reply
           FRIEND -> friend(it.body())
@@ -116,7 +115,7 @@ class IMMessageVerticle : AbstractVerticle() {
         return result.put(INFO, "秘钥格式错误")
       }
 
-      val dir = config().getString(DIR) + File.separator + id
+      val dir = config.getString(DIR) + File.separator + id
 
       when (subtype) {
         REGISTER -> {
@@ -245,7 +244,7 @@ class IMMessageVerticle : AbstractVerticle() {
   private suspend fun search(json: JsonObject): JsonObject {
     val subtype = json.getString(SUBTYPE)
 
-    val userDir = config().getString(DIR) + File.separator + json.getString(KEYWORD).toLowerCase()
+    val userDir = config.getString(DIR) + File.separator + json.getString(KEYWORD).toLowerCase()
     val userFile = userDir + File.separator + "user.json"
 
     json.clear()
@@ -276,7 +275,7 @@ class IMMessageVerticle : AbstractVerticle() {
       DELETE -> {
       }
       REQUEST -> {
-        val dir = config().getString(DIR) + separator
+        val dir = config.getString(DIR) + separator
         val fs = vertx.fileSystem()
         if (!json.getString(FROM).contains("@")) {    //本地保存发送记录
 
@@ -290,8 +289,8 @@ class IMMessageVerticle : AbstractVerticle() {
 
         }
         if (to.contains("@")) {    //如果跨域，转发给你相应的服务器
-          json.put(FROM, json.getString(FROM) + "@" + config().getString(HOST))//把from加上域名
-          webClient.put(config().getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$REQUEST")
+          json.put(FROM, json.getString(FROM) + "@" + config.getString(HOST))//把from加上域名
+          webClient.put(config.getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$REQUEST")
             .sendJsonObject(json.put(TO, to.substringBeforeLast('@'))) {}
         } else {    //接受是其他服务器发送过来的请求
 
@@ -307,7 +306,7 @@ class IMMessageVerticle : AbstractVerticle() {
         }
       }
       RESPONSE -> {
-        val dir = config().getString(DIR) + separator
+        val dir = config.getString(DIR) + separator
         val fs = vertx.fileSystem()
 
         if (!json.getString(FROM).contains("@")) {
@@ -330,8 +329,8 @@ class IMMessageVerticle : AbstractVerticle() {
         }
 
         if (json.getString(TO).contains("@")) {
-          json.put(FROM, json.getString(FROM) + "@" + config().getString(HOST))//把from加上域名
-          webClient.put(config().getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$RESPONSE")
+          json.put(FROM, json.getString(FROM) + "@" + config.getString(HOST))//把from加上域名
+          webClient.put(config.getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$RESPONSE")
             .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
         } else {
           if (fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
@@ -371,7 +370,7 @@ class IMMessageVerticle : AbstractVerticle() {
     json.put(DATE, today)
     json.put(TIME, instant)
 
-    val dir = config().getString(DIR) + separator
+    val dir = config.getString(DIR) + separator
 
     if (!json.getString(FROM).contains("@")) {
       val senderDir = "$dir$from$separator$to"
@@ -384,8 +383,8 @@ class IMMessageVerticle : AbstractVerticle() {
     }
 
     if (json.getString(TO).contains("@")) {
-      json.put(FROM, json.getString(FROM) + "@" + config().getString(HOST))//把from加上域名
-      webClient.put(config().getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$MESSAGE/$${json.getString(SUBTYPE)}")
+      json.put(FROM, json.getString(FROM) + "@" + config.getString(HOST))//把from加上域名
+      webClient.put(config.getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$MESSAGE/$${json.getString(SUBTYPE)}")
         .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
     } else {
       val receiverDir = "$dir$to$separator$from"
