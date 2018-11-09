@@ -32,6 +32,7 @@ import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
+import io.vertx.kotlin.core.file.*
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
 import java.io.File
@@ -119,13 +120,13 @@ class IMMessageVerticle : CoroutineVerticle() {
 
       when (subtype) {
         REGISTER -> {
-          if (vertx.fileSystem().existsBlocking(dir + File.separator + "user.json")) {
+          if (vertx.fileSystem().existsAwait(dir + File.separator + "user.json")) {
             return result.put(INFO, "用户已存在")
           }
-          vertx.fileSystem().mkdirsBlocking(dir)
-          vertx.fileSystem().createFileBlocking(dir + File.separator + "user.json")
+          vertx.fileSystem().mkdirsAwait(dir)
+          vertx.fileSystem().createFileAwait(dir + File.separator + "user.json")
           json.removeAll { it.key in arrayOf(TYPE, SUBTYPE) }
-          vertx.fileSystem().writeFileBlocking(dir + File.separator + "user.json", json.toBuffer())
+          vertx.fileSystem().writeFileAwait(dir + File.separator + "user.json", json.toBuffer())
 
           return result.put(subtype, true)
         }
@@ -137,25 +138,25 @@ class IMMessageVerticle : CoroutineVerticle() {
           val fs = vertx.fileSystem()
           val messages = JsonArray()
           val friends = JsonArray()
-          val userJson = fs.readFileBlocking("$dir${separator}user.json").toJsonObject()
-          if (!fs.existsBlocking("$dir$separator.message")) fs.mkdirBlocking("$dir$separator.message")
-          if (!fs.existsBlocking("$dir$separator.receive")) fs.mkdirBlocking("$dir$separator.receive")
-          val messageList = fs.readDirBlocking("$dir$separator.message")
-          val receiveList = fs.readDirBlocking("$dir$separator.receive")
-          if (fs.existsBlocking(dir + File.separator + "user.json")
+          val userJson = fs.readFileAwait("$dir${separator}user.json").toJsonObject()
+          if (!fs.existsAwait("$dir$separator.message")) fs.mkdirAwait("$dir$separator.message")
+          if (!fs.existsAwait("$dir$separator.receive")) fs.mkdirAwait("$dir$separator.receive")
+          val messageList = fs.readDirAwait("$dir$separator.message")
+          val receiveList = fs.readDirAwait("$dir$separator.receive")
+          if (fs.existsAwait(dir + File.separator + "user.json")
             && json.getString(PASSWORD) == userJson.getString(PASSWORD)) {
             for (file in messageList) {
-              val msgs = fs.readFileBlocking(file).toString().trim().split(END)
+              val msgs = fs.readFileAwait(file).toString().trim().split(END)
               for (message in msgs) messages.add(JsonObject(message))
             }
             for (file in receiveList) {
-              val requests = fs.readFileBlocking(file).toString().trim().split(END)
+              val requests = fs.readFileAwait(file).toString().trim().split(END)
               for (request in requests) friends.add(JsonObject(request))
             }
             if (friends.size() > 0) result.put(FRIENDS, friends)
             if (messages.size() > 0) result.put(MESSAGES, messages)
 
-            fs.deleteRecursiveBlocking("$dir$separator.message", true)
+            fs.deleteRecursiveAwait("$dir$separator.message", true)
 
             return result.put(subtype, true)
               .put(ID, json.getString(ID))
@@ -170,12 +171,12 @@ class IMMessageVerticle : CoroutineVerticle() {
 
           val fs = vertx.fileSystem()
           val friendList = JsonArray()
-          val friends = fs.readDirBlocking(dir)
+          val friends = fs.readDirAwait(dir)
 
           for (friend in friends) {
             val friendId = friend.substringAfterLast(File.separator)
-            if (fs.lpropsBlocking(friend).isDirectory && !friendId.startsWith(".")) {
-              friendList.add(fs.readFileBlocking("$friend${File.separator}$friendId.json").toJsonObject())
+            if (fs.lpropsAwait(friend).isDirectory && !friendId.startsWith(".")) {
+              friendList.add(fs.readFileAwait("$friend${File.separator}$friendId.json").toJsonObject())
             }
           }
           return result.put(subtype, true)
@@ -190,9 +191,9 @@ class IMMessageVerticle : CoroutineVerticle() {
           val friend = json.getString(FRIEND)
           val friendDir = dir+File.separator+friend
           val fs        = vertx.fileSystem()
-          val messageList = fs.readDirBlocking(friendDir,"\\d{4}-\\d{2}-\\d{2}\\.sv")
-          messageList.sort()
-          messageList.reverse()
+          val messageList = fs.readDirAwait(friendDir,"\\d{4}-\\d{2}-\\d{2}\\.sv")
+          messageList.sorted()
+          messageList.reversed()
           val date = if (json.containsKey(DATE))
             json.getString(DATE)
           else
@@ -201,7 +202,7 @@ class IMMessageVerticle : CoroutineVerticle() {
           val array= JsonArray()
           for(msg in messageList){
             if(date >= msg){
-              val messages = fs.readFileBlocking(msg).toString().trim().split(END)
+              val messages = fs.readFileAwait(msg).toString().trim().split(END)
               val jsonMsgs = JsonArray()
               for (message in messages){
                 try {
@@ -230,9 +231,9 @@ class IMMessageVerticle : CoroutineVerticle() {
   //取出为独立函数，为后续搜索聊天内容做准备
   private suspend fun verify(userDir:String, password:String):Boolean{
 
-    if (vertx.fileSystem().existsBlocking(userDir + File.separator + "user.json")) {
+    if (vertx.fileSystem().existsAwait(userDir + File.separator + "user.json")) {
       val fs = vertx.fileSystem()
-      val userJson = fs.readFileBlocking(userDir + File.separator + "user.json").toJsonObject()
+      val userJson = fs.readFileAwait(userDir + File.separator + "user.json").toJsonObject()
       if (userJson.getString(PASSWORD) == password) {
         return true
       }
@@ -249,8 +250,8 @@ class IMMessageVerticle : CoroutineVerticle() {
 
     json.clear()
 
-    if (vertx.fileSystem().existsBlocking(userFile)) {
-      val buffer = vertx.fileSystem().readFileBlocking(userFile)
+    if (vertx.fileSystem().existsAwait(userFile)) {
+      val buffer = vertx.fileSystem().readFileAwait(userFile)
       val resJson = buffer.toJsonObject()
       resJson.remove(PASSWORD)
       json.put(USER, resJson)
@@ -279,13 +280,13 @@ class IMMessageVerticle : CoroutineVerticle() {
         val fs = vertx.fileSystem()
         if (!json.getString(FROM).contains("@")) {    //本地保存发送记录
 
-          if (!fs.existsBlocking("$dir$from$separator.send"))
-            fs.mkdirsBlocking("$dir$from$separator.send")
-          if (fs.existsBlocking("$dir$from$separator.send$separator$to.json")) {
-            fs.deleteBlocking("$dir$from$separator.send$separator$to.json")
+          if (!fs.existsAwait("$dir$from$separator.send"))
+            fs.mkdirsAwait("$dir$from$separator.send")
+          if (fs.existsAwait("$dir$from$separator.send$separator$to.json")) {
+            fs.deleteAwait("$dir$from$separator.send$separator$to.json")
           }
-          fs.createFileBlocking("$dir$from$separator.send$separator$to.json")
-          fs.writeFileBlocking("$dir$from$separator.send$separator$to.json", json.toBuffer())
+          fs.createFileAwait("$dir$from$separator.send$separator$to.json")
+          fs.writeFileAwait("$dir$from$separator.send$separator$to.json", json.toBuffer())
 
         }
         if (to.contains("@")) {    //如果跨域，转发给你相应的服务器
@@ -294,12 +295,12 @@ class IMMessageVerticle : CoroutineVerticle() {
             .sendJsonObject(json.put(TO, to.substringBeforeLast('@'))) {}
         } else {    //接受是其他服务器发送过来的请求
 
-          fs.mkdirsBlocking("$dir$to$separator.receive")
-          if (fs.existsBlocking("$dir$to$separator.receive$separator$from.json")) {
-            fs.deleteBlocking("$dir$to$separator.receive$separator$from.json")
+          fs.mkdirsAwait("$dir$to$separator.receive")
+          if (fs.existsAwait("$dir$to$separator.receive$separator$from.json")) {
+            fs.deleteAwait("$dir$to$separator.receive$separator$from.json")
           }
-          fs.createFileBlocking("$dir$to$separator.receive$separator$from.json")
-          fs.writeFileBlocking("$dir$to$separator.receive$separator$from.json", json.toBuffer().appendString(END))
+          fs.createFileAwait("$dir$to$separator.receive$separator$from.json")
+          fs.writeFileAwait("$dir$to$separator.receive$separator$from.json", json.toBuffer().appendString(END))
           //尝试投递
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
 
@@ -310,14 +311,14 @@ class IMMessageVerticle : CoroutineVerticle() {
         val fs = vertx.fileSystem()
 
         if (!json.getString(FROM).contains("@")) {
-          if (fs.existsBlocking("$dir$from$separator.receive$separator$to.json")) {
-            fs.deleteBlocking("$dir$from$separator.receive$separator$to.json")//删除
+          if (fs.existsAwait("$dir$from$separator.receive$separator$to.json")) {
+            fs.deleteAwait("$dir$from$separator.receive$separator$to.json")//删除
             if (json.getBoolean(ACCEPT)) {
-              if (!fs.existsBlocking("$dir$from$separator$to")) {
-                fs.mkdirsBlocking("$dir$from$separator$to")
+              if (!fs.existsAwait("$dir$from$separator$to")) {
+                fs.mkdirsAwait("$dir$from$separator$to")
                 val fileDir = "$dir$from$separator$to$separator$to.json"
-                fs.createFileBlocking(fileDir)
-                fs.writeFileBlocking(fileDir, JsonObject()
+                fs.createFileAwait(fileDir)
+                fs.writeFileAwait(fileDir, JsonObject()
                   .put(ID, to)
                   .put(NICKNAME, json.getString(NICKNAME) ?: to)
                   .toBuffer())
@@ -333,14 +334,14 @@ class IMMessageVerticle : CoroutineVerticle() {
           webClient.put(config.getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$RESPONSE")
             .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
         } else {
-          if (fs.existsBlocking("$dir$to$separator.send$separator$from.json")) {
-            fs.deleteBlocking("$dir$to$separator.send$separator$from.json")
+          if (fs.existsAwait("$dir$to$separator.send$separator$from.json")) {
+            fs.deleteAwait("$dir$to$separator.send$separator$from.json")
             if (json.getBoolean(ACCEPT)) {
-              if (!fs.existsBlocking("$dir$to$separator$from")) {
-                fs.mkdirsBlocking("$dir$to$separator$from")
+              if (!fs.existsAwait("$dir$to$separator$from")) {
+                fs.mkdirsAwait("$dir$to$separator$from")
                 val fileDir1 = "$dir$to$separator$from$separator$from.json"
-                fs.createFileBlocking(fileDir1)
-                fs.writeFileBlocking(fileDir1, JsonObject()
+                fs.createFileAwait(fileDir1)
+                fs.writeFileAwait(fileDir1, JsonObject()
                   .put(ID, from)
                   .put(NICKNAME, json.getString(NICKNAME) ?: from)
                   .toBuffer())
@@ -374,12 +375,12 @@ class IMMessageVerticle : CoroutineVerticle() {
 
     if (!json.getString(FROM).contains("@")) {
       val senderDir = "$dir$from$separator$to"
-      if (!fs.existsBlocking(senderDir)) {
+      if (!fs.existsAwait(senderDir)) {
         return //错误，该用户没有该好友
       }
       val senderFile = "$senderDir$separator$today.sv"
-      if (!fs.existsBlocking(senderFile)) fs.createFileBlocking(senderFile)
-      fs.openBlocking(senderFile, OpenOptions().setAppend(true)).write(json.toBuffer().appendBuffer(Buffer.buffer(END)))
+      if (!fs.existsAwait(senderFile)) fs.createFileAwait(senderFile)
+      fs.openAwait(senderFile, OpenOptions().setAppend(true)).write(json.toBuffer().appendBuffer(Buffer.buffer(END)))
     }
 
     if (json.getString(TO).contains("@")) {
@@ -388,12 +389,12 @@ class IMMessageVerticle : CoroutineVerticle() {
         .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
     } else {
       val receiverDir = "$dir$to$separator$from"
-      if (!fs.existsBlocking(receiverDir)) {
+      if (!fs.existsAwait(receiverDir)) {
         return //错误，该用户没有该好友
       }
       val receiverFile = "$receiverDir$separator$today.sv"
-      if (!fs.existsBlocking(receiverFile)) fs.createFileBlocking(receiverFile)
-      fs.openBlocking(receiverFile, OpenOptions().setAppend(true)).write(json.toBuffer().appendBuffer(Buffer.buffer(END)))
+      if (!fs.existsAwait(receiverFile)) fs.createFileAwait(receiverFile)
+      fs.openAwait(receiverFile, OpenOptions().setAppend(true)).write(json.toBuffer().appendBuffer(Buffer.buffer(END)))
       //尝试投递
       vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
     }
