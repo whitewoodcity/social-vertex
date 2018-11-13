@@ -243,7 +243,7 @@ class IMMessageVerticle : CoroutineVerticle() {
   }
 
   private suspend fun search(json: JsonObject): JsonObject {
-    val subtype = json.getString(SUBTYPE)
+//    val subtype = json.getString(SUBTYPE)
 
     val userDir = config.getString(DIR) + File.separator + json.getString(KEYWORD).toLowerCase()
     val userFile = userDir + File.separator + "user.json"
@@ -399,7 +399,6 @@ class IMMessageVerticle : CoroutineVerticle() {
       vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
     }
   }
-
 
   private fun defaultMessage(json: JsonObject): JsonObject {
     json.removeAll { it.key !in arrayOf(VERSION, TYPE) }

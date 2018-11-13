@@ -27,22 +27,24 @@ package cn.net.polyglot.verticle
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue
 import com.google.common.collect.HashBiMap
-import io.vertx.core.AbstractVerticle
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 import io.vertx.core.parsetools.RecordParser
+import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.coroutines.CoroutineVerticle
+import kotlinx.coroutines.launch
 import java.io.File
 
-class IMTcpServerVerticle : AbstractVerticle() {
+class IMTcpServerVerticle : CoroutineVerticle() {
 
   private val socketMap = HashBiMap.create<NetSocket, String>()
 //  private var buffer = Buffer.buffer()
 
-  override fun start() {
+  override suspend fun start() {
 
-    val port = config().getInteger(TCP_PORT)
+    val port = config.getInteger(TCP_PORT)
 
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
       val type = it.body().getString(TYPE)
@@ -50,7 +52,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
       if (socketMap.containsValue(target)) {
         socketMap.inverse()[target]!!.write(it.body().toString().plus(END))
       } else if (type == MESSAGE) {//仅是message类型的时候，投递不成功会在此处存入硬盘，friend类型已经先行处理
-        val targetDir = config().getString(DIR) + File.separator + it.body().getString(TO) + File.separator + ".message"
+        val targetDir = config.getString(DIR) + File.separator + it.body().getString(TO) + File.separator + ".message"
         val fs = vertx.fileSystem()
         if (!fs.existsBlocking(targetDir)) fs.mkdirBlocking(targetDir)
         if (!fs.existsBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv"))
@@ -66,7 +68,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
 
       socket.handler {
         RecordParser
-          .newDelimited(END) { buffer -> processJsonString(buffer.toString(), socket) }
+          .newDelimited(END) { buffer -> launch { processJsonString(buffer.toString(), socket) } }
           .maxRecordSize(10240)//max is 10KB
           .exceptionHandler { socket.close() }
           .handle(it)
@@ -105,7 +107,7 @@ class IMTcpServerVerticle : AbstractVerticle() {
     }
   }
 
-  private fun processJsonString(jsonString: String, socket: NetSocket) {
+  private suspend fun processJsonString(jsonString: String, socket: NetSocket) {
     val result = JsonObject()
     try {
       val json = JsonObject(jsonString)
@@ -114,19 +116,18 @@ class IMTcpServerVerticle : AbstractVerticle() {
 
       when (json.getString(TYPE)) {
         USER, SEARCH -> {
-          vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
-            val jsonObject = it.result().body()
+          val asyncResult = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json)
+          val jsonObject = asyncResult.body()
 
-            if (jsonObject.containsKey(LOGIN) && jsonObject.getBoolean(LOGIN)) {
-              if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
-                socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
-              }
-              socketMap[socket] = json.getString(ID)
+          if (jsonObject.containsKey(LOGIN) && jsonObject.getBoolean(LOGIN)) {
+            if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
+              socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
             }
-            jsonObject.mergeIn(json).remove(PASSWORD)
-            jsonObject.remove(FROM)
-            socket.write(jsonObject.toString().plus(END))
+            socketMap[socket] = json.getString(ID)
           }
+          jsonObject.mergeIn(json).remove(PASSWORD)
+          jsonObject.remove(FROM)
+          socket.write(jsonObject.toString().plus(END))
         }
         else -> {
           vertx.eventBus().send(IMMessageVerticle::class.java.name, json)

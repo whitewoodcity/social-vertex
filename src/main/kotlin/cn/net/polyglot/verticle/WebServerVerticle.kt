@@ -26,15 +26,17 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue
-import io.vertx.core.AbstractVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CookieHandler
+import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.coroutines.CoroutineVerticle
+import kotlinx.coroutines.launch
 
-class WebServerVerticle : AbstractVerticle() {
+class WebServerVerticle : CoroutineVerticle() {
 
-  override fun start() {
+  override suspend fun start() {
     val httpServer = vertx.createHttpServer()
     val router = Router.router(vertx)
 
@@ -56,12 +58,10 @@ class WebServerVerticle : AbstractVerticle() {
             vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
             routingContext.response().end()
           }
-          else -> {
-            var result: JsonObject?
-            vertx.eventBus().send<JsonObject>(IMMessageVerticle::class.java.name, json) {
-              result = it.result().body()
-              routingContext.response().end(result.toString())
-            }
+          else -> launch {
+            val result =
+              vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json).body()
+            routingContext.response().end(result.toString())
           }
         }
       } catch (e: Exception) {
@@ -70,7 +70,7 @@ class WebServerVerticle : AbstractVerticle() {
       }
     }
 
-    httpServer.requestHandler(router::accept).listen(config().getInteger(HTTP_PORT)) {
+    httpServer.requestHandler(router).listen(config.getInteger(HTTP_PORT)) {
       if (it.succeeded()) {
         println("${this::class.java.name} is deployed")
       } else {
