@@ -36,6 +36,7 @@ import io.vertx.kotlin.core.eventbus.sendAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
 import java.io.File
+import java.io.File.separator
 
 class IMTcpServerVerticle : CoroutineVerticle() {
 
@@ -55,9 +56,9 @@ class IMTcpServerVerticle : CoroutineVerticle() {
         val targetDir = config.getString(DIR) + File.separator + it.body().getString(TO) + File.separator + ".message"
         val fs = vertx.fileSystem()
         if (!fs.existsBlocking(targetDir)) fs.mkdirBlocking(targetDir)
-        if (!fs.existsBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv"))
-          fs.createFileBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv")
-        fs.openBlocking("$targetDir${File.separator}${it.body().getString(FROM)}.sv", OpenOptions().setAppend(true))
+        if (!fs.existsBlocking("$targetDir$separator${it.body().getString(FROM)}.sv"))
+          fs.createFileBlocking("$targetDir$separator${it.body().getString(FROM)}.sv")
+        fs.openBlocking("$targetDir$separator${it.body().getString(FROM)}.sv", OpenOptions().setAppend(true))
           .write(it.body().toBuffer().appendString(END))
       }
     }
