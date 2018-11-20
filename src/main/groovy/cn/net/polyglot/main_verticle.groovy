@@ -24,7 +24,6 @@
 
 package cn.net.polyglot
 
-import cn.net.polyglot.verticle.*
 import io.vertx.config.ConfigRetriever
 import io.vertx.config.ConfigRetrieverOptions
 import io.vertx.config.ConfigStoreOptions
@@ -67,9 +66,9 @@ retriever.getConfig { ar ->
     }
 
     def option = new DeploymentOptions().setConfig(config)
-    vertx.deployVerticle(WebServerVerticle.class.name, option)
-    vertx.deployVerticle(IMTcpServerVerticle.class.name, option)
-    vertx.deployVerticle(IMMessageVerticle.class.name, option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMTcpServerVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMMessageVerticle", option)
 
   } catch (Exception e) {
     e.printStackTrace()

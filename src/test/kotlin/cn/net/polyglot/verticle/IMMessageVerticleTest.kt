@@ -56,7 +56,7 @@ class IMMessageVerticleTest {
           vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR),true)
 
       val option = DeploymentOptions(config = config)
-      vertx.deployVerticle(IMMessageVerticle::class.java.name, option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMMessageVerticle", option, context.asyncAssertSuccess())
     }
 
     @AfterClass
