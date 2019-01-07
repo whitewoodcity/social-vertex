@@ -26,13 +26,18 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue
+import com.codahale.fastuuid.UUIDGenerator
+import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.Cookie
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CookieHandler
 import io.vertx.kotlin.core.eventbus.sendAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
+import java.security.SecureRandom
+import kotlin.random.Random
 
 class WebServerVerticle : CoroutineVerticle() {
 
@@ -42,6 +47,28 @@ class WebServerVerticle : CoroutineVerticle() {
 
     router.route().handler(CookieHandler.create())
     router.route().handler(BodyHandler.create().setBodyLimit(1 * 1048576L))//1MB = 1048576L
+
+    val generator = UUIDGenerator(SecureRandom())
+
+    router.route().handler { routingContext ->
+      if (routingContext.getCookie(SESSION_ID) == null) {
+        if(Random.nextInt(100)==0) generator.reseed()
+        val value = generator.generate().toString()
+
+        val age = 31 * 24 * 3600L //31 days in seconds
+        val cookie = Cookie.cookie(SESSION_ID, value)
+        val path = "/" //give any suitable path
+        cookie.path = path
+        cookie.setMaxAge(age) //if this is not there, then a session cookie is set
+        routingContext.addCookie(cookie)
+
+        routingContext.response().isChunked = true
+        routingContext.response().putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+        routingContext.response().putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "*")
+      }
+
+      routingContext.next()
+    }
 
     router.put("/:$TYPE/:$SUBTYPE").handler { routingContext ->
       try {
