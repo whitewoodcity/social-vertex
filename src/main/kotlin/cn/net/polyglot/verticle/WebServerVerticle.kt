@@ -45,10 +45,10 @@ class WebServerVerticle : CoroutineVerticle() {
     val httpServer = vertx.createHttpServer()
     val router = Router.router(vertx)
 
+    val generator = UUIDGenerator(SecureRandom())
+
     router.route().handler(CookieHandler.create())
     router.route().handler(BodyHandler.create().setBodyLimit(1 * 1048576L))//1MB = 1048576L
-
-    val generator = UUIDGenerator(SecureRandom())
 
     router.route().handler { routingContext ->
       if (routingContext.getCookie(SESSION_ID) == null) {
@@ -69,6 +69,10 @@ class WebServerVerticle : CoroutineVerticle() {
 
       routingContext.next()
     }
+
+    //web start
+
+    //web over
 
     router.put("/:$TYPE/:$SUBTYPE").handler { routingContext ->
       try {
