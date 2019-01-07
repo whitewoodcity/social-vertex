@@ -59,5 +59,17 @@ const val TIME = "time"
 const val UUID = "uuid"
 
 const val END = "\r\n"
+const val SESSION_ID = "social-vertex-id"
+
+//内部使用的字符串
+const val HTTP_METHOD = "HTTP_METHOD"
+const val POST = "POST"
+const val GET = "GET"
+const val ACTION = "ACTION"
+const val PUT = "PUT"
+const val REMOVE = "REMOVE"
+const val INFORMATION = "INFORMATION"
+const val COOKIES = "COOKIES"
+const val JSON_BODY = "BODY"
 
 const val SENSITIVE_WORDS = "fuck shit caonima ganniniang qunima tmd falun qnm"
