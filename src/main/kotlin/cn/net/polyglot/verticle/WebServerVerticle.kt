@@ -76,7 +76,6 @@ class WebServerVerticle : CoroutineVerticle() {
 
     //web start
     router.get("/*").handler { routingContext ->
-      routingContext.put("what","nice")
       routingContext.next()
     }
 
@@ -85,8 +84,7 @@ class WebServerVerticle : CoroutineVerticle() {
 
     val templateHandler = { routingContext:RoutingContext ->
       launch {
-        val json = JsonObject()
-        json.map["context"] = routingContext
+        val json = JsonObject().put("what","nice")
         val buffer = engine.renderAwait(json, "templates/test.html")
         routingContext.response().end(buffer)
       }

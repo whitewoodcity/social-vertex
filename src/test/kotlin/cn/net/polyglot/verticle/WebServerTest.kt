@@ -52,7 +52,7 @@ class WebServerTest {
   fun testTemplate(context: TestContext) {
     val async = context.async()
 
-    webClient.get(config.getInteger(HTTP_PORT), "localhost", "/test")
+    webClient.get(config.getInteger(HTTP_PORT), "localhost", "/allo")
       .send { response ->
         println(response.result().body())
         context.assertTrue(response.result().body().toString().contains("nice"))
