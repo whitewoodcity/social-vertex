@@ -31,10 +31,14 @@ import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Cookie
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CookieHandler
+import io.vertx.ext.web.handler.TemplateHandler
+import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.vertx.kotlin.core.eventbus.sendAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.ext.web.common.template.renderAwait
 import kotlinx.coroutines.launch
 import java.security.SecureRandom
 import kotlin.random.Random
@@ -71,7 +75,26 @@ class WebServerVerticle : CoroutineVerticle() {
     }
 
     //web start
+    router.get("/*").handler { routingContext ->
+      routingContext.put("what","nice")
+      routingContext.next()
+    }
 
+    //render part
+    val engine = ThymeleafTemplateEngine.create(vertx)
+
+    val templateHandler = { routingContext:RoutingContext ->
+      launch {
+        val json = JsonObject()
+        json.map["context"] = routingContext
+        val buffer = engine.renderAwait(json, "templates/test.html")
+        routingContext.response().end(buffer)
+      }
+      Unit
+    }
+
+    router.post("/*").handler(templateHandler)
+    router.get("/*").handler(templateHandler)
     //web end
 
     //im start
