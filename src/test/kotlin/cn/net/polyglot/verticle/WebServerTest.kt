@@ -1,6 +1,7 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
+import io.vertx.core.MultiMap
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.io.File
 import java.nio.file.Paths
+import java.util.ArrayList
 
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
@@ -52,8 +54,13 @@ class WebServerTest {
   fun testTemplate(context: TestContext) {
     val async = context.async()
 
-    webClient.get(config.getInteger(HTTP_PORT), "localhost", "/allo")
-      .send { response ->
+    val list = ArrayList<String>()
+    list.add("test0")
+    list.add("test1")
+
+    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/allo.ftl?test=zhaoce")
+      .sendForm(MultiMap.caseInsensitiveMultiMap().set("test", list))
+      { response ->
         println(response.result().body())
         context.assertTrue(response.result().body().toString().contains("nice"))
         async.complete()

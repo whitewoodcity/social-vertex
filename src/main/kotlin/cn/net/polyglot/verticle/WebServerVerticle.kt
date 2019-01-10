@@ -75,9 +75,58 @@ class WebServerVerticle : CoroutineVerticle() {
     }
 
     //web start
-    router.get("/*").handler { routingContext ->
+    val routingHandler = { routingContext:RoutingContext ->
+
+      val requestJson = JsonObject()
+
+      val cookies = routingContext.cookies()
+      val headers = routingContext.request().headers()
+      val params = routingContext.request().params()
+      val attributes = routingContext.request().formAttributes()
+
+      var json = JsonObject()
+      for(cookie in cookies){
+        json.put(cookie.name, cookie.value)
+      }
+      requestJson.put("cookies", json)
+
+      json = JsonObject()
+      for(header in headers){
+        json.put(header.key, header.value)
+      }
+      requestJson.put("headers", json)
+
+      json = JsonObject()
+      var iterator = params.iterator()
+      while(iterator.hasNext()){
+        val i = iterator.next()
+        if(!json.containsKey(i.key))
+          json.put(i.key,i.value)
+      }
+      requestJson.put("params", json)
+
+      json = JsonObject()
+      iterator = attributes.iterator()
+      println(attributes)
+      while(iterator.hasNext()){
+        val i = iterator.next()
+        if(json.containsKey(i.key)){
+          var index = 0
+          while(json.containsKey("${i.key}$index")){
+            index++
+          }
+          json.put("${i.key}$index", i.value)
+        }else
+          json.put(i.key,i.value)
+      }
+      requestJson.put("attributes", json)
+
+      println(requestJson)
+
       routingContext.next()
     }
+    router.get("/:path").handler(routingHandler)
+    router.post("/:path").handler(routingHandler)
 
     //render part
     val engine = ThymeleafTemplateEngine.create(vertx)
@@ -130,6 +179,12 @@ class WebServerVerticle : CoroutineVerticle() {
       } else {
         println("${this::class.java.name} fail to deploy")
       }
+    }
+  }
+
+  private fun dispatch(address:String, routingContext: RoutingContext){
+    launch {
+      val result = vertx.eventBus().sendAwait<JsonObject>(address, JsonObject()).body()
     }
   }
 

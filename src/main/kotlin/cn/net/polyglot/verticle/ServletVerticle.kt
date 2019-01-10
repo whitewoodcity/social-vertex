@@ -28,7 +28,7 @@ abstract class ServletVerticle:CoroutineVerticle() {
     }
   }
 
-  inner class Session(val id: String) {
+  inner class Session(private val id: String) {
 
     fun put(key:String, value:String){
       vertx.eventBus().send(SessionVerticle::class.java.name,
