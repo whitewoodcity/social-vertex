@@ -88,13 +88,13 @@ class WebServerVerticle : CoroutineVerticle() {
       for(cookie in cookies){
         json.put(cookie.name, cookie.value)
       }
-      requestJson.put("cookies", json)
+      requestJson.put(COOKIES, json)
 
       json = JsonObject()
       for(header in headers){
         json.put(header.key, header.value)
       }
-      requestJson.put("headers", json)
+      requestJson.put(HEADERS, json)
 
       json = JsonObject()
       var iterator = params.iterator()
@@ -103,7 +103,7 @@ class WebServerVerticle : CoroutineVerticle() {
         if(!json.containsKey(i.key))
           json.put(i.key,i.value)
       }
-      requestJson.put("params", json)
+      requestJson.put(PARAMS, json)
 
       json = JsonObject()
       iterator = attributes.iterator()
@@ -119,18 +119,17 @@ class WebServerVerticle : CoroutineVerticle() {
         }else
           json.put(i.key,i.value)
       }
-      requestJson.put("attributes", json)
+      requestJson.put(FORM_ATTRIBUTES, json)
 
       println(requestJson)
 
       routingContext.next()
     }
-    router.get("/:path").handler(routingHandler)
-    router.post("/:path").handler(routingHandler)
+    router.get("/*").handler(routingHandler)
+    router.post("/*").handler(routingHandler)
 
     //render part
     val engine = ThymeleafTemplateEngine.create(vertx)
-
     val templateHandler = { routingContext:RoutingContext ->
       launch {
         val json = JsonObject().put("what","nice")

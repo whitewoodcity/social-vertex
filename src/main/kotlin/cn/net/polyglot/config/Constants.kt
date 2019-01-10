@@ -71,5 +71,8 @@ const val REMOVE = "REMOVE"
 const val INFORMATION = "INFORMATION"
 const val COOKIES = "COOKIES"
 const val JSON_BODY = "BODY"
+const val HEADERS = "HEADERS"
+const val PARAMS = "PARAMS"
+const val FORM_ATTRIBUTES = "FORM_ATTRIBUTES"
 
 const val SENSITIVE_WORDS = "fuck shit caonima ganniniang qunima tmd falun qnm"
