@@ -79,10 +79,13 @@ class WebServerVerticle : CoroutineVerticle() {
 
       val requestJson = JsonObject()
 
+      val path = routingContext.request().path()
       val cookies = routingContext.cookies()
       val headers = routingContext.request().headers()
-      val params = routingContext.request().params()
+      val params = routingContext.queryParams()
       val attributes = routingContext.request().formAttributes()
+
+      requestJson.put(PATH, path)
 
       var json = JsonObject()
       for(cookie in cookies){
@@ -100,10 +103,9 @@ class WebServerVerticle : CoroutineVerticle() {
       var iterator = params.iterator()
       while(iterator.hasNext()){
         val i = iterator.next()
-        if(!json.containsKey(i.key))
-          json.put(i.key,i.value)
+        json.put(i.key,i.value)
       }
-      requestJson.put(PARAMS, json)
+      requestJson.put(QUERY_PARAM, json)
 
       json = JsonObject()
       iterator = attributes.iterator()
@@ -120,8 +122,6 @@ class WebServerVerticle : CoroutineVerticle() {
           json.put(i.key,i.value)
       }
       requestJson.put(FORM_ATTRIBUTES, json)
-
-      println(requestJson)
 
       routingContext.next()
     }
