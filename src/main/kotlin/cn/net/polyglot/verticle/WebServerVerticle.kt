@@ -28,13 +28,14 @@ import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.http.HttpHeaders
+import io.vertx.core.http.HttpMethod
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Cookie
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CookieHandler
-import io.vertx.ext.web.handler.TemplateHandler
+import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.vertx.kotlin.core.eventbus.sendAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -75,17 +76,28 @@ class WebServerVerticle : CoroutineVerticle() {
     }
 
     //web start
+    router.getWithRegex("/.*(\\.html|\\.css|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
+      .handler(StaticHandler.create("./"))//如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
+
     val routingHandler = { routingContext:RoutingContext ->
 
       val requestJson = JsonObject()
 
       val path = routingContext.request().path()
+      val httpMethod = routingContext.request().method()
       val cookies = routingContext.cookies()
       val headers = routingContext.request().headers()
       val params = routingContext.queryParams()
       val attributes = routingContext.request().formAttributes()
 
       requestJson.put(PATH, path)
+
+      when(httpMethod){
+        HttpMethod.GET -> requestJson.put(HTTP_METHOD, GET)
+        HttpMethod.POST -> requestJson.put(HTTP_METHOD, POST)
+        HttpMethod.PUT -> requestJson.put(HTTP_METHOD, PUT)
+        else -> requestJson.put(HTTP_METHOD, OTHER)
+      }
 
       var json = JsonObject()
       for(cookie in cookies){
@@ -123,8 +135,15 @@ class WebServerVerticle : CoroutineVerticle() {
       }
       requestJson.put(FORM_ATTRIBUTES, json)
 
-      routingContext.next()
+//      launch {
+//        val templatePath = dispatch(path, requestJson)
+//        routingContext.put(TEMPLATE_PATH, templatePath)
+//        routingContext.next()
+//      }
+
+      routingContext.reroute(HttpMethod.GET,"/webroot/test.html")
     }
+
     router.get("/*").handler(routingHandler)
     router.post("/*").handler(routingHandler)
 
@@ -132,8 +151,7 @@ class WebServerVerticle : CoroutineVerticle() {
     val engine = ThymeleafTemplateEngine.create(vertx)
     val templateHandler = { routingContext:RoutingContext ->
       launch {
-        val json = JsonObject().put("what","nice")
-        val buffer = engine.renderAwait(json, "templates/test.html")
+        val buffer = engine.renderAwait(JsonObject(), routingContext.get(TEMPLATE_PATH))
         routingContext.response().end(buffer)
       }
       Unit
@@ -181,9 +199,24 @@ class WebServerVerticle : CoroutineVerticle() {
     }
   }
 
-  private fun dispatch(address:String, routingContext: RoutingContext){
-    launch {
-      val result = vertx.eventBus().sendAwait<JsonObject>(address, JsonObject()).body()
+  private suspend fun dispatch(path:String, jsonObject: JsonObject):String{
+    val result:String
+
+    val verticleAddress = verticleAddressDispatch(path)
+    if(verticleAddress!=null){
+      val responseJson = vertx.eventBus().sendAwait<JsonObject>(verticleAddress, jsonObject).body()
+      result = responseJson.getString(TEMPLATE_PATH)
+    }else{
+      result = ""
+    }
+
+    return result
+  }
+
+  private fun verticleAddressDispatch(path:String):String?{
+    return when(path){
+      "/" -> "cn.net.polyglot.verticle.SampleVerticle"
+      else -> null
     }
   }
 
