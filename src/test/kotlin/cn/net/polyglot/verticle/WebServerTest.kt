@@ -49,22 +49,32 @@ class WebServerTest {
 
   private val webClient = WebClient.create(vertx)
 
-
   @Test
-  fun testTemplate(context: TestContext) {
+  fun testIndex(context: TestContext){
     val async = context.async()
-
-    val list = ArrayList<String>()
-    list.add("test0")
-    list.add("test1")
-
-    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/test")
-      .sendForm(MultiMap.caseInsensitiveMultiMap().set("test", list))
-//      .send()
-      { response ->
-        println(response.result().body())
-//        context.assertTrue(response.result().body().toString().contains("nice"))
+    webClient.get(config.getInteger(HTTP_PORT), "localhost", "/")
+      .send{
+        response ->
+        context.assertTrue(response.result().body().toString().contains("Social Vertex"))
         async.complete()
       }
   }
+
+//  @Test
+//  fun testTemplate(context: TestContext) {
+//    val async = context.async()
+//
+//    val list = ArrayList<String>()
+//    list.add("test0")
+//    list.add("test1")
+//
+//    webClient.post(config.getInteger(HTTP_PORT), "localhost", "/index.htm")
+//      .sendForm(MultiMap.caseInsensitiveMultiMap().set("test", list))
+////      .send()
+//      { response ->
+//        println(response.result().body())
+////        context.assertTrue(response.result().body().toString().contains("nice"))
+//        async.complete()
+//      }
+//  }
 }

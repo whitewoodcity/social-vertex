@@ -76,8 +76,16 @@ class WebServerVerticle : CoroutineVerticle() {
     }
 
     //web start
-    router.getWithRegex("/.*(\\.html|\\.css|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
+    router.getWithRegex("/.*(\\.htm|\\.css|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create("./"))//如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
+
+    router.get("/*").handler { routingContext:RoutingContext ->
+      val path = routingContext.request().path()
+      when(path){
+        "/","/index" -> routingContext.reroute("/index.htm")
+        else -> routingContext.next()
+      }
+    }
 
     val routingHandler = { routingContext:RoutingContext ->
 
@@ -141,7 +149,7 @@ class WebServerVerticle : CoroutineVerticle() {
 //        routingContext.next()
 //      }
 
-      routingContext.reroute(HttpMethod.GET,"/webroot/test.html")
+      Unit
     }
 
     router.get("/*").handler(routingHandler)
