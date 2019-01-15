@@ -146,9 +146,9 @@ class WebServerVerticle : CoroutineVerticle() {
       requestJson.put(FORM_ATTRIBUTES, json)
 
       launch {
-        //todo send data to sample verticle and receive render json back
+        val responseJson = vertx.eventBus().sendAwait<JsonObject>(SampleVerticle::class.java.name, requestJson).body()
 
-        val buffer = engine.renderAwait(JsonObject(), routingContext.get(TEMPLATE_PATH))
+        val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES), responseJson.getString(TEMPLATE_PATH))
         routingContext.response().end(buffer)
       }
 
