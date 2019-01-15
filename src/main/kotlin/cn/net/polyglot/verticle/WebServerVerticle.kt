@@ -78,7 +78,7 @@ class WebServerVerticle : CoroutineVerticle() {
     //web start
     router.getWithRegex("/.*(\\.htm|\\.css|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create("./"))//如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
-
+    //reroute to the static files
     router.get("/*").handler { routingContext:RoutingContext ->
       val path = routingContext.request().path()
       when(path){
@@ -87,6 +87,8 @@ class WebServerVerticle : CoroutineVerticle() {
       }
     }
 
+    //dynamic page
+    val engine = ThymeleafTemplateEngine.create(vertx)
     val routingHandler = { routingContext:RoutingContext ->
 
       val requestJson = JsonObject()
@@ -143,30 +145,18 @@ class WebServerVerticle : CoroutineVerticle() {
       }
       requestJson.put(FORM_ATTRIBUTES, json)
 
-//      launch {
-//        val templatePath = dispatch(path, requestJson)
-//        routingContext.put(TEMPLATE_PATH, templatePath)
-//        routingContext.next()
-//      }
+      launch {
+        //todo send data to sample verticle and receive render json back
+
+        val buffer = engine.renderAwait(JsonObject(), routingContext.get(TEMPLATE_PATH))
+        routingContext.response().end(buffer)
+      }
 
       Unit
     }
 
     router.get("/*").handler(routingHandler)
     router.post("/*").handler(routingHandler)
-
-    //render part
-    val engine = ThymeleafTemplateEngine.create(vertx)
-    val templateHandler = { routingContext:RoutingContext ->
-      launch {
-        val buffer = engine.renderAwait(JsonObject(), routingContext.get(TEMPLATE_PATH))
-        routingContext.response().end(buffer)
-      }
-      Unit
-    }
-
-    router.post("/*").handler(templateHandler)
-    router.get("/*").handler(templateHandler)
     //web end
 
     //im start
