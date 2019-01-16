@@ -77,7 +77,7 @@ class WebServerVerticle : CoroutineVerticle() {
     }
 
     //web start
-    router.getWithRegex("/.*(\\.htm|\\.css|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
+    router.getWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create())//StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
     //reroute to the static files
     router.get("/*").handler { routingContext:RoutingContext ->
