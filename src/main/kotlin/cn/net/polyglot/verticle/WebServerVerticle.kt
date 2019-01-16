@@ -95,7 +95,6 @@ class WebServerVerticle : CoroutineVerticle() {
       val requestJson = JsonObject()
 
       val path = routingContext.request().path()
-      println(path)
       val httpMethod = routingContext.request().method()
       val cookies = routingContext.cookies()
       val headers = routingContext.request().headers()
