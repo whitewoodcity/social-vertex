@@ -40,6 +40,7 @@ JsonObject config = new JsonObject()
   .put("host", "localhost")
   .put("tcp-port", 7373)
   .put("http-port",80)
+  .put("https-port",443)
 
 ConfigStoreOptions fileStore = new ConfigStoreOptions()
   .setType("file")
@@ -69,6 +70,7 @@ retriever.getConfig { ar ->
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMTcpServerVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMMessageVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.SessionVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.SampleVerticle", option)
 
   } catch (Exception e) {

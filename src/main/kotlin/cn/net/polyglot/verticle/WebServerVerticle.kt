@@ -29,7 +29,9 @@ import cn.net.polyglot.module.lowerCaseValue
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod
+import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.JsonObject
+import io.vertx.core.net.PemKeyCertOptions
 import io.vertx.ext.web.Cookie
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
@@ -47,7 +49,6 @@ import kotlin.random.Random
 class WebServerVerticle : CoroutineVerticle() {
 
   override suspend fun start() {
-    val httpServer = vertx.createHttpServer()
     val router = Router.router(vertx)
 
     val generator = UUIDGenerator(SecureRandom())
@@ -77,12 +78,12 @@ class WebServerVerticle : CoroutineVerticle() {
 
     //web start
     router.getWithRegex("/.*(\\.htm|\\.css|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
-      .handler(StaticHandler.create("./"))//如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
+      .handler(StaticHandler.create())//StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
     //reroute to the static files
     router.get("/*").handler { routingContext:RoutingContext ->
       val path = routingContext.request().path()
       when(path){
-        "/","/index" -> routingContext.reroute("/index.htm")
+        "","/","/index" -> routingContext.reroute(HttpMethod.GET, "/index.htm")
         else -> routingContext.next()
       }
     }
@@ -94,6 +95,7 @@ class WebServerVerticle : CoroutineVerticle() {
       val requestJson = JsonObject()
 
       val path = routingContext.request().path()
+      println(path)
       val httpMethod = routingContext.request().method()
       val cookies = routingContext.cookies()
       val headers = routingContext.request().headers()
@@ -131,7 +133,7 @@ class WebServerVerticle : CoroutineVerticle() {
 
       json = JsonObject()
       iterator = attributes.iterator()
-      println(attributes)
+
       while(iterator.hasNext()){
         val i = iterator.next()
         if(json.containsKey(i.key)){
@@ -188,6 +190,7 @@ class WebServerVerticle : CoroutineVerticle() {
     }
     //im end
 
+    val httpServer = vertx.createHttpServer()
     httpServer.requestHandler(router).listen(config.getInteger(HTTP_PORT)) {
       if (it.succeeded()) {
         println("${this::class.java.name} is deployed")
@@ -195,28 +198,21 @@ class WebServerVerticle : CoroutineVerticle() {
         println("${this::class.java.name} fail to deploy")
       }
     }
-  }
 
-  private suspend fun dispatch(path:String, jsonObject: JsonObject):String{
-    val result:String
-
-    val verticleAddress = verticleAddressDispatch(path)
-    if(verticleAddress!=null){
-      val responseJson = vertx.eventBus().sendAwait<JsonObject>(verticleAddress, jsonObject).body()
-      result = responseJson.getString(TEMPLATE_PATH)
-    }else{
-      result = ""
-    }
-
-    return result
-  }
-
-  private fun verticleAddressDispatch(path:String):String?{
-    return when(path){
-      "/" -> "cn.net.polyglot.verticle.SampleVerticle"
-      else -> null
+    if(config.containsKey("KeyPath")&&config.containsKey("CertPath")){
+      val options = HttpServerOptions().setSsl(true).setPemKeyCertOptions(
+        PemKeyCertOptions().setKeyPath(config.getString("KeyPath"))
+          .setCertPath(config.getString("CertPath"))
+      )
+      vertx.createHttpServer(options)
+        .requestHandler(router).listen(config.getInteger(HTTPS_PORT)) {
+          if (it.succeeded()) {
+            println("${this::class.java.name} is deployed")
+          } else {
+            println("${this::class.java.name} fail to deploy")
+          }
+        }
     }
   }
-
 }
 
