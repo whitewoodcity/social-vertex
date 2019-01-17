@@ -77,8 +77,9 @@ class WebServerVerticle : CoroutineVerticle() {
     }
 
     //web start
-    router.getWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
-      .handler(StaticHandler.create())//StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
+    router.routeWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
+      .handler(StaticHandler.create()) //StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
+      .handler{ it.response().end() }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
     //reroute to the static files
     router.get("/*").handler { routingContext:RoutingContext ->
       val path = routingContext.request().path()
@@ -148,8 +149,7 @@ class WebServerVerticle : CoroutineVerticle() {
 
       launch {
         val responseJson = vertx.eventBus().sendAwait<JsonObject>(SampleVerticle::class.java.name, requestJson).body()
-
-        val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES), responseJson.getString(TEMPLATE_PATH))
+        val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
         routingContext.response().end(buffer)
       }
 
@@ -194,6 +194,7 @@ class WebServerVerticle : CoroutineVerticle() {
       if (it.succeeded()) {
         println("${this::class.java.name} is deployed")
       } else {
+        it.cause().printStackTrace()
         println("${this::class.java.name} fail to deploy")
       }
     }
@@ -206,9 +207,10 @@ class WebServerVerticle : CoroutineVerticle() {
       vertx.createHttpServer(options)
         .requestHandler(router).listen(config.getInteger(HTTPS_PORT)) {
           if (it.succeeded()) {
-            println("${this::class.java.name} is deployed")
+            println("${this::class.java.name} with secure is deployed")
           } else {
-            println("${this::class.java.name} fail to deploy")
+            it.cause().printStackTrace()
+            println("${this::class.java.name} with secure fail to deploy")
           }
         }
     }
