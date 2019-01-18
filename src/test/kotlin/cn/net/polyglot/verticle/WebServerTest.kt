@@ -38,7 +38,7 @@ class WebServerTest {
 
       val option = DeploymentOptions(config = config)
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.SampleVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.LoginVerticle", option, context.asyncAssertSuccess())
     }
 
     @AfterClass

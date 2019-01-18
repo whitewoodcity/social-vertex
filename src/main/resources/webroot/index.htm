@@ -1,13 +1,43 @@
 <html>
 <head>
     <title>Social Vertex</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="index.css">
 </head>
 <body>
-    Social Vertex
-<form action="/login" method="post">
-    <label>Your name please?</label>
-    <input name="id" id="id">
-    <button type="submit">Submit</button>
-</form>
+<div class="container">
+    <form action="/login" method="post">
+    <table id="table1">
+        <tbody>
+        <tr><td colspan="2">Social Vertex</td> </tr>
+        <tr>
+            <td>
+                <label>User Id</label>
+            </td>
+            <td>
+                <input name="id" id="id"><br/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Password</label>
+            </td>
+            <td>
+                <input type="password" name="password" id="password"><br/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <button type="submit">Login</button>
+            </td>
+            <td>
+                <button type="reset">Reset</button>
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+    </form>
+</div>
 </body>
 </html>

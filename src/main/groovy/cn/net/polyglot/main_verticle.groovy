@@ -71,7 +71,7 @@ retriever.getConfig { ar ->
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMTcpServerVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMMessageVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.SessionVerticle", option)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.SampleVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.LoginVerticle", option)
 
   } catch (Exception e) {
     e.printStackTrace()

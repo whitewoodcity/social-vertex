@@ -149,14 +149,14 @@ class WebServerVerticle : CoroutineVerticle() {
 
       //dispatch by path
       val address = when(path){
-        "/login" -> SampleVerticle::class.java.name
+        "/login" -> LoginVerticle::class.java.name
         else -> ""
       }
 
       launch {
         if(address != ""){
           val responseJson = vertx.eventBus().sendAwait<JsonObject>(address, requestJson).body()
-          val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
+          val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)?:JsonObject(), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
           routingContext.response().end(buffer)
         }else{
           routingContext.reroute("/error.htm")
