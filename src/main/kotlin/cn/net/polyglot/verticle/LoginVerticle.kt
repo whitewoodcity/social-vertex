@@ -1,6 +1,7 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.module.md5
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.existsAwait
 import io.vertx.kotlin.core.file.readFileAwait
@@ -19,7 +20,7 @@ class LoginVerticle : ServletVerticle() {
     var verified = false
     if(vertx.fileSystem().existsAwait(config.getString(DIR) + File.separator + id+ File.separator + "user.json")){
       val fileJson = vertx.fileSystem().readFileAwait(config.getString(DIR) + File.separator + id+ File.separator + "user.json").toJsonObject()
-      if(fileJson.getString(PASSWORD) == password)
+      if(fileJson.getString(PASSWORD) == md5(password))
         verified = true
     }
 
