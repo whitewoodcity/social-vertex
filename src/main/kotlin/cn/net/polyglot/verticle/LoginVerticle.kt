@@ -25,6 +25,7 @@ class LoginVerticle : ServletVerticle() {
     }
 
     return if(verified){
+      session.put(ID, id)
       JsonObject()
         .put(VALUES, JsonObject().put("username", json.getJsonObject(FORM_ATTRIBUTES).getString("id")))
         .put(TEMPLATE_PATH, "sample/result.html")
