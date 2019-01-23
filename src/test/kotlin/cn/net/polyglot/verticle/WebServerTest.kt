@@ -37,8 +37,8 @@ class WebServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = DeploymentOptions(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.LoginVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.WebServerVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.LoginVerticle", option, context.asyncAssertSuccess())
     }
 
     @AfterClass

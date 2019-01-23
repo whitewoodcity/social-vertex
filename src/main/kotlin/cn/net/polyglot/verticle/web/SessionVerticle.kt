@@ -1,4 +1,4 @@
-package cn.net.polyglot.verticle
+package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
 import io.vertx.core.json.JsonObject

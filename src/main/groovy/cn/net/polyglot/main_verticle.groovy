@@ -67,11 +67,11 @@ retriever.getConfig { ar ->
     }
 
     def option = new DeploymentOptions().setConfig(config)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMTcpServerVerticle", option)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMMessageVerticle", option)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.SessionVerticle", option)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.LoginVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.WebServerVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.SessionVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.LoginVerticle", option)
 
   } catch (Exception e) {
     e.printStackTrace()

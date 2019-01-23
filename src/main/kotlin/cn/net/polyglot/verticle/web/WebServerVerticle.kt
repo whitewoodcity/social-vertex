@@ -22,10 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-package cn.net.polyglot.verticle
+package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue
+import cn.net.polyglot.verticle.im.IMMessageVerticle
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod

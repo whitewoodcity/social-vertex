@@ -1,4 +1,4 @@
-package cn.net.polyglot.verticle
+package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
 import io.vertx.core.json.JsonObject
@@ -12,7 +12,7 @@ abstract class ServletVerticle:CoroutineVerticle() {
 
     vertx.eventBus().consumer<JsonObject>(address){
       val reqJson = it.body()
-      val session:Session = Session(reqJson.getJsonObject(COOKIES).getString(SESSION_ID))
+      val session: Session = Session(reqJson.getJsonObject(COOKIES).getString(SESSION_ID))
 
       launch {
         when(reqJson.getString(HTTP_METHOD)){
@@ -50,11 +50,11 @@ abstract class ServletVerticle:CoroutineVerticle() {
     }
   }
 
-  open suspend fun doGet(json:JsonObject, session:Session):JsonObject{
+  open suspend fun doGet(json:JsonObject, session: Session):JsonObject{
     return json
   }
 
-  open suspend fun doPost(json:JsonObject, session:Session):JsonObject{
+  open suspend fun doPost(json:JsonObject, session: Session):JsonObject{
     return json
   }
 

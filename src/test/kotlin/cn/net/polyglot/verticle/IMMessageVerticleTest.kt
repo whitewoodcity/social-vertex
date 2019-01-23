@@ -25,6 +25,7 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.verticle.im.IMMessageVerticle
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -56,7 +57,7 @@ class IMMessageVerticleTest {
           vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR),true)
 
       val option = DeploymentOptions(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMMessageVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option, context.asyncAssertSuccess())
     }
 
     @AfterClass

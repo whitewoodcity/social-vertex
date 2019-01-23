@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
-package cn.net.polyglot.verticle
+package cn.net.polyglot.verticle.im
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue

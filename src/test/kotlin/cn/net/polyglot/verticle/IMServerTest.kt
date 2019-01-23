@@ -63,9 +63,9 @@ class IMServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = DeploymentOptions(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMTcpServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.IMMessageVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.WebServerVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option, context.asyncAssertSuccess())
     }
 
     @AfterClass
