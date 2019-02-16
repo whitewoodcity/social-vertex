@@ -2,6 +2,7 @@ package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.md5
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.existsAwait
 import io.vertx.kotlin.core.file.readFileAwait
@@ -17,7 +18,7 @@ class LoginVerticle : ServletVerticle() {
     val id = json.getJsonObject(FORM_ATTRIBUTES).getString(ID)
     val password = json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD)
 
-    var verified = false
+    var verified = true
     if(vertx.fileSystem().existsAwait(config.getString(DIR) + File.separator + id+ File.separator + "user.json")){
       val fileJson = vertx.fileSystem().readFileAwait(config.getString(DIR) + File.separator + id+ File.separator + "user.json").toJsonObject()
       if(fileJson.getString(PASSWORD) == md5(password))
@@ -26,8 +27,11 @@ class LoginVerticle : ServletVerticle() {
 
     return if(verified){
       session.put(ID, id)
-      JsonObject()
-        .put(VALUES, JsonObject().put("username", json.getJsonObject(FORM_ATTRIBUTES).getString("id")))
+      JsonObject().put(VALUES,
+          JsonObject()
+            .put("username", json.getJsonObject(FORM_ATTRIBUTES).getString("id"))
+            .put("friends", JsonArray().add("1").add("2"))
+        )
         .put(TEMPLATE_PATH, "sample/result.html")
     }else{
       JsonObject()

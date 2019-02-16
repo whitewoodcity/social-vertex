@@ -31,6 +31,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.kotlin.core.DeploymentOptions
+import io.vertx.kotlin.core.deploymentOptionsOf
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -56,7 +57,7 @@ class IMMessageVerticleTest {
         if(vertx.fileSystem().existsBlocking(config.getString(DIR)))
           vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR),true)
 
-      val option = DeploymentOptions(config = config)
+      val option = deploymentOptionsOf(config = config)
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option, context.asyncAssertSuccess())
     }
 

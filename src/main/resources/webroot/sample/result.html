@@ -6,6 +6,10 @@
 <body>
 Login Succeed<br/>
 
-Hi [[${username}]] how r u?
+Hi [[${username}]] how r u?<br/>
+
+<div th:each="friend : ${friends}">
+    <span th:text="${friend}">0000</span>
+</div>
 </body>
 </html>

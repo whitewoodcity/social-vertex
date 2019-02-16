@@ -1,13 +1,12 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
-import io.vertx.core.MultiMap
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
-import io.vertx.kotlin.core.DeploymentOptions
+import io.vertx.kotlin.core.deploymentOptionsOf
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -16,7 +15,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.io.File
 import java.nio.file.Paths
-import java.util.ArrayList
 
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
@@ -36,7 +34,7 @@ class WebServerTest {
       if (vertx.fileSystem().existsBlocking(config.getString(DIR)))
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
-      val option = DeploymentOptions(config = config)
+      val option = deploymentOptionsOf(config = config)
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.WebServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.LoginVerticle", option, context.asyncAssertSuccess())
     }
