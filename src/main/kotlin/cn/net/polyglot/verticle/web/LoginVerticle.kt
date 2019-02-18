@@ -33,6 +33,8 @@ class LoginVerticle : ServletVerticle() {
 
       if(asyncResult.containsKey(LOGIN) && asyncResult.getBoolean(LOGIN)){
 
+        session.put(ID, id)
+
         JsonObject()
           .put(VALUES,asyncResult.put(ID, id))
           .put(TEMPLATE_PATH, "sample/result.html")
@@ -45,4 +47,5 @@ class LoginVerticle : ServletVerticle() {
         .put(TEMPLATE_PATH, "error.htm")
     }
   }
+
 }
