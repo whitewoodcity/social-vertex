@@ -188,8 +188,7 @@ class WebServerVerticle : CoroutineVerticle() {
             routingContext.response().end()
           }
           else -> launch {
-            val result =
-              vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json).body()
+            val result = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json).body()
             routingContext.response().end(result.toString())
           }
         }

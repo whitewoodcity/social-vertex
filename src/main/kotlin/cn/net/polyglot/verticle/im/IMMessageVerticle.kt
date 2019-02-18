@@ -175,7 +175,7 @@ class IMMessageVerticle : CoroutineVerticle() {
 
           for (friend in friends) {
             val friendId = friend.substringAfterLast(File.separator)
-            if (fs.lpropsAwait(friend).isDirectory && !friendId.startsWith("")) {
+            if (fs.lpropsAwait(friend).isDirectory && !friendId.startsWith(".")) {
               friendList.add(fs.readFileAwait("$friend${File.separator}$friendId.json").toJsonObject())
             }
           }
