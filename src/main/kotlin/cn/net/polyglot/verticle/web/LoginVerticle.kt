@@ -3,14 +3,8 @@ package cn.net.polyglot.verticle.web
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.md5
 import cn.net.polyglot.verticle.im.IMMessageVerticle
-import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
-import io.vertx.kotlin.core.file.existsAwait
-import io.vertx.kotlin.core.file.readDirAwait
-import io.vertx.kotlin.core.file.readFileAwait
-import java.io.File
-import java.io.File.separator
 
 class LoginVerticle : ServletVerticle() {
   override suspend fun start() {
