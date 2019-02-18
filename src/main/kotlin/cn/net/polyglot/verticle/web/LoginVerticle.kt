@@ -33,8 +33,6 @@ class LoginVerticle : ServletVerticle() {
 
       if(asyncResult.containsKey(LOGIN) && asyncResult.getBoolean(LOGIN)){
 
-        println(asyncResult)
-
         JsonObject()
           .put(VALUES,asyncResult.put(ID, id))
           .put(TEMPLATE_PATH, "sample/result.html")
