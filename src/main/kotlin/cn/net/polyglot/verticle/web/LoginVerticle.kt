@@ -47,20 +47,4 @@ class LoginVerticle : ServletVerticle() {
         .put(TEMPLATE_PATH, "error.htm")
     }
   }
-
-  private suspend fun retrieveFriends(id:String):JsonArray{
-    val friends = JsonArray()
-
-    val dir = config.getString(DIR)
-
-    if(vertx.fileSystem().existsAwait("$dir$separator$id")){
-      val list = vertx.fileSystem().readDirAwait("$dir$separator$id")
-      for(string in list){
-        if(!string.contains("."))
-          friends.add(string)
-      }
-    }
-
-    return friends
-  }
 }
