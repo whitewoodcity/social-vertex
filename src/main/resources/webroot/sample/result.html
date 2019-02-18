@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
 </head>
 <body>
-你好 [[${username}]]：<br/>
+你好 [[${id}]]（[[${nickname}]]）：<br/>
 好友列表：<br/>
 <div th:each="friend : ${friends}">
-    <span th:text="${friend}">0000</span> <br/>
+    <span th:text="${friend.getString('id')}">0000</span> <br/>
 </div>
 
 </body>
