@@ -7,7 +7,8 @@
 你好 [[${id}]]（[[${nickname}]]）：<br/>
 好友列表：<br/>
 <div th:each="friend : ${friends}">
-    <span th:text="${friend.getString('id')}">0000</span> <br/>
+    <span th:text="${friend.getString('id')}">id</span>（<span th:text="${friend.getString('nickname')}">nickname</span>）
+    <br/>
 </div>
 
 </body>
