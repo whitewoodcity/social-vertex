@@ -172,7 +172,6 @@ class IMMessageVerticle : CoroutineVerticle() {
           val fs = vertx.fileSystem()
           val friendList = JsonArray()
           val friends = fs.readDirAwait(dir)
-
           for (friend in friends) {
             val friendId = friend.substringAfterLast(File.separator)
             if (fs.lpropsAwait(friend).isDirectory && !friendId.startsWith(".")) {

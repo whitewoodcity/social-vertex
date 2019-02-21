@@ -31,7 +31,7 @@ class LoginVerticle : ServletVerticle() {
 
         JsonObject()
           .put(VALUES,asyncResult.put(ID, id))
-          .put(TEMPLATE_PATH, "sample/result.html")
+          .put(TEMPLATE_PATH, "index.html")
       }else{
         JsonObject()
           .put(TEMPLATE_PATH, "index.htm")
