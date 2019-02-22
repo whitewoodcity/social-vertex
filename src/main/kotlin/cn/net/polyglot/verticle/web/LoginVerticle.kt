@@ -28,15 +28,17 @@ class LoginVerticle : ServletVerticle() {
       if(asyncResult.containsKey(LOGIN) && asyncResult.getBoolean(LOGIN)){
 
         session.put(ID, id)
+        session.put(NICKNAME, asyncResult.getString(NICKNAME))
 
         JsonObject()
-          .put(VALUES,asyncResult.put(ID, id))
+          .put(VALUES,asyncResult)
           .put(TEMPLATE_PATH, "index.html")
       }else{
         JsonObject()
           .put(TEMPLATE_PATH, "index.htm")
       }
     }catch (e:Throwable){
+      e.printStackTrace()
       JsonObject()
         .put(TEMPLATE_PATH, "error.htm")
     }

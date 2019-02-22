@@ -1,12 +1,9 @@
 package cn.net.polyglot.verticle.web
 
-import cn.net.polyglot.config.DIR
-import cn.net.polyglot.config.TEMPLATE_PATH
+import cn.net.polyglot.config.*
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.existsAwait
 import java.io.File
-import cn.net.polyglot.config.COMMUNITY
-import cn.net.polyglot.config.FORM_ATTRIBUTES
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.file.OpenOptions
 import io.vertx.kotlin.core.file.createFileAwait
@@ -25,7 +22,10 @@ class ForumVerticle : ServletVerticle() {
   override suspend fun doPost(json: JsonObject, session: Session): JsonObject {
 
     return try{
-
+      if(session.get(ID) == null){
+        return JsonObject()
+          .put(TEMPLATE_PATH, "index.htm")
+      }
 
       val dir = config.getString(DIR)
 
@@ -41,9 +41,9 @@ class ForumVerticle : ServletVerticle() {
 
       vertx.fileSystem().createFileAwait(fullPath)
       vertx.fileSystem().openAwait(fullPath, OpenOptions().setAppend(true))
-        .write(json.getJsonObject(FORM_ATTRIBUTES).toBuffer())
-
-      println(json)
+        .write(json.getJsonObject(FORM_ATTRIBUTES)
+          .put(ID, session.get(ID))
+          .put(NICKNAME, session.get(NICKNAME)).toBuffer())
 
       JsonObject().put(TEMPLATE_PATH, "dontuknow/index.html")
     }catch (throwable:Throwable){

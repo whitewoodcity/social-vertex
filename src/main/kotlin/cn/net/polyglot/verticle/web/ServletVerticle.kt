@@ -30,7 +30,7 @@ abstract class ServletVerticle:CoroutineVerticle() {
 
   inner class Session(private val id: String) {
 
-    fun put(key:String, value:String){
+    fun put(key:String, value:String?){
       vertx.eventBus().send(SessionVerticle::class.java.name,
         JsonObject().put(ACTION, PUT).put(SESSION_ID, id).put(INFORMATION, JsonObject().put(key, value))
       )

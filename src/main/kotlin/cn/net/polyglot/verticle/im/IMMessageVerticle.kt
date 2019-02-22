@@ -178,8 +178,12 @@ class IMMessageVerticle : CoroutineVerticle() {
               friendList.add(fs.readFileAwait("$friend${File.separator}$friendId.json").toJsonObject())
             }
           }
+
+          json.mergeIn(vertx.fileSystem().readFileAwait(dir + File.separator + "user.json").toJsonObject())
+
           return result.put(subtype, true)
-            .put(NICKNAME, json.getString(ID))
+            .put(ID, json.getString(ID))
+            .put(NICKNAME, json.getString(NICKNAME))
             .put(FRIENDS, friendList)
         }
         HISTORY->{
