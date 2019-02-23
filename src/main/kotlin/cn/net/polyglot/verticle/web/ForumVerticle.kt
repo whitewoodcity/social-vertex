@@ -44,7 +44,7 @@ class ForumVerticle : ServletVerticle() {
           .put(NICKNAME, session.get(NICKNAME)).toBuffer())
 
       JsonObject()
-        .put("articles", getRecentArticles())
+        .put(ARTICLES, getRecentArticles())
         .put(TEMPLATE_PATH, "dontuknow/index.html")
     } catch (throwable: Throwable) {
       throwable.printStackTrace()
@@ -61,7 +61,7 @@ class ForumVerticle : ServletVerticle() {
     var date = LocalDateTime.now()
 
     if (!vertx.fileSystem().readDirAwait(dir + File.separator + COMMUNITY).isEmpty()) {
-      while (date.year > 2018 || articles.size() >= 20) {
+      while (date.year > 2018 && articles.size() < 20) {
 
         val uri = "year=${date.year}&month=${date.monthValue}&day=${date.dayOfMonth}"
 
@@ -74,8 +74,8 @@ class ForumVerticle : ServletVerticle() {
 
                 val json =
                   JsonObject()
-                    .put("uri", "$uri&name=${path.substringAfterLast("/").substringBefore(".")}")
-                    .put("title", file.getString("title"))
+                    .put(PARAMETERS, "$uri&name=${path.substringAfterLast("/").substringBefore(".")}")
+                    .put(TITLE, file.getString(TITLE))
 
                 articles.add(json)
               }catch (throwable:Throwable){

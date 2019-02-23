@@ -61,6 +61,11 @@ const val UUID = "uuid"
 
 const val END = "\r\n"
 const val SESSION_ID = "social-vertex-id"
+const val COMMUNITY = ".community"
+
+const val TITLE = "title"
+const val PARAMETERS = "parameters"
+const val ARTICLES = "articles"
 
 //内部使用的字符串
 const val HTTP_METHOD = "HTTP_METHOD"
@@ -80,6 +85,5 @@ const val PATH = "PATH"
 const val TEMPLATE_PATH = "TEMPLATE_PATH"
 const val QUERY_PARAM = PARAMS
 const val VALUES = "VALUES"
-const val COMMUNITY = ".community"
 
 const val SENSITIVE_WORDS = "fuck shit caonima ganniniang qunima tmd falun qnm"
