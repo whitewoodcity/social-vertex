@@ -9,6 +9,7 @@ import io.vertx.core.json.JsonArray
 import io.vertx.kotlin.core.file.*
 import java.security.SecureRandom
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 class ForumVerticle : ServletVerticle() {
   private val generator = UUIDGenerator(SecureRandom())
@@ -76,6 +77,7 @@ class ForumVerticle : ServletVerticle() {
                   JsonObject()
                     .put(PARAMETERS, "$uri&name=${path.substringAfterLast("/").substringBefore(".")}")
                     .put(TITLE, file.getString(TITLE))
+                    .put(DATE, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 
                 articles.add(json)
               }catch (throwable:Throwable){
