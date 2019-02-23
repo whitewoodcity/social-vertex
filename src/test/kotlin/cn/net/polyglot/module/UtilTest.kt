@@ -29,6 +29,7 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.time.LocalDateTime
 
 @RunWith(VertxUnitRunner::class)
 class UtilTest{
@@ -53,5 +54,10 @@ class UtilTest{
 
     context.assertEquals(json.getInteger("field"), 111)
     context.assertEquals(json.getString("field0"), "zhaoce")
+  }
+
+  @Test
+  fun test(context: TestContext){
+    println("/root/social-vertex/.community/2019/2/23/99377f18-4425-45bd-ada0-a8f782154d48.json".substringAfterLast("/").substringBefore("."))
   }
 }

@@ -38,7 +38,6 @@ class LoginVerticle : ServletVerticle() {
           .put(TEMPLATE_PATH, "index.htm")
       }
     }catch (e:Throwable){
-      e.printStackTrace()
       JsonObject()
         .put(TEMPLATE_PATH, "error.htm")
     }
