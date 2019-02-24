@@ -72,7 +72,7 @@ retriever.getConfig { ar ->
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.SessionVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.LoginVerticle", option)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.ForumVerticle", option)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.DontuknowVerticle", option)
 
   } catch (Exception e) {
     e.printStackTrace()

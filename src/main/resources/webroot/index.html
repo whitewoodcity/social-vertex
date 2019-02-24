@@ -7,7 +7,7 @@
 <body>
 <div class="container">
     你好 [[${id}]]（[[${nickname}]]）：<br/>
-    <a href="dontuknow/index.htm">知否？知否？</a><br/>
+    <a href="dontuknow">知否？知否？</a><br/>
     好友列表：<br/>
     <div th:each="friend : ${friends}">
         <span th:text="${friend.getString('id')}">id</span>（<span th:text="${friend.getString('nickname')}">nickname</span>）

@@ -1,33 +1,35 @@
 package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
-import io.vertx.core.json.JsonObject
-import java.io.File
 import com.codahale.fastuuid.UUIDGenerator
-import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonArray
+import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.*
+import java.io.File
 import java.security.SecureRandom
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class ForumVerticle : ServletVerticle() {
+class DontuknowVerticle : ServletVerticle() {
   private val generator = UUIDGenerator(SecureRandom())
 
   override suspend fun start() {
     super.start(this::class.java.name)
   }
 
-  override suspend fun doPost(json: JsonObject, session: Session): JsonObject {
+  override suspend fun doGet(json: JsonObject, session: Session): JsonObject {
+    return doGetAndPost(json, session)
+  }
 
+  override suspend fun doPost(json: JsonObject, session: Session): JsonObject {
+    return doGetAndPost(json, session)
+  }
+
+  suspend fun doGetAndPost(json: JsonObject, session: Session):JsonObject{
     return try {
       if (session.get(ID) == null) {
         return JsonObject()
           .put(TEMPLATE_PATH, "index.htm")
-      }
-
-      when(json.getString(PATH)){
-
       }
 
       val dir = config.getString(DIR)
@@ -40,13 +42,20 @@ class ForumVerticle : ServletVerticle() {
         vertx.fileSystem().mkdirsAwait(datePath)
       }
 
-      val fullPath = datePath + File.separator + generator.generate().toString() + ".json"
+      when(json.getString(PATH)){
+        "/question" -> {
+          val fullPath = datePath + File.separator + generator.generate().toString() + ".json"
 
-      vertx.fileSystem().createFileAwait(fullPath)
-      vertx.fileSystem().openAwait(fullPath, OpenOptions().setAppend(true))
-        .write(json.getJsonObject(FORM_ATTRIBUTES)
-          .put(ID, session.get(ID))
-          .put(NICKNAME, session.get(NICKNAME)).toBuffer())
+          vertx.fileSystem().createFileAwait(fullPath)
+          vertx.fileSystem().writeFileAwait(fullPath,
+            json.getJsonObject(FORM_ATTRIBUTES)
+              .put(ID, session.get(ID))
+              .put(NICKNAME, session.get(NICKNAME)).toBuffer())
+        }
+        else -> {
+
+        }
+      }
 
       JsonObject()
         .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
@@ -94,7 +103,6 @@ class ForumVerticle : ServletVerticle() {
         date = date.minusDays(1)
       }
     }
-    println(articles)
 
     return articles
   }
