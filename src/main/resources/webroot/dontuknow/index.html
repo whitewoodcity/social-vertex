@@ -1,4 +1,4 @@
-<html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <title>Successful login</title>
     <meta charset="UTF-8">
@@ -12,7 +12,12 @@
         请补充相关问题您所了解到的信息和情况（可选）<br/>
         <textarea></textarea><br/>
         以下是最新问题列表：
-
+        <div th:each="article : ${articles}">
+            <a th:href="@{elaborate?}+${article.getString('parameters')}">
+                <span th:text="${article.getString('title')}">这里是标题</span>
+            </a>
+            <br/>
+        </div>
     </form>
 </div>
 </body>

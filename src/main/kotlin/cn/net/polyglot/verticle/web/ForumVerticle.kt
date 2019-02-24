@@ -26,6 +26,10 @@ class ForumVerticle : ServletVerticle() {
           .put(TEMPLATE_PATH, "index.htm")
       }
 
+      when(json.getString(PATH)){
+
+      }
+
       val dir = config.getString(DIR)
 
       val now = LocalDateTime.now()
@@ -45,7 +49,7 @@ class ForumVerticle : ServletVerticle() {
           .put(NICKNAME, session.get(NICKNAME)).toBuffer())
 
       JsonObject()
-        .put(ARTICLES, getRecentArticles())
+        .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
         .put(TEMPLATE_PATH, "dontuknow/index.html")
     } catch (throwable: Throwable) {
       throwable.printStackTrace()
@@ -64,7 +68,7 @@ class ForumVerticle : ServletVerticle() {
     if (!vertx.fileSystem().readDirAwait(dir + File.separator + COMMUNITY).isEmpty()) {
       while (date.year > 2018 && articles.size() < 20) {
 
-        val uri = "year=${date.year}&month=${date.monthValue}&day=${date.dayOfMonth}"
+        val uri = "path=${date.year}${File.separator}${date.monthValue}${File.separator}${date.dayOfMonth}${File.separator}"
 
         if (vertx.fileSystem().existsAwait(dir + File.separator + COMMUNITY + File.separator + date.year + File.separator + date.monthValue + File.separator + date.dayOfMonth)) {
           val list = vertx.fileSystem().readDirAwait(dir + File.separator + COMMUNITY + File.separator + date.year + File.separator + date.monthValue + File.separator + date.dayOfMonth)
@@ -75,7 +79,7 @@ class ForumVerticle : ServletVerticle() {
 
                 val json =
                   JsonObject()
-                    .put(PARAMETERS, "$uri&name=${path.substringAfterLast("/").substringBefore(".")}")
+                    .put(PARAMETERS, "$uri${path.substringAfterLast("/").substringBefore(".")}")
                     .put(TITLE, file.getString(TITLE))
                     .put(DATE, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 
