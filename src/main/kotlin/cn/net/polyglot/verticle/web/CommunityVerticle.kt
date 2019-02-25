@@ -10,7 +10,7 @@ import java.security.SecureRandom
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class DontuknowVerticle : ServletVerticle() {
+class CommunityVerticle : ServletVerticle() {
   private val generator = UUIDGenerator(SecureRandom())
 
   override suspend fun start() {
@@ -25,7 +25,7 @@ class DontuknowVerticle : ServletVerticle() {
     return doGetAndPost(json, session)
   }
 
-  suspend fun doGetAndPost(json: JsonObject, session: Session):JsonObject{
+  suspend fun doGetAndPost(json: JsonObject, session: Session): JsonObject {
     return try {
       if (session.get(ID) == null) {
         return JsonObject()
@@ -43,23 +43,35 @@ class DontuknowVerticle : ServletVerticle() {
       }
 
       when(json.getString(PATH)){
-        "/question" -> {
+        "/submitArticle" -> {
           val fullPath = datePath + File.separator + generator.generate().toString() + ".json"
-
           vertx.fileSystem().createFileAwait(fullPath)
           vertx.fileSystem().writeFileAwait(fullPath,
             json.getJsonObject(FORM_ATTRIBUTES)
               .put(ID, session.get(ID))
               .put(NICKNAME, session.get(NICKNAME)).toBuffer())
-        }
-        else -> {
 
+          JsonObject()
+            .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
+            .put(TEMPLATE_PATH, "community/index.html")
+        }
+        "/community" -> {
+          JsonObject()
+            .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
+            .put(TEMPLATE_PATH, "community/index.html")
+        }
+        "/article" -> {
+          val path = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(PARAMS).getString("path") + ".json"
+          val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
+          JsonObject()
+            .put(VALUES, articleJson)
+            .put(TEMPLATE_PATH, "community/article.html")
+        }
+        else -> {//"/prepareArticle"
+          JsonObject().put(TEMPLATE_PATH, "community/post.html")
         }
       }
 
-      JsonObject()
-        .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
-        .put(TEMPLATE_PATH, "dontuknow/index.html")
     } catch (throwable: Throwable) {
       throwable.printStackTrace()
       JsonObject().put(TEMPLATE_PATH, "error.htm")
