@@ -69,6 +69,14 @@ class CommunityVerticle : ServletVerticle() {
             .put(VALUES, articleJson)
             .put(TEMPLATE_PATH, "community/article.html")
         }
+        "/prepareModifyArticle" -> {
+          val path = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(PARAMS).getString("path") + ".json"
+          val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
+          articleJson.mergeIn(json.getJsonObject(PARAMS))
+          JsonObject()
+            .put(VALUES, articleJson)
+            .put(TEMPLATE_PATH, "community/modifyPost.html")
+        }
         else -> {//"/prepareArticle"
           JsonObject().put(TEMPLATE_PATH, "community/post.html")
         }
