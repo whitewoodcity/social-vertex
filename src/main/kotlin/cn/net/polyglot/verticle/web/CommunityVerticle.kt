@@ -63,6 +63,7 @@ class CommunityVerticle : ServletVerticle() {
         "/article" -> {
           val path = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(PARAMS).getString("path") + ".json"
           val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
+          articleJson.put("displayModificationPanel", session.get(ID) == articleJson.getString(ID))
           JsonObject()
             .put(VALUES, articleJson)
             .put(TEMPLATE_PATH, "community/article.html")
