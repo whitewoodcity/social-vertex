@@ -55,6 +55,19 @@ class CommunityVerticle : ServletVerticle() {
             .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
             .put(TEMPLATE_PATH, "community/index.html")
         }
+        "/modifyArticle" -> {
+          val fullPath = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(FORM_ATTRIBUTES).getString("path") + ".json"
+          vertx.fileSystem().deleteAwait(fullPath)
+          vertx.fileSystem().createFileAwait(fullPath)
+          vertx.fileSystem().writeFileAwait(fullPath,
+            json.getJsonObject(FORM_ATTRIBUTES)
+              .put(ID, session.get(ID))
+              .put(NICKNAME, session.get(NICKNAME)).toBuffer())
+
+          JsonObject()
+            .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
+            .put(TEMPLATE_PATH, "community/index.html")
+        }
         "/community" -> {
           JsonObject()
             .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
