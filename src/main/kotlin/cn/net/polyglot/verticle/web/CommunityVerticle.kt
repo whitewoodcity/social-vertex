@@ -64,6 +64,7 @@ class CommunityVerticle : ServletVerticle() {
           val path = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(PARAMS).getString("path") + ".json"
           val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
           articleJson.put("displayModificationPanel", session.get(ID) == articleJson.getString(ID))
+          articleJson.put("path", json.getJsonObject(PARAMS).getString("path"))
           JsonObject()
             .put(VALUES, articleJson)
             .put(TEMPLATE_PATH, "community/article.html")
@@ -90,7 +91,7 @@ class CommunityVerticle : ServletVerticle() {
     if (!vertx.fileSystem().readDirAwait(dir + File.separator + COMMUNITY).isEmpty()) {
       while (date.year > 2018 && articles.size() < 20) {
 
-        val uri = "path=${date.year}${File.separator}${date.monthValue}${File.separator}${date.dayOfMonth}${File.separator}"
+        val uri = "${date.year}${File.separator}${date.monthValue}${File.separator}${date.dayOfMonth}${File.separator}"
 
         if (vertx.fileSystem().existsAwait(dir + File.separator + COMMUNITY + File.separator + date.year + File.separator + date.monthValue + File.separator + date.dayOfMonth)) {
           val list = vertx.fileSystem().readDirAwait(dir + File.separator + COMMUNITY + File.separator + date.year + File.separator + date.monthValue + File.separator + date.dayOfMonth)

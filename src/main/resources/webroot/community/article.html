@@ -9,8 +9,8 @@
     [[${title}]]<br/>
     [[${body}]]<br/>
     <div th:if=" ${displayModificationPanel}">
-        <a href="modifyArticle">修改</a>
+        <a th:href="@{prepareModifyArticle?path=}+${path}" href="">修改</a>
     </div>
 </div>
 </body>
-</html>
+</html>e

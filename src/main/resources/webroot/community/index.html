@@ -9,7 +9,7 @@
     <a href="prepareArticle">发表文章</a><br/>
     以下是最新文章列表：
     <div th:each="article : ${articles}">
-        <a th:href="@{article?}+${article.getString('parameters')}">
+        <a th:href="@{article?path=}+${article.getString('parameters')}">
             <span th:text="${article.getString('title')}">文章标题</span>
         </a>
         <br/>
