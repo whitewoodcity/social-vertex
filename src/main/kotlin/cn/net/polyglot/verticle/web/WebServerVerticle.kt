@@ -80,7 +80,7 @@ class WebServerVerticle : CoroutineVerticle() {
     //web start
     router.routeWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create()) //StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
-      .handler{ it.response().end("no matched file") }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
+      .handler{it.response().end("no matched file") }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
     //reroute to the static files
     router.get("/*").handler { routingContext:RoutingContext ->
       val path = routingContext.request().path()
@@ -151,7 +151,7 @@ class WebServerVerticle : CoroutineVerticle() {
       //dispatch by path
       val address = when(path){
         "/login","/profile" -> LoginVerticle::class.java.name
-        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/article","/community" -> CommunityVerticle::class.java.name
+        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/prepareSearchArticle","/article","/community" -> CommunityVerticle::class.java.name
         else -> ""
       }
 
@@ -161,7 +161,7 @@ class WebServerVerticle : CoroutineVerticle() {
           val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)?:JsonObject(), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
           routingContext.response().end(buffer)
         }else{
-          routingContext.reroute("/error.htm")
+          routingContext.reroute(HttpMethod.GET,"/error.htm")
         }
       }
 

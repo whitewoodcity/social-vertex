@@ -30,6 +30,10 @@ import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
+import java.time.Duration
+
 
 @RunWith(VertxUnitRunner::class)
 class UtilTest{
@@ -58,6 +62,11 @@ class UtilTest{
 
   @Test
   fun test(context: TestContext){
-    println("/root/social-vertex/.community/2019/2/23/99377f18-4425-45bd-ada0-a8f782154d48.json".substringAfterLast("/").substringBefore("."))
+    val date0 = LocalDateTime.parse("2019-01-01T00:00")
+    val date1 = LocalDateTime.parse("2018-01-01T00:00")
+
+    println(Math.abs(Duration.between(date1, date0).toDays()))
+
+    println(date1.minusDays(365))
   }
 }

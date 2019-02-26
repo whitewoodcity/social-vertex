@@ -103,6 +103,9 @@ class CommunityVerticle : ServletVerticle() {
             .put(VALUES, articleJson)
             .put(TEMPLATE_PATH, "community/modifyPost.html")
         }
+        "/prepareSearchArticle" -> {
+          JsonObject().put(TEMPLATE_PATH, "community/search.html")
+        }
         else -> {//"/prepareArticle"
           JsonObject().put(TEMPLATE_PATH, "community/post.html")
         }
