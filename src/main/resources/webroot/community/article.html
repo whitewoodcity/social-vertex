@@ -10,6 +10,7 @@
     [[${body}]]<br/>
     <div th:if=" ${displayModificationPanel}">
         <a th:href="@{prepareModifyArticle?path=}+${path}" href="">修改</a>
+        <a th:href="@{deleteArticle?path=}+${path}" href="">删除</a>
     </div>
 </div>
 </body>
