@@ -5,6 +5,8 @@ import cn.net.polyglot.module.md5
 import cn.net.polyglot.verticle.im.IMMessageVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.core.file.readFileAwait
+import java.io.File
 
 class LoginVerticle : ServletVerticle() {
   override suspend fun start() {
@@ -22,12 +24,36 @@ class LoginVerticle : ServletVerticle() {
         .put(TYPE, USER)
         .put(SUBTYPE, LOGIN)
 
+    return profile(reqJson, session)
+  }
+
+  override suspend fun doGet(json: JsonObject, session: Session): JsonObject {
+    if (session.get(ID) == null) {
+      return JsonObject()
+        .put(TEMPLATE_PATH, "index.htm")
+    }
+
+    val dir = config.getString(DIR)
+    val path = dir + File.separator + session.get(ID) + File.separator + "user.json"
+    val id = session.get(ID)
+    val password = vertx.fileSystem().readFileAwait(path).toJsonObject().getString(PASSWORD)
+
+    val reqJson =
+      JsonObject().put(ID, id)
+        .put(PASSWORD, password)
+        .put(TYPE, USER)
+        .put(SUBTYPE, LOGIN)
+
+    return profile(reqJson, session)
+  }
+
+  private suspend fun profile(reqJson: JsonObject, session: Session):JsonObject{
     return try{
       val asyncResult = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, reqJson).body()
 
       if(asyncResult.containsKey(LOGIN) && asyncResult.getBoolean(LOGIN)){
 
-        session.put(ID, id)
+        session.put(ID, reqJson.getString(ID))
         session.put(NICKNAME, asyncResult.getString(NICKNAME))
 
         JsonObject()
@@ -42,5 +68,4 @@ class LoginVerticle : ServletVerticle() {
         .put(TEMPLATE_PATH, "error.htm")
     }
   }
-
 }

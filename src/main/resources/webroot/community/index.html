@@ -6,7 +6,9 @@
 </head>
 <body>
 <div class="container">
-    <a href="prepareArticle">发表文章</a><br/>
+    <a href="profile">个人档案</a>
+    <a href="prepareArticle">发表文章</a>
+    <br/>
     以下是最新文章列表：
     <div th:each="article : ${articles}">
         <a th:href="@{article?path=}+${article.getString('parameters')}">

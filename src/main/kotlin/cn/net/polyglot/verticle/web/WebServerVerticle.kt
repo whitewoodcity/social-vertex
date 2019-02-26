@@ -150,7 +150,7 @@ class WebServerVerticle : CoroutineVerticle() {
 
       //dispatch by path
       val address = when(path){
-        "/login" -> LoginVerticle::class.java.name
+        "/login","/profile" -> LoginVerticle::class.java.name
         "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/article","/community" -> CommunityVerticle::class.java.name
         else -> ""
       }
