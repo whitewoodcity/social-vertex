@@ -2,8 +2,10 @@ package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
 import com.codahale.fastuuid.UUIDGenerator
+import io.vertx.core.Future
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.core.executeBlockingAwait
 import io.vertx.kotlin.core.file.*
 import java.io.File
 import java.security.SecureRandom
@@ -105,6 +107,50 @@ class CommunityVerticle : ServletVerticle() {
         }
         "/prepareSearchArticle" -> {
           JsonObject().put(TEMPLATE_PATH, "community/search.html")
+        }
+        "/searchArticle" -> {
+
+          val keyword = json.getJsonObject(FORM_ATTRIBUTES).getString("keyword")
+
+          val date0 = LocalDateTime.parse(json.getJsonObject(FORM_ATTRIBUTES).getString("date0")+"T00:00")
+          val date1 = LocalDateTime.parse(json.getJsonObject(FORM_ATTRIBUTES).getString("date1")+"T00:00")
+
+          val d0 = if(date0.isBefore(date1)) date0 else date1
+          var d1 = if(date0.isBefore(date1)) date1 else date0
+
+          val articles = JsonArray()
+
+          while(!d1.isBefore(d0)){
+
+            val uri = "${d1.year}${File.separator}${d1.monthValue}${File.separator}${d1.dayOfMonth}${File.separator}"
+            val d1Path = dir + File.separator + COMMUNITY + File.separator + d1.year + File.separator + d1.monthValue + File.separator + d1.dayOfMonth
+            if(vertx.fileSystem().existsAwait(d1Path)){
+              val list = vertx.fileSystem().readDirAwait(d1Path)
+
+              for (path in list) {
+                if (path.endsWith("json")) {
+                  try {
+                    val file = vertx.fileSystem().readFileAwait(path).toJsonObject()
+
+                    if(file.getString(TITLE).contains(keyword)){
+                      articles.add(JsonObject()
+                        .put(PARAMETERS, "$uri${path.substringAfterLast("/").substringBefore(".")}")
+                        .put(TITLE, file.getString(TITLE))
+                        .put(DATE, d1.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
+                    }
+                  }catch (throwable:Throwable){
+                    throwable.printStackTrace()
+                  }
+                }
+              }
+            }
+
+            d1 = d1.minusDays(1)
+          }
+
+          JsonObject()
+            .put(VALUES, JsonObject().put(ARTICLES, articles))
+            .put(TEMPLATE_PATH, "community/index.html")
         }
         else -> {//"/prepareArticle"
           JsonObject().put(TEMPLATE_PATH, "community/post.html")
