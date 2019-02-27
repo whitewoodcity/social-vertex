@@ -109,7 +109,7 @@ class CommunityVerticle : ServletVerticle() {
           JsonObject().put(TEMPLATE_PATH, "community/search.html")
         }
         "/searchArticle" -> {
-
+          //考虑放到worker verticle中去执行，如果文件非常多，这里可能会有比较长的执行时间
           val keyword = json.getJsonObject(FORM_ATTRIBUTES).getString("keyword")
 
           val date0 = LocalDateTime.parse(json.getJsonObject(FORM_ATTRIBUTES).getString("date0")+"T00:00")
