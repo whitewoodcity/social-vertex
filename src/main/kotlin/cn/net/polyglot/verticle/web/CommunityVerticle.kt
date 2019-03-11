@@ -73,11 +73,13 @@ class CommunityVerticle : ServletVerticle() {
         "/deleteArticle" -> {
           val path = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(PARAMS).getString("path") + ".json"
 
-          if(session.get(ID)!=vertx.fileSystem().readFileAwait(path).toJsonObject().getString(ID))
-            return JsonObject()
-              .put(TEMPLATE_PATH, "index.htm")
+          if(vertx.fileSystem().existsAwait(path)){
+            if(session.get(ID)!=vertx.fileSystem().readFileAwait(path).toJsonObject().getString(ID))
+              return JsonObject()
+                .put(TEMPLATE_PATH, "index.htm")
 
-          vertx.fileSystem().deleteAwait(path)
+            vertx.fileSystem().deleteAwait(path)
+          }
 
           JsonObject()
             .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
