@@ -6,7 +6,9 @@
 </head>
 <body>
 <div class="container">
+    <img src="portrait" th:src="@{portrait?}+${#strings.randomAlphanumeric(16)}"/><br/>
     <a href="profile">个人档案</a><br/>
+    <a href="/community/upload.htm">上传头像</a><br/>
     <a href="prepareArticle">发表文章</a><br/>
     <a href="prepareSearchArticle">搜索文章</a><br/>
     以下是文章列表：

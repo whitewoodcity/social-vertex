@@ -41,6 +41,8 @@ import io.vertx.ext.web.handler.CookieHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.core.file.readFileAwait
+import io.vertx.kotlin.core.http.sendFileAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.ext.web.common.template.renderAwait
 import kotlinx.coroutines.launch
@@ -148,20 +150,42 @@ class WebServerVerticle : CoroutineVerticle() {
       }
       requestJson.put(FORM_ATTRIBUTES, json)
 
+      json = JsonObject()
+      val json2 = JsonObject()
+      for (f in routingContext.fileUploads()) {
+        json.put(f.name(),f.uploadedFileName())
+        json2.put(f.name(), f.fileName())
+      }
+      requestJson.put(UPLOAD_FILES, json)
+      requestJson.put(UPLOAD_FILE_NAMES, json2)
+
       //dispatch by path
       val address = when(path){
         "/login","/profile" -> LoginVerticle::class.java.name
-        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/prepareSearchArticle","/searchArticle","/article","/community" -> CommunityVerticle::class.java.name
+        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/prepareSearchArticle","/searchArticle","/article", "/community","/portrait","/uploadPortrait" -> CommunityVerticle::class.java.name
         else -> ""
       }
 
       launch {
-        if(address != ""){
-          val responseJson = vertx.eventBus().sendAwait<JsonObject>(address, requestJson).body()
-          val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)?:JsonObject(), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
-          routingContext.response().end(buffer)
+        val responseJson = if(address != ""){
+          vertx.eventBus().sendAwait<JsonObject>(address, requestJson).body()
         }else{
-          routingContext.reroute(HttpMethod.GET,"/error.htm")
+          JsonObject()
+        }
+
+        when{
+          responseJson.containsKey(TEMPLATE_PATH) -> {
+            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)?:JsonObject(), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
+            routingContext.response().end(buffer)
+          }
+          responseJson.containsKey(FILE_PATH) -> {
+            try{
+              routingContext.response().sendFileAwait(responseJson.getString(FILE_PATH))
+            }catch (throwable:Throwable){
+              routingContext.reroute(HttpMethod.GET,"img/default_portrait.png")
+            }
+          }
+          else -> routingContext.reroute(HttpMethod.GET,"/error.htm")
         }
       }
 

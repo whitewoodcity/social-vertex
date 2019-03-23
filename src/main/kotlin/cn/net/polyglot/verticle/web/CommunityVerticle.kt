@@ -154,6 +154,21 @@ class CommunityVerticle : ServletVerticle() {
             .put(VALUES, JsonObject().put(ARTICLES, articles))
             .put(TEMPLATE_PATH, "community/index.html")
         }
+        "/uploadPortrait" -> {
+
+          val jarDir = config.getString(JAR_DIR)
+
+          if(vertx.fileSystem().existsAwait(dir+File.separator+session.get(ID)+File.separator+"portrait")){
+            vertx.fileSystem().deleteAwait(dir+File.separator+session.get(ID)+File.separator+"portrait")
+          }
+
+          vertx.fileSystem().moveAwait(jarDir+File.separator+json.getJsonObject(UPLOAD_FILES).getString("profile"), dir+File.separator+session.get(ID)+File.separator+"portrait")
+
+          JsonObject()
+            .put(VALUES, JsonObject().put(ARTICLES, getRecentArticles()))
+            .put(TEMPLATE_PATH, "community/index.html")
+        }
+        "/portrait" -> JsonObject().put(FILE_PATH, dir+File.separator+session.get(ID)+File.separator+"portrait")
         else -> {//"/prepareArticle"
           JsonObject().put(TEMPLATE_PATH, "community/post.html")
         }

@@ -31,12 +31,16 @@ import io.vertx.core.DeploymentOptions
 import io.vertx.core.Launcher
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.handler.BodyHandler
 
 Vertx vertx = vertx
 
+def currentPath = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent()
+
 JsonObject config = new JsonObject()
   .put("version",0.1d)
-  .put("dir", new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent() + File.separator + "social-vertex")
+  .put("dir", currentPath + File.separator + "social-vertex")
+  .put("jar-dir", currentPath)
   .put("host", "localhost")
   .put("tcp-port", 7373)
   .put("http-port",80)
