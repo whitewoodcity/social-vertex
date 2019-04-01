@@ -9,13 +9,13 @@ import kotlinx.coroutines.launch
 abstract class ServletVerticle:CoroutineVerticle() {
 
   override suspend fun start(){
-    start(this::class.java.asSubclass(this::class.java).name)
+    start(this::class.java.asSubclass(this::class.java).name)//缺省以实际继承类名作为地址
   }
 
-  fun start(address:String) {
+  protected fun start(address:String) {
     vertx.eventBus().consumer<JsonObject>(address){
       val reqJson = it.body()
-      val session: Session = Session(reqJson.getJsonObject(COOKIES).getString(SESSION_ID))
+      val session = Session(reqJson.getJsonObject(COOKIES).getString(SESSION_ID))
 
       launch {
         when(reqJson.getString(HTTP_METHOD)){
