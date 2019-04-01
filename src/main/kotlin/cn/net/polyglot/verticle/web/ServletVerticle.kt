@@ -57,14 +57,14 @@ abstract class ServletVerticle:CoroutineVerticle() {
   }
 
   open suspend fun doGet(json:JsonObject, session: Session):JsonObject{
-    return json
+    return JsonObject().put(EMPTY_RESPONSE, true)
   }
 
   open suspend fun doPost(json:JsonObject, session: Session):JsonObject{
-    return json
+    return JsonObject().put(EMPTY_RESPONSE, true)
   }
 
   open suspend fun doPut(json:JsonObject, session: Session):JsonObject{
-    return json
+    return JsonObject().put(EMPTY_RESPONSE, true)
   }
 }
