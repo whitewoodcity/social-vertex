@@ -8,8 +8,11 @@ import kotlinx.coroutines.launch
 
 abstract class ServletVerticle:CoroutineVerticle() {
 
-  fun start(address:String) {
+  override suspend fun start(){
+    start(this::class.java.asSubclass(this::class.java).name)
+  }
 
+  fun start(address:String) {
     vertx.eventBus().consumer<JsonObject>(address){
       val reqJson = it.body()
       val session: Session = Session(reqJson.getJsonObject(COOKIES).getString(SESSION_ID))
@@ -21,6 +24,9 @@ abstract class ServletVerticle:CoroutineVerticle() {
           }
           GET -> {
             it.reply(doGet(reqJson, session))
+          }
+          PUT -> {
+            it.reply(doPut(reqJson, session))
           }
           else -> it.reply(JsonObject().put(JSON_BODY,"Http Method is not specified"))
         }
@@ -58,4 +64,7 @@ abstract class ServletVerticle:CoroutineVerticle() {
     return json
   }
 
+  open suspend fun doPut(json:JsonObject, session: Session):JsonObject{
+    return json
+  }
 }

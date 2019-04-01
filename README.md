@@ -55,7 +55,7 @@ uri: /message/text
 
 #### 用户注册  
 method: PUT  
-uri: /user/register  
+uri: /  
 ```json
 {
   "type":"user",

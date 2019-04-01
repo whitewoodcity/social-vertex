@@ -25,11 +25,14 @@
             <array />
           </option>
           <option name="coroutinesState" value="enable" />
+          <option name="errors">
+            <ArgumentParseErrors />
+          </option>
         </compilerArguments>
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_12">
     <output url="file://$MODULE_DIR$/target/classes" />
     <output-test url="file://$MODULE_DIR$/target/test-classes" />
     <content url="file://$MODULE_DIR$">
@@ -42,7 +45,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-core:3.6.3" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-core:3.7.0" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.30.Final" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.30.Final" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-transport:4.1.30.Final" level="project" />
@@ -58,13 +61,13 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.8" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.9.8" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.0" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web-common:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-auth-common:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-bridge-common:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-config:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-groovy:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-groovy-gen:3.6.3" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-web:3.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-web-common:3.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-auth-common:3.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-bridge-common:3.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-config:3.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-groovy:3.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-groovy-gen:3.7.0" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-console:2.5.4" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-cli-picocli:2.5.4" level="project" />
     <orderEntry type="library" name="Maven: info.picocli:picocli:3.7.0" level="project" />
@@ -73,24 +76,24 @@
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-xml:2.5.4" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy:2.5.4" level="project" />
     <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-json:2.5.4" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-kotlin:3.6.3" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-kotlin:3.7.0" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.20" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib:1.3.20" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-common:1.3.20" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains:annotations:13.0" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.20" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-kotlin-coroutines:3.6.3" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-kotlin-coroutines:3.7.0" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlinx:kotlinx-coroutines-core-common:1.1.1" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web-client:3.6.3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web-templ-thymeleaf:3.6.3" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-web-client:3.7.0" level="project" />
+    <orderEntry type="library" name="Maven: io.vertx:vertx-web-templ-thymeleaf:3.7.0" level="project" />
     <orderEntry type="library" name="Maven: org.thymeleaf:thymeleaf:3.0.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: ognl:ognl:3.1.12" level="project" />
     <orderEntry type="library" name="Maven: org.attoparser:attoparser:2.0.4.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.unbescape:unbescape:1.1.5.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.javassist:javassist:3.21.0-GA" level="project" />
-    <orderEntry type="library" name="Maven: com.google.guava:guava:27.0-jre" level="project" />
-    <orderEntry type="library" name="Maven: com.google.guava:failureaccess:1.0" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:guava:27.1-jre" level="project" />
+    <orderEntry type="library" name="Maven: com.google.guava:failureaccess:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.findbugs:jsr305:3.0.2" level="project" />
     <orderEntry type="library" name="Maven: org.checkerframework:checker-qual:2.5.2" level="project" />
@@ -100,8 +103,8 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.25" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: io.vertx:vertx-unit:3.6.3" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.awaitility:awaitility:3.1.2" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: io.vertx:vertx-unit:3.7.0" level="project" />
+    <orderEntry type="library" scope="TEST" name="Maven: org.awaitility:awaitility:3.1.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.hamcrest:hamcrest-library:1.3" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.objenesis:objenesis:2.6" level="project" />
   </component>

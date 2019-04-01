@@ -25,8 +25,7 @@ SOFTWARE.
 package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
-import cn.net.polyglot.module.lowerCaseValue
-import cn.net.polyglot.verticle.im.IMMessageVerticle
+import cn.net.polyglot.module.getMimeTypeWithoutCharset
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod
@@ -41,7 +40,6 @@ import io.vertx.ext.web.handler.CookieHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.vertx.kotlin.core.eventbus.sendAwait
-import io.vertx.kotlin.core.file.readFileAwait
 import io.vertx.kotlin.core.http.sendFileAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.ext.web.common.template.renderAwait
@@ -49,9 +47,13 @@ import kotlinx.coroutines.launch
 import java.security.SecureRandom
 import kotlin.random.Random
 
-class WebServerVerticle : CoroutineVerticle() {
+abstract class WebServerVerticle : CoroutineVerticle() {
+
+  abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path:String):String
 
   override suspend fun start() {
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.SessionVerticle")
+
     val router = Router.router(vertx)
 
     val generator = UUIDGenerator(SecureRandom())
@@ -97,6 +99,9 @@ class WebServerVerticle : CoroutineVerticle() {
     val routingHandler = { routingContext:RoutingContext ->
 
       val requestJson = JsonObject()
+
+      val contentTypeString = routingContext.request().getHeader("Content-Type")
+      val mimeType = if(contentTypeString != null) getMimeTypeWithoutCharset(contentTypeString) else "TEXT/PLAIN"
 
       val path = routingContext.request().path()
       val httpMethod = routingContext.request().method()
@@ -150,6 +155,10 @@ class WebServerVerticle : CoroutineVerticle() {
       }
       requestJson.put(FORM_ATTRIBUTES, json)
 
+      if(mimeType.contains("JSON")){
+        requestJson.put(BODY_AS_JSON, routingContext.bodyAsJson)
+      }
+
       json = JsonObject()
       val json2 = JsonObject()
       for (f in routingContext.fileUploads()) {
@@ -159,14 +168,10 @@ class WebServerVerticle : CoroutineVerticle() {
       requestJson.put(UPLOAD_FILES, json)
       requestJson.put(UPLOAD_FILE_NAMES, json2)
 
-      //dispatch by path
-      val address = when(path){
-        "/login","/profile" -> LoginVerticle::class.java.name
-        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/prepareSearchArticle","/searchArticle","/article", "/community","/portrait","/uploadPortrait" -> CommunityVerticle::class.java.name
-        else -> ""
-      }
-
       launch {
+        //dispatch by path
+        val address = getVerticleAddressByPath(httpMethod,path)
+
         val responseJson = if(address != ""){
           vertx.eventBus().sendAwait<JsonObject>(address, requestJson).body()
         }else{
@@ -182,9 +187,11 @@ class WebServerVerticle : CoroutineVerticle() {
             try{
               routingContext.response().sendFileAwait(responseJson.getString(FILE_PATH))
             }catch (throwable:Throwable){
-              routingContext.reroute(HttpMethod.GET,"img/default_portrait.png")
+              routingContext.reroute(HttpMethod.GET,"/img/image_not_available.jpg")
             }
           }
+          responseJson.containsKey(RESPONSE_JSON) -> routingContext.response().end(responseJson.getJsonObject(RESPONSE_JSON).toString())
+          responseJson.containsKey(EMPTY_RESPONSE) -> routingContext.response().end()
           else -> routingContext.reroute(HttpMethod.GET,"/error.htm")
         }
       }
@@ -194,35 +201,36 @@ class WebServerVerticle : CoroutineVerticle() {
 
     router.get("/*").handler(routingHandler)
     router.post("/*").handler(routingHandler)
+    router.put("/*").handler(routingHandler)
     //web end
 
-    //im start
-    router.put("/:$TYPE/:$SUBTYPE").handler { routingContext ->
-      try {
-        val type = routingContext.request().getParam(TYPE)
-        val subtype = routingContext.request().getParam(SUBTYPE)
-
-        val json = routingContext.bodyAsJson
-          .put(TYPE, type)
-          .put(SUBTYPE, subtype)
-          .lowerCaseValue(ID)
-
-        when (type) {
-          FRIEND, MESSAGE -> {
-            vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
-            routingContext.response().end()
-          }
-          else -> launch {
-            val result = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json).body()
-            routingContext.response().end(result.toString())
-          }
-        }
-      } catch (e: Exception) {
-        routingContext.response().end(e.message)
-        return@handler
-      }
-    }
-    //im end
+//    //im start
+//    router.put("/:$TYPE/:$SUBTYPE").handler { routingContext ->
+//      try {
+//        val type = routingContext.request().getParam(TYPE)
+//        val subtype = routingContext.request().getParam(SUBTYPE)
+//
+//        val json = routingContext.bodyAsJson
+//          .put(TYPE, type)
+//          .put(SUBTYPE, subtype)
+//          .lowerCaseValue(ID)
+//
+//        when (type) {
+//          FRIEND, MESSAGE -> {
+//            vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
+//            routingContext.response().end()
+//          }
+//          else -> launch {
+//            val result = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json).body()
+//            routingContext.response().end(result.toString())
+//          }
+//        }
+//      } catch (e: Exception) {
+//        routingContext.response().end(e.message)
+//        return@handler
+//      }
+//    }
+//    //im end
 
     val httpServer = vertx.createHttpServer()
     httpServer.requestHandler(router).listen(config.getInteger(HTTP_PORT)) {

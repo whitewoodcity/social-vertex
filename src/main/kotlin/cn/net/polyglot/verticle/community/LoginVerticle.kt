@@ -1,28 +1,47 @@
-package cn.net.polyglot.verticle.web
+package cn.net.polyglot.verticle.community
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.md5
 import cn.net.polyglot.verticle.im.IMMessageVerticle
+import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
 import io.vertx.kotlin.core.file.readFileAwait
 import java.io.File
 
 class LoginVerticle : ServletVerticle() {
-  override suspend fun start() {
-    super.start(this::class.java.name)
-  }
 
   override suspend fun doPost(json: JsonObject, session: Session): JsonObject {
 
-    val id = json.getJsonObject(FORM_ATTRIBUTES).getString(ID)
-    val password = md5(json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD))
+    val reqJson = when(json.getString(PATH)){
+      "/register" -> {
+        val id = json.getJsonObject(FORM_ATTRIBUTES).getString(ID)
+        val password = json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD)
+        val password2 = json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD2)
+        if(password != password2)
+          return JsonObject().put(TEMPLATE_PATH, "register.htm")
 
-    val reqJson =
-      JsonObject().put(ID, id)
-        .put(PASSWORD, password)
-        .put(TYPE, USER)
-        .put(SUBTYPE, LOGIN)
+        val requestJson = json.getJsonObject(FORM_ATTRIBUTES).put(SUBTYPE, REGISTER)
+        val result = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name,requestJson).body()
+        if(!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)){
+          return JsonObject().put(TEMPLATE_PATH, "register.htm")
+        }
+
+        JsonObject().put(ID, id)
+          .put(PASSWORD, md5(password))
+          .put(TYPE, USER)
+          .put(SUBTYPE, LOGIN)
+      }
+      else -> {//default is login
+        val id = json.getJsonObject(FORM_ATTRIBUTES).getString(ID)
+        val password = md5(json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD))
+
+        JsonObject().put(ID, id)
+          .put(PASSWORD, password)
+          .put(TYPE, USER)
+          .put(SUBTYPE, LOGIN)
+      }
+    }
 
     return profile(reqJson, session)
   }

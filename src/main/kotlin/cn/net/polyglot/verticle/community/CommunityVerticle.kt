@@ -1,11 +1,10 @@
-package cn.net.polyglot.verticle.web
+package cn.net.polyglot.verticle.community
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.verticle.web.ServletVerticle
 import com.codahale.fastuuid.UUIDGenerator
-import io.vertx.core.Future
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.executeBlockingAwait
 import io.vertx.kotlin.core.file.*
 import java.io.File
 import java.security.SecureRandom
@@ -14,10 +13,6 @@ import java.time.format.DateTimeFormatter
 
 class CommunityVerticle : ServletVerticle() {
   private val generator = UUIDGenerator(SecureRandom())
-
-  override suspend fun start() {
-    super.start(this::class.java.name)
-  }
 
   override suspend fun doGet(json: JsonObject, session: Session): JsonObject {
     return doGetAndPost(json, session)

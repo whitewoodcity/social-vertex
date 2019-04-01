@@ -64,9 +64,10 @@ class IMServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = deploymentOptionsOf(config = config)
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.WebServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.WebServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option, context.asyncAssertSuccess())
     }
 
     @AfterClass
@@ -81,8 +82,10 @@ class IMServerTest {
   @Test
   fun testAccountRegister(context: TestContext) {
     val async = context.async()
-    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(VERSION, 0.1)
@@ -93,8 +96,10 @@ class IMServerTest {
       }
 
     val async1 = context.async()
-    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
         .put(ID, "yangkui")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
         .put(VERSION, 0.1)
@@ -105,8 +110,10 @@ class IMServerTest {
       }
 
     val async2 = context.async()
-    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/$USER/$REGISTER")
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE, REGISTER)
         .put(ID, "zhaoce")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
         .put(VERSION, 0.1)
@@ -374,8 +381,10 @@ class IMServerTest {
   fun testAccountsOfflineInform(context: TestContext) {
     val async = context.async()
 
-    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST), "/$USER/$OFFLINE").sendJson(
+    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST), "/").sendJson(
       JsonObject()
+        .put(TYPE, USER)
+        .put(SUBTYPE, OFFLINE)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
     ) {
@@ -394,7 +403,7 @@ class IMServerTest {
   fun  testAccountsHistoryInform(context: TestContext){
     val async = context.async()
     val  date = SimpleDateFormat("yyyy-MM-dd").format(Date(Date().time + (1000 * 60 * 60 * 24)))
-    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST),"/$USER/$HISTORY").sendJson(
+    webClient.put(config.getInteger(HTTP_PORT), config.getString(HOST),"/").sendJson(
       JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, HISTORY)

@@ -28,6 +28,7 @@ import cn.net.polyglot.config.SENSITIVE_WORDS
 import io.vertx.core.json.JsonObject
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.util.regex.Pattern
 
 fun md5(string:String):String{
   val digest = MessageDigest.getInstance("MD5")
@@ -50,4 +51,31 @@ fun JsonObject.lowerCaseValue(field:String):JsonObject{
     //json field may not be string
   }
   return this
+}
+
+/**
+ * Parse out a mime type from a content type header.
+ *
+ * @param contentType
+ *            e.g. "text/plain; charset=EUC-JP"
+ * @return "TEXT/PLAIN"
+ *
+ */
+fun getMimeTypeWithoutCharset(contentType:String):String {
+  return contentType.split(";")[0].trim().toUpperCase()
+}
+
+/**
+ * Parse out a charset from a content type header.
+ *
+ * @param contentType
+ *            e.g. "text/html; charset=EUC-JP"
+ * @return "EUC-JP"
+ *
+ */
+fun getCharsetFromContentType(contentType: String):String {
+  val m = Pattern.compile("(?i)\\bcharset=\\s*\"?([^\\s;\"]*)").matcher(contentType)
+  return if (m.find()) {
+    m.group(1).trim().toUpperCase()
+  }else "UTF-8"
 }

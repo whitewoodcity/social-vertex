@@ -1,0 +1,19 @@
+package cn.net.polyglot.verticle.community
+
+import cn.net.polyglot.verticle.im.IMServletVerticle
+import cn.net.polyglot.verticle.web.WebServerVerticle
+import io.vertx.core.http.HttpMethod
+
+class WebServerVerticle: WebServerVerticle() {
+  override suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String {
+    return when(httpMethod){
+      HttpMethod.GET, HttpMethod.POST -> when(path){
+        "/login","/profile" -> LoginVerticle::class.java.name
+        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/prepareSearchArticle","/searchArticle","/article", "/community","/portrait","/uploadPortrait" -> CommunityVerticle::class.java.name
+        else -> ""
+      }
+      HttpMethod.PUT -> IMServletVerticle::class.java.name
+      else -> ""
+    }
+  }
+}
