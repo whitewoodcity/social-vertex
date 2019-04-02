@@ -34,6 +34,7 @@ abstract class ServletVerticle:CoroutineVerticle() {
     }
   }
 
+  //Service Proxy of the Session Verticle
   inner class Session(private val id: String) {
 
     fun put(key:String, value:String?){

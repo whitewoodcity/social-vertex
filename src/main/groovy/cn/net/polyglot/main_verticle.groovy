@@ -31,7 +31,6 @@ import io.vertx.core.DeploymentOptions
 import io.vertx.core.Launcher
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.handler.BodyHandler
 
 Vertx vertx = vertx
 
