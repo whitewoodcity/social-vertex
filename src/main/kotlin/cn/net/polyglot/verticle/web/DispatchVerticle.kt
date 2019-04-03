@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
 import java.security.SecureRandom
 import kotlin.random.Random
 
-abstract class WebServerVerticle : CoroutineVerticle() {
+abstract class DispatchVerticle : CoroutineVerticle() {
 
   abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path:String):String
 
@@ -86,7 +86,7 @@ abstract class WebServerVerticle : CoroutineVerticle() {
       .handler(StaticHandler.create()) //StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
       .handler{it.response().end("no matched file") }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
     //reroute to the static files
-    router.get("/*").handler { routingContext:RoutingContext ->
+    router.get("/*").handler { routingContext: RoutingContext ->
       val path = routingContext.request().path()
       when(path){
         "","/","/index" -> routingContext.reroute(HttpMethod.GET, "/index.htm")
@@ -96,7 +96,7 @@ abstract class WebServerVerticle : CoroutineVerticle() {
 
     //dynamic page
     val engine = ThymeleafTemplateEngine.create(vertx)
-    val routingHandler = { routingContext:RoutingContext ->
+    val routingHandler = { routingContext: RoutingContext ->
 
       val requestJson = JsonObject()
 
@@ -180,7 +180,7 @@ abstract class WebServerVerticle : CoroutineVerticle() {
 
         when{
           responseJson.containsKey(TEMPLATE_PATH) -> {
-            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)?:JsonObject(), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
+            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)?: JsonObject(), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
             routingContext.response().end(buffer)
           }
           responseJson.containsKey(FILE_PATH) -> {

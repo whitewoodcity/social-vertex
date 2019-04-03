@@ -1,10 +1,10 @@
 package cn.net.polyglot.verticle.community
 
 import cn.net.polyglot.verticle.im.IMServletVerticle
-import cn.net.polyglot.verticle.web.WebServerVerticle
+import cn.net.polyglot.verticle.web.DispatchVerticle
 import io.vertx.core.http.HttpMethod
 
-class WebServerVerticle: WebServerVerticle() {
+class WebServerVerticle: DispatchVerticle() {
   override suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String {
     return when(httpMethod){
       HttpMethod.GET, HttpMethod.POST -> when(path){
