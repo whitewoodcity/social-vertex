@@ -1,4 +1,4 @@
-<html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <title>Social Vertex</title>
     <meta charset="UTF-8">
@@ -6,7 +6,7 @@
 </head>
 <body>
 <div class="container">
-    <form action="/register" method="post">
+    <form action="/update" method="post">
         <table id="table1">
             <tbody>
             <tr><td colspan="2">社交节点（Social Vertex）</td> </tr>
@@ -15,23 +15,7 @@
                     <label>账户：</label>
                 </td>
                 <td>
-                    <input name="id" id="id"><br/>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <label>密码：</label>
-                </td>
-                <td>
-                    <input type="password" name="password" id="password"><br/>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <label>重输密码：</label>
-                </td>
-                <td>
-                    <input type="password" name="password2" id="password2"><br/>
+                    <span th:text="${id}">lice001</span>
                 </td>
             </tr>
             <tr>
@@ -39,12 +23,12 @@
                     <label>昵称：</label>
                 </td>
                 <td>
-                    <input name="nickname" id="nickname"><br/>
+                    <input name="nickname" id="nickname" th:value="${nickname}"><br/>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <button type="submit">注册</button>
+                    <button type="submit">更新</button>
                 </td>
                 <td>
                     <button type="reset">取消</button>
@@ -52,7 +36,7 @@
             </tr>
             <tr>
                 <td colspan="2">
-                    已有账户？请点击此处<a href="index.htm">返回</a>
+                    <span th:text="${info}">错误信息</span>
                 </td>
             </tr>
             </tbody>

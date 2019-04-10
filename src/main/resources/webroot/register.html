@@ -1,4 +1,4 @@
-<html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <title>Social Vertex</title>
     <meta charset="UTF-8">
@@ -48,6 +48,11 @@
                 </td>
                 <td>
                     <button type="reset">取消</button>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span th:text="${info}">错误信息</span>
                 </td>
             </tr>
             <tr>

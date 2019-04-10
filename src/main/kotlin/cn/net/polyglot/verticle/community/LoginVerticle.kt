@@ -2,7 +2,7 @@ package cn.net.polyglot.verticle.community
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.md5
-import cn.net.polyglot.verticle.im.IMMessageVerticle
+import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
@@ -15,22 +15,36 @@ class LoginVerticle : ServletVerticle() {
 
     val reqJson = when(json.getString(PATH)){
       "/register" -> {
-        val id = json.getJsonObject(FORM_ATTRIBUTES).getString(ID)
-        val password = json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD)
-        val password2 = json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD2)
-        if(password != password2)
-          return JsonObject().put(TEMPLATE_PATH, "register.htm")
+        val requestJson =
+          json.getJsonObject(FORM_ATTRIBUTES)
+            .put(SUBTYPE, REGISTER)
 
-        val requestJson = json.getJsonObject(FORM_ATTRIBUTES).put(SUBTYPE, REGISTER)
-        val result = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name,requestJson).body()
+        val password = md5(requestJson.getString(PASSWORD))
+        val password2 = md5(requestJson.getString(PASSWORD2))
+
+        requestJson.put(PASSWORD, password)
+        requestJson.put(PASSWORD2, password2)
+
+        val result = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
         if(!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)){
-          return JsonObject().put(TEMPLATE_PATH, "register.htm")
+          return JsonObject().put(VALUES, result).put(TEMPLATE_PATH, "register.html")
         }
 
-        JsonObject().put(ID, id)
-          .put(PASSWORD, md5(password))
+        JsonObject().put(ID, requestJson.getString(ID))
+          .put(PASSWORD, password)
           .put(TYPE, USER)
-          .put(SUBTYPE, LOGIN)
+          .put(SUBTYPE, PROFILE)
+      }
+      "/update" -> {
+        if (session.get(ID) == null) {
+          return JsonObject()
+            .put(TEMPLATE_PATH, "index.htm")
+        }
+
+        JsonObject().put(ID, session.get(ID))
+          .put(PASSWORD, session.get(PASSWORD))
+          .put(TYPE, USER)
+          .put(SUBTYPE, PROFILE)
       }
       else -> {//default is login
         val id = json.getJsonObject(FORM_ATTRIBUTES).getString(ID)
@@ -39,7 +53,7 @@ class LoginVerticle : ServletVerticle() {
         JsonObject().put(ID, id)
           .put(PASSWORD, password)
           .put(TYPE, USER)
-          .put(SUBTYPE, LOGIN)
+          .put(SUBTYPE, PROFILE)
       }
     }
 
@@ -52,31 +66,30 @@ class LoginVerticle : ServletVerticle() {
         .put(TEMPLATE_PATH, "index.htm")
     }
 
-    val dir = config.getString(DIR)
-    val path = dir + File.separator + session.get(ID) + File.separator + "user.json"
     val id = session.get(ID)
-    val password = vertx.fileSystem().readFileAwait(path).toJsonObject().getString(PASSWORD)
+    val password = session.get(PASSWORD)
 
     val reqJson =
       JsonObject().put(ID, id)
         .put(PASSWORD, password)
         .put(TYPE, USER)
-        .put(SUBTYPE, LOGIN)
+        .put(SUBTYPE, PROFILE)
 
     return profile(reqJson, session)
   }
 
   private suspend fun profile(reqJson: JsonObject, session: Session):JsonObject{
     return try{
-      val asyncResult = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, reqJson).body()
+      val asyncResult = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, reqJson).body()
 
-      if(asyncResult.containsKey(LOGIN) && asyncResult.getBoolean(LOGIN)){
+      if(asyncResult.containsKey(PROFILE) && asyncResult.getBoolean(PROFILE)){
 
         session.put(ID, reqJson.getString(ID))
-        session.put(NICKNAME, asyncResult.getString(NICKNAME))
+        session.put(PASSWORD, reqJson.getString(PASSWORD))
+        session.put(NICKNAME, asyncResult.getJsonObject(JSON_BODY).getString(NICKNAME))
 
         JsonObject()
-          .put(VALUES,asyncResult)
+          .put(VALUES,asyncResult.getJsonObject(JSON_BODY))
           .put(TEMPLATE_PATH, "index.html")
       }else{
         JsonObject()
