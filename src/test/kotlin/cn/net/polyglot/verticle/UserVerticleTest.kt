@@ -88,8 +88,8 @@ class UserVerticleTest {
         .put(TYPE, USER)
         .put(SUBTYPE, REGISTER)
         .put(ID, "zxj2017")
-        .put(PASSWORD, "431fe828b9b8e8094235dee515562126")
-        .put(PASSWORD2, "431fe828b9b8e8094235dee515562126")) {
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562127")
+        .put(PASSWORD2, "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey(REGISTER))
       context.assertFalse(it.result().body().getBoolean(REGISTER))
@@ -105,28 +105,10 @@ class UserVerticleTest {
         .put(TYPE, USER)
         .put(SUBTYPE, UPDATE)
         .put(ID, "zxj2017")
-        .put(PASSWORD, "431fe828b9b8e8094235dee515562127")
-        .put(PASSWORD2, "431fe828b9b8e8094235dee515562127")) {
+        .put(NICKNAME, "ZXJ")) {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey(UPDATE))
       context.assertTrue(it.result().body().getBoolean(UPDATE))
-      async.complete()
-    }
-  }
-
-  @Test
-  fun testUserUpdateFail(context: TestContext) {
-    val async = context.async()
-    vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
-      JsonObject()
-        .put(TYPE, USER)
-        .put(SUBTYPE, UPDATE)
-        .put(ID, "zxj2017")
-        .put(PASSWORD, "431fe828b9b8e8094235dee515562127")
-        .put(PASSWORD2, "431fe828b9b8e8094235dee515562126")) {
-      println(it.result().body())
-      context.assertTrue(it.result().body().containsKey(UPDATE))
-      context.assertFalse(it.result().body().getBoolean(UPDATE))
       async.complete()
     }
   }
@@ -137,12 +119,12 @@ class UserVerticleTest {
     vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
         .put(TYPE, USER)
-        .put(SUBTYPE, VALID)
+        .put(SUBTYPE, PROFILE)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562127")) {
       println(it.result().body())
-      context.assertTrue(it.result().body().containsKey(VALID))
-      context.assertTrue(it.result().body().getBoolean(VALID))
+      context.assertTrue(it.result().body().containsKey(PROFILE))
+      context.assertTrue(it.result().body().getBoolean(PROFILE))
       async.complete()
     }
   }

@@ -6,8 +6,6 @@ import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
-import io.vertx.kotlin.core.file.readFileAwait
-import java.io.File
 
 class LoginVerticle : ServletVerticle() {
 
@@ -41,6 +39,14 @@ class LoginVerticle : ServletVerticle() {
             .put(TEMPLATE_PATH, "index.htm")
         }
 
+        val requestJson =
+          json.getJsonObject(FORM_ATTRIBUTES)
+            .put(TYPE, USER)
+            .put(SUBTYPE, UPDATE)
+            .put(ID, session.get(ID))
+
+        vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
+
         JsonObject().put(ID, session.get(ID))
           .put(PASSWORD, session.get(PASSWORD))
           .put(TYPE, USER)
@@ -69,16 +75,23 @@ class LoginVerticle : ServletVerticle() {
     val id = session.get(ID)
     val password = session.get(PASSWORD)
 
-    val reqJson =
-      JsonObject().put(ID, id)
-        .put(PASSWORD, password)
-        .put(TYPE, USER)
-        .put(SUBTYPE, PROFILE)
-
-    return profile(reqJson, session)
+    return when(json.getString(PATH)){
+      "/update" -> {
+        profile(JsonObject().put(ID, id)
+          .put(PASSWORD, password)
+          .put(TYPE, USER)
+          .put(SUBTYPE, PROFILE),session,"update.html")
+      }
+      else -> {
+        profile(JsonObject().put(ID, id)
+          .put(PASSWORD, password)
+          .put(TYPE, USER)
+          .put(SUBTYPE, PROFILE),session)
+      }
+    }
   }
 
-  private suspend fun profile(reqJson: JsonObject, session: Session):JsonObject{
+  private suspend fun profile(reqJson: JsonObject, session: Session, defaultTemplatePath:String = "index.html"):JsonObject{
     return try{
       val asyncResult = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, reqJson).body()
 
@@ -90,7 +103,7 @@ class LoginVerticle : ServletVerticle() {
 
         JsonObject()
           .put(VALUES,asyncResult.getJsonObject(JSON_BODY))
-          .put(TEMPLATE_PATH, "index.html")
+          .put(TEMPLATE_PATH, defaultTemplatePath)
       }else{
         JsonObject()
           .put(TEMPLATE_PATH, "index.htm")
