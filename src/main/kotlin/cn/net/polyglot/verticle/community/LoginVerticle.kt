@@ -26,7 +26,7 @@ class LoginVerticle : ServletVerticle() {
 
         val result = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
         if(!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)){
-          return Response(ResponseType.TEMPLATE_PATH, "register.html")
+          return Response(ResponseType.TEMPLATE, "register.html")
         }
 
         JsonObject().put(ID, requestJson.getString(ID))
@@ -36,7 +36,7 @@ class LoginVerticle : ServletVerticle() {
       }
       "/update" -> {
         if (session.get(ID) == null) {
-          return Response(ResponseType.TEMPLATE_PATH, "index.htm")
+          return Response(ResponseType.TEMPLATE, "index.htm")
         }
 
         val requestJson =
@@ -68,7 +68,7 @@ class LoginVerticle : ServletVerticle() {
 
   override suspend fun doGet(json: JsonObject, session: Session): Response {
     if (session.get(ID) == null) {
-      return Response(ResponseType.TEMPLATE_PATH, "index.htm")
+      return Response(ResponseType.TEMPLATE, "index.htm")
     }
 
     val id = session.get(ID)
@@ -83,7 +83,7 @@ class LoginVerticle : ServletVerticle() {
       }
       "/portrait" ->{
         val dir = config.getString(DIR)
-        return Response(ResponseType.FILE_PATH, dir+ File.separator+session.get(ID)+ File.separator+"portrait")
+        return Response(dir+ File.separator+session.get(ID)+ File.separator+"portrait")
       }
       else -> {
         profile(JsonObject().put(ID, id)
@@ -104,13 +104,13 @@ class LoginVerticle : ServletVerticle() {
         session.put(PASSWORD, reqJson.getString(PASSWORD))
         session.put(NICKNAME, asyncResult.getJsonObject(JSON_BODY).getString(NICKNAME))
 
-        Response(ResponseType.TEMPLATE_PATH, defaultTemplatePath, asyncResult.getJsonObject(JSON_BODY))
+        Response(defaultTemplatePath, asyncResult.getJsonObject(JSON_BODY))
       }else{
-        Response(ResponseType.TEMPLATE_PATH, "index.htm")
+        Response(ResponseType.TEMPLATE, "index.htm")
       }
     }catch (e:Throwable){
       e.printStackTrace()
-      Response(ResponseType.TEMPLATE_PATH, "error.htm")
+      Response(ResponseType.TEMPLATE, "error.htm")
     }
   }
 }

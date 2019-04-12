@@ -58,30 +58,33 @@ abstract class ServletVerticle:CoroutineVerticle() {
   }
 
   enum class ResponseType {
-    EMPTY_RESPONSE, TEMPLATE_PATH, FILE_PATH, RESPONSE_JSON
+    EMPTY_RESPONSE, TEMPLATE, FILE, JSON
   }
 
-  inner class Response(val type:ResponseType, val path:String = "index.htm", val json:JsonObject = JsonObject()){
-    constructor(type:ResponseType, json:JsonObject = JsonObject()):this(type, "index.htm", json)
+  inner class Response(val type:ResponseType, val path:String = "index.htm",private val values:JsonObject = JsonObject()){
+    constructor(json:JsonObject = JsonObject()):this(ResponseType.JSON, "index.htm", json)
+    constructor():this(ResponseType.EMPTY_RESPONSE)
+    constructor(filePath:String):this(ResponseType.FILE, filePath)
+    constructor(templatePath:String, values:JsonObject):this(ResponseType.TEMPLATE, templatePath, values)
     fun toJson():JsonObject{
       return when(type){
-        ResponseType.TEMPLATE_PATH -> JsonObject().put(TEMPLATE_PATH, path).put(VALUES, json)
-        ResponseType.FILE_PATH -> JsonObject().put(FILE_PATH, path)
-        ResponseType.RESPONSE_JSON -> JsonObject().put(RESPONSE_JSON, json)
+        ResponseType.TEMPLATE -> JsonObject().put(TEMPLATE_PATH, path).put(VALUES, values)
+        ResponseType.FILE -> JsonObject().put(FILE_PATH, path)
+        ResponseType.JSON -> JsonObject().put(RESPONSE_JSON, values)
         else -> JsonObject().put(EMPTY_RESPONSE, true)
       }
     }
   }
 
   open suspend fun doGet(json:JsonObject, session: Session):Response{
-    return Response(ResponseType.EMPTY_RESPONSE)
+    return Response()
   }
 
   open suspend fun doPost(json:JsonObject, session: Session):Response{
-    return Response(ResponseType.EMPTY_RESPONSE)
+    return Response()
   }
 
   open suspend fun doPut(json:JsonObject, session: Session):Response{
-    return Response(ResponseType.EMPTY_RESPONSE)
+    return Response()
   }
 }

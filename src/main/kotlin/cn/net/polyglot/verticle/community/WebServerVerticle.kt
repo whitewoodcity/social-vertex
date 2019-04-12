@@ -8,8 +8,8 @@ class WebServerVerticle: DispatchVerticle() {
   override suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String {
     return when(httpMethod){
       HttpMethod.GET, HttpMethod.POST -> when(path){
-        "/login","/profile","/register","/update" -> LoginVerticle::class.java.name
-        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/prepareSearchArticle","/searchArticle","/article", "/community","/portrait","/uploadPortrait" -> CommunityVerticle::class.java.name
+        "/login","/profile","/register","/update","/portrait" -> LoginVerticle::class.java.name
+        "/prepareArticle", "/submitArticle","/prepareModifyArticle","/modifyArticle","/deleteArticle","/prepareSearchArticle","/searchArticle","/article", "/community","/uploadPortrait" -> CommunityVerticle::class.java.name
         else -> ""
       }
       HttpMethod.PUT -> IMServletVerticle::class.java.name

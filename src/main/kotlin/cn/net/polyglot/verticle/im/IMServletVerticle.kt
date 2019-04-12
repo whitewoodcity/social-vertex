@@ -12,11 +12,11 @@ class IMServletVerticle:ServletVerticle() {
     return when (type) {
       FRIEND, MESSAGE -> {
         vertx.eventBus().send(IMMessageVerticle::class.java.name, bodyJson)
-        Response(ResponseType.EMPTY_RESPONSE)
+        Response()
       }
       else ->{
         val responseJson = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, bodyJson).body()
-        Response(ResponseType.RESPONSE_JSON, responseJson)
+        Response(responseJson)
       }
     }
   }
