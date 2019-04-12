@@ -6,10 +6,11 @@ import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
+import java.io.File
 
 class LoginVerticle : ServletVerticle() {
 
-  override suspend fun doPost(json: JsonObject, session: Session): JsonObject {
+  override suspend fun doPost(json: JsonObject, session: Session): Response {
 
     val reqJson = when(json.getString(PATH)){
       "/register" -> {
@@ -25,7 +26,7 @@ class LoginVerticle : ServletVerticle() {
 
         val result = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
         if(!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)){
-          return JsonObject().put(VALUES, result).put(TEMPLATE_PATH, "register.html")
+          return Response(ResponseType.TEMPLATE_PATH, "register.html")
         }
 
         JsonObject().put(ID, requestJson.getString(ID))
@@ -35,8 +36,7 @@ class LoginVerticle : ServletVerticle() {
       }
       "/update" -> {
         if (session.get(ID) == null) {
-          return JsonObject()
-            .put(TEMPLATE_PATH, "index.htm")
+          return Response(ResponseType.TEMPLATE_PATH, "index.htm")
         }
 
         val requestJson =
@@ -66,10 +66,9 @@ class LoginVerticle : ServletVerticle() {
     return profile(reqJson, session)
   }
 
-  override suspend fun doGet(json: JsonObject, session: Session): JsonObject {
+  override suspend fun doGet(json: JsonObject, session: Session): Response {
     if (session.get(ID) == null) {
-      return JsonObject()
-        .put(TEMPLATE_PATH, "index.htm")
+      return Response(ResponseType.TEMPLATE_PATH, "index.htm")
     }
 
     val id = session.get(ID)
@@ -82,6 +81,10 @@ class LoginVerticle : ServletVerticle() {
           .put(TYPE, USER)
           .put(SUBTYPE, PROFILE),session,"update.html")
       }
+      "/portrait" ->{
+        val dir = config.getString(DIR)
+        return Response(ResponseType.FILE_PATH, dir+ File.separator+session.get(ID)+ File.separator+"portrait")
+      }
       else -> {
         profile(JsonObject().put(ID, id)
           .put(PASSWORD, password)
@@ -91,7 +94,7 @@ class LoginVerticle : ServletVerticle() {
     }
   }
 
-  private suspend fun profile(reqJson: JsonObject, session: Session, defaultTemplatePath:String = "index.html"):JsonObject{
+  private suspend fun profile(reqJson: JsonObject, session: Session, defaultTemplatePath:String = "index.html"):Response{
     return try{
       val asyncResult = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, reqJson).body()
 
@@ -101,16 +104,13 @@ class LoginVerticle : ServletVerticle() {
         session.put(PASSWORD, reqJson.getString(PASSWORD))
         session.put(NICKNAME, asyncResult.getJsonObject(JSON_BODY).getString(NICKNAME))
 
-        JsonObject()
-          .put(VALUES,asyncResult.getJsonObject(JSON_BODY))
-          .put(TEMPLATE_PATH, defaultTemplatePath)
+        Response(ResponseType.TEMPLATE_PATH, defaultTemplatePath, asyncResult.getJsonObject(JSON_BODY))
       }else{
-        JsonObject()
-          .put(TEMPLATE_PATH, "index.htm")
+        Response(ResponseType.TEMPLATE_PATH, "index.htm")
       }
     }catch (e:Throwable){
-      JsonObject()
-        .put(TEMPLATE_PATH, "error.htm")
+      e.printStackTrace()
+      Response(ResponseType.TEMPLATE_PATH, "error.htm")
     }
   }
 }

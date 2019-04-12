@@ -20,13 +20,13 @@ abstract class ServletVerticle:CoroutineVerticle() {
       launch {
         when(reqJson.getString(HTTP_METHOD)){
           POST -> {
-            it.reply(doPost(reqJson, session))
+            it.reply(doPost(reqJson, session).toJson())
           }
           GET -> {
-            it.reply(doGet(reqJson, session))
+            it.reply(doGet(reqJson, session).toJson())
           }
           PUT -> {
-            it.reply(doPut(reqJson, session))
+            it.reply(doPut(reqJson, session).toJson())
           }
           else -> it.reply(JsonObject().put(JSON_BODY,"Http Method is not specified"))
         }
@@ -57,15 +57,31 @@ abstract class ServletVerticle:CoroutineVerticle() {
     }
   }
 
-  open suspend fun doGet(json:JsonObject, session: Session):JsonObject{
-    return JsonObject().put(EMPTY_RESPONSE, true)
+  enum class ResponseType {
+    EMPTY_RESPONSE, TEMPLATE_PATH, FILE_PATH, RESPONSE_JSON
   }
 
-  open suspend fun doPost(json:JsonObject, session: Session):JsonObject{
-    return JsonObject().put(EMPTY_RESPONSE, true)
+  inner class Response(val type:ResponseType, val path:String = "index.htm", val json:JsonObject = JsonObject()){
+    constructor(type:ResponseType, json:JsonObject = JsonObject()):this(type, "index.htm", json)
+    fun toJson():JsonObject{
+      return when(type){
+        ResponseType.TEMPLATE_PATH -> JsonObject().put(TEMPLATE_PATH, path).put(VALUES, json)
+        ResponseType.FILE_PATH -> JsonObject().put(FILE_PATH, path)
+        ResponseType.RESPONSE_JSON -> JsonObject().put(RESPONSE_JSON, json)
+        else -> JsonObject().put(EMPTY_RESPONSE, true)
+      }
+    }
   }
 
-  open suspend fun doPut(json:JsonObject, session: Session):JsonObject{
-    return JsonObject().put(EMPTY_RESPONSE, true)
+  open suspend fun doGet(json:JsonObject, session: Session):Response{
+    return Response(ResponseType.EMPTY_RESPONSE)
+  }
+
+  open suspend fun doPost(json:JsonObject, session: Session):Response{
+    return Response(ResponseType.EMPTY_RESPONSE)
+  }
+
+  open suspend fun doPut(json:JsonObject, session: Session):Response{
+    return Response(ResponseType.EMPTY_RESPONSE)
   }
 }
