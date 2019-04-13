@@ -6,7 +6,8 @@ import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
-import java.io.File
+import io.vertx.kotlin.core.file.*
+import java.io.File.separator
 
 class LoginVerticle : ServletVerticle() {
 
@@ -44,8 +45,22 @@ class LoginVerticle : ServletVerticle() {
             .put(TYPE, USER)
             .put(SUBTYPE, UPDATE)
             .put(ID, session.get(ID))
-
+        //update user data
         vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
+        //update profile image
+        val uploadFile = json.getJsonObject(UPLOAD_FILES).getString("portrait")
+        if(!uploadFile.isNullOrBlank()){
+
+          val jarDir = config.getString(JAR_DIR)
+          val dir = config.getString(DIR)
+
+          val file = vertx.fileSystem().propsAwait(jarDir + separator + uploadFile)
+          if(file.size()==0L)
+            vertx.fileSystem().deleteAwait(jarDir + separator + uploadFile)
+          else
+            vertx.fileSystem().moveAwait(jarDir + separator + uploadFile,
+            dir + separator + session.get(ID) + separator + "portrait", copyOptionsOf().setReplaceExisting(true))
+        }
 
         JsonObject().put(ID, session.get(ID))
           .put(PASSWORD, session.get(PASSWORD))
@@ -83,7 +98,7 @@ class LoginVerticle : ServletVerticle() {
       }
       "/portrait" ->{
         val dir = config.getString(DIR)
-        return Response(dir+ File.separator+session.get(ID)+ File.separator+"portrait")
+        return Response(dir+ separator+session.get(ID)+ separator+"portrait")
       }
       else -> {
         profile(JsonObject().put(ID, id)

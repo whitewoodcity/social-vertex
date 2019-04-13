@@ -49,7 +49,7 @@ import kotlin.random.Random
 
 abstract class DispatchVerticle : CoroutineVerticle() {
 
-  abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path:String):String
+  abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String
 
   override suspend fun start() {
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.SessionVerticle")
@@ -63,7 +63,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
     router.route().handler { routingContext ->
       if (routingContext.getCookie(SESSION_ID) == null) {
-        if(Random.nextInt(100)==0) generator.reseed()
+        if (Random.nextInt(100) == 0) generator.reseed()
         val value = generator.generate().toString()
 
         val age = 31 * 24 * 3600L //31 days in seconds
@@ -84,12 +84,12 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     //web start
     router.routeWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create()) //StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
-      .handler{it.response().end("no matched file") }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
+      .handler { it.response().end("no matched file") }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
     //reroute to the static files
     router.get("/*").handler { routingContext: RoutingContext ->
       val path = routingContext.request().path()
-      when(path){
-        "","/","/index" -> routingContext.reroute(HttpMethod.GET, "/index.htm")
+      when (path) {
+        "", "/", "/index" -> routingContext.reroute(HttpMethod.GET, "/index.htm")
         else -> routingContext.next()
       }
     }
@@ -101,7 +101,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
       val requestJson = JsonObject()
 
       val contentTypeString = routingContext.request().getHeader("Content-Type")
-      val mimeType = if(contentTypeString != null) getMimeTypeWithoutCharset(contentTypeString) else "TEXT/PLAIN"
+      val mimeType = if (contentTypeString != null) getMimeTypeWithoutCharset(contentTypeString) else "TEXT/PLAIN"
 
       val path = routingContext.request().path()
       val httpMethod = routingContext.request().method()
@@ -112,7 +112,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
       requestJson.put(PATH, path)
 
-      when(httpMethod){
+      when (httpMethod) {
         HttpMethod.GET -> requestJson.put(HTTP_METHOD, GET)
         HttpMethod.POST -> requestJson.put(HTTP_METHOD, POST)
         HttpMethod.PUT -> requestJson.put(HTTP_METHOD, PUT)
@@ -120,49 +120,49 @@ abstract class DispatchVerticle : CoroutineVerticle() {
       }
 
       var json = JsonObject()
-      for(cookie in cookies){
+      for (cookie in cookies) {
         json.put(cookie.name, cookie.value)
       }
       requestJson.put(COOKIES, json)
 
       json = JsonObject()
-      for(header in headers){
+      for (header in headers) {
         json.put(header.key, header.value)
       }
       requestJson.put(HEADERS, json)
 
       json = JsonObject()
       var iterator = params.iterator()
-      while(iterator.hasNext()){
+      while (iterator.hasNext()) {
         val i = iterator.next()
-        json.put(i.key,i.value)
+        json.put(i.key, i.value)
       }
       requestJson.put(QUERY_PARAM, json)
 
       json = JsonObject()
       iterator = attributes.iterator()
 
-      while(iterator.hasNext()){
+      while (iterator.hasNext()) {
         val i = iterator.next()
-        if(json.containsKey(i.key)){
+        if (json.containsKey(i.key)) {
           var index = 0
-          while(json.containsKey("${i.key}$index")){
+          while (json.containsKey("${i.key}$index")) {
             index++
           }
           json.put("${i.key}$index", i.value)
-        }else
-          json.put(i.key,i.value)
+        } else
+          json.put(i.key, i.value)
       }
       requestJson.put(FORM_ATTRIBUTES, json)
 
-      if(mimeType.contains("JSON")){
+      if (mimeType.contains("JSON")) {
         requestJson.put(BODY_AS_JSON, routingContext.bodyAsJson)
       }
 
       json = JsonObject()
       val json2 = JsonObject()
       for (f in routingContext.fileUploads()) {
-        json.put(f.name(),f.uploadedFileName())
+        json.put(f.name(), f.uploadedFileName())
         json2.put(f.name(), f.fileName())
       }
       requestJson.put(UPLOAD_FILES, json)
@@ -170,29 +170,30 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
       launch {
         //dispatch by path
-        val address = getVerticleAddressByPath(httpMethod,path)
+        val address = getVerticleAddressByPath(httpMethod, path)
 
-        val responseJson = if(address != ""){
+        val responseJson = if (address != "") {
           vertx.eventBus().sendAwait<JsonObject>(address, requestJson).body()
-        }else{
+        } else {
           JsonObject()
         }
 
-        when{
+        when {
           responseJson.containsKey(TEMPLATE_PATH) -> {
-            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)?: JsonObject(), "webroot/"+responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
+            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)
+              ?: JsonObject(), "webroot/" + responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
             routingContext.response().end(buffer)
           }
           responseJson.containsKey(FILE_PATH) -> {
-            try{
+            try {
               routingContext.response().sendFileAwait(responseJson.getString(FILE_PATH))
-            }catch (throwable:Throwable){
-              routingContext.reroute(HttpMethod.GET,"/img/image_not_available.jpg")
+            } catch (throwable: Throwable) {
+              routingContext.reroute(HttpMethod.GET, "/img/image_not_available.jpg")
             }
           }
           responseJson.containsKey(RESPONSE_JSON) -> routingContext.response().end(responseJson.getJsonObject(RESPONSE_JSON).toString())
           responseJson.containsKey(EMPTY_RESPONSE) -> routingContext.response().end()
-          else -> routingContext.reroute(HttpMethod.GET,"/error.htm")
+          else -> routingContext.reroute(HttpMethod.GET, "/error.htm")
         }
       }
 
@@ -242,7 +243,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
       }
     }
 
-    if(config.containsKey("KeyPath")&&config.containsKey("CertPath")){
+    if (config.containsKey("KeyPath") && config.containsKey("CertPath")) {
       val options = HttpServerOptions().setSsl(true).setPemKeyCertOptions(
         PemKeyCertOptions().setKeyPath(config.getString("KeyPath"))
           .setCertPath(config.getString("CertPath"))

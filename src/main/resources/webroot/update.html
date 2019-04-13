@@ -6,7 +6,7 @@
 </head>
 <body>
 <div class="container">
-    <form action="/update" method="post">
+    <form action="/update" enctype="multipart/form-data"  method="post">
         <table id="table1">
             <tbody>
             <tr><td colspan="2">社交节点（Social Vertex）</td> </tr>
@@ -16,6 +16,20 @@
                 </td>
                 <td>
                     <span th:text="${id}">lice001</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <img src="portrait" th:src="@{portrait?}+${#strings.randomAlphanumeric(16)}"/><br/>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label>上传头像：</label>
+                </td>
+                <td>
+                    <input type="file" id="portrait" name="portrait" accept="image/*"><br/>
+                    注意：图片最大不得超过1m<br/>
                 </td>
             </tr>
             <tr>

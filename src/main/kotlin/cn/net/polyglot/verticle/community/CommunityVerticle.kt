@@ -22,7 +22,7 @@ class CommunityVerticle : ServletVerticle() {
     return doGetAndPost(json, session)
   }
 
-  suspend fun doGetAndPost(json: JsonObject, session: Session): Response {
+  private suspend fun doGetAndPost(json: JsonObject, session: Session): Response {
     return try {
       if (session.get(ID) == null) {
         return Response(ResponseType.TEMPLATE, "index.htm")
@@ -38,7 +38,7 @@ class CommunityVerticle : ServletVerticle() {
         vertx.fileSystem().mkdirsAwait(datePath)
       }
 
-      when(json.getString(PATH)){
+      when (json.getString(PATH)) {
         "/submitArticle" -> {
           val fullPath = datePath + File.separator + generator.generate().toString() + ".json"
           vertx.fileSystem().createFileAwait(fullPath)
@@ -63,8 +63,8 @@ class CommunityVerticle : ServletVerticle() {
         "/deleteArticle" -> {
           val path = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(PARAMS).getString("path") + ".json"
 
-          if(vertx.fileSystem().existsAwait(path)){
-            if(session.get(ID)!=vertx.fileSystem().readFileAwait(path).toJsonObject().getString(ID))
+          if (vertx.fileSystem().existsAwait(path)) {
+            if (session.get(ID) != vertx.fileSystem().readFileAwait(path).toJsonObject().getString(ID))
               return Response(ResponseType.TEMPLATE, "index.htm")
 
             vertx.fileSystem().deleteAwait(path)
@@ -86,28 +86,28 @@ class CommunityVerticle : ServletVerticle() {
           val path = dir + File.separator + COMMUNITY + File.separator + json.getJsonObject(PARAMS).getString("path") + ".json"
           val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
           articleJson.mergeIn(json.getJsonObject(PARAMS))
-          Response( "community/modifyPost.html", articleJson)
+          Response("community/modifyPost.html", articleJson)
         }
         "/prepareSearchArticle" -> {
-          Response(ResponseType.TEMPLATE,  "community/search.html")
+          Response(ResponseType.TEMPLATE, "community/search.html")
         }
         "/searchArticle" -> {
           //考虑放到worker verticle中去执行，如果文件非常多，这里可能会有比较长的执行时间
           val keyword = json.getJsonObject(FORM_ATTRIBUTES).getString("keyword")
 
-          val date0 = LocalDateTime.parse(json.getJsonObject(FORM_ATTRIBUTES).getString("date0")+"T00:00")
-          val date1 = LocalDateTime.parse(json.getJsonObject(FORM_ATTRIBUTES).getString("date1")+"T00:00")
+          val date0 = LocalDateTime.parse(json.getJsonObject(FORM_ATTRIBUTES).getString("date0") + "T00:00")
+          val date1 = LocalDateTime.parse(json.getJsonObject(FORM_ATTRIBUTES).getString("date1") + "T00:00")
 
-          val d0 = if(date0.isBefore(date1)) date0 else date1
-          var d1 = if(date0.isBefore(date1)) date1 else date0
+          val d0 = if (date0.isBefore(date1)) date0 else date1
+          var d1 = if (date0.isBefore(date1)) date1 else date0
 
           val articles = JsonArray()
 
-          while(!d1.isBefore(d0)){
+          while (!d1.isBefore(d0)) {
 
             val uri = "${d1.year}${File.separator}${d1.monthValue}${File.separator}${d1.dayOfMonth}${File.separator}"
             val d1Path = dir + File.separator + COMMUNITY + File.separator + d1.year + File.separator + d1.monthValue + File.separator + d1.dayOfMonth
-            if(vertx.fileSystem().existsAwait(d1Path)){
+            if (vertx.fileSystem().existsAwait(d1Path)) {
               val list = vertx.fileSystem().readDirAwait(d1Path)
 
               for (path in list) {
@@ -115,13 +115,13 @@ class CommunityVerticle : ServletVerticle() {
                   try {
                     val file = vertx.fileSystem().readFileAwait(path).toJsonObject()
 
-                    if(file.getString(TITLE).contains(keyword)){
+                    if (file.getString(TITLE).contains(keyword)) {
                       articles.add(JsonObject()
                         .put(PARAMETERS, "$uri${path.substringAfterLast("/").substringBefore(".")}")
                         .put(TITLE, file.getString(TITLE))
                         .put(DATE, d1.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))))
                     }
-                  }catch (throwable:Throwable){
+                  } catch (throwable: Throwable) {
                     throwable.printStackTrace()
                   }
                 }
@@ -131,21 +131,21 @@ class CommunityVerticle : ServletVerticle() {
             d1 = d1.minusDays(1)
           }
 
-          Response( "community/index.html", JsonObject().put(ARTICLES, articles))
+          Response("community/index.html", JsonObject().put(ARTICLES, articles))
         }
         "/uploadPortrait" -> {
 
           val jarDir = config.getString(JAR_DIR)
 
-          if(vertx.fileSystem().existsAwait(dir+File.separator+session.get(ID)+File.separator+"portrait")){
-            vertx.fileSystem().deleteAwait(dir+File.separator+session.get(ID)+File.separator+"portrait")
+          if (vertx.fileSystem().existsAwait(dir + File.separator + session.get(ID) + File.separator + "portrait")) {
+            vertx.fileSystem().deleteAwait(dir + File.separator + session.get(ID) + File.separator + "portrait")
           }
 
-          vertx.fileSystem().moveAwait(jarDir+File.separator+json.getJsonObject(UPLOAD_FILES).getString("profile"), dir+File.separator+session.get(ID)+File.separator+"portrait")
+          vertx.fileSystem().moveAwait(jarDir + File.separator + json.getJsonObject(UPLOAD_FILES).getString("profile"), dir + File.separator + session.get(ID) + File.separator + "portrait")
 
           Response("community/index.html", JsonObject().put(ARTICLES, getRecentArticles()))
         }
-        "/portrait" -> Response(dir+File.separator+session.get(ID)+File.separator+"portrait")
+//        "/portrait" -> Response(dir + File.separator + session.get(ID) + File.separator + "portrait")
         else -> {//"/prepareArticle"
           Response(ResponseType.TEMPLATE, "community/post.html")
         }
@@ -157,7 +157,7 @@ class CommunityVerticle : ServletVerticle() {
     }
   }
 
-  suspend fun getRecentArticles(): JsonArray {
+  private suspend fun getRecentArticles(): JsonArray {
 
     val articles = JsonArray()
 
@@ -184,7 +184,7 @@ class CommunityVerticle : ServletVerticle() {
                     .put(DATE, date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")))
 
                 articles.add(json)
-              }catch (throwable:Throwable){
+              } catch (throwable: Throwable) {
                 throwable.printStackTrace()
               }
             }

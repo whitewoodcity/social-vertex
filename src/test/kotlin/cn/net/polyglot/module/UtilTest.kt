@@ -60,17 +60,4 @@ class UtilTest{
     context.assertEquals(json.getString("field0"), "zhaoce")
   }
 
-  @Test
-  fun test(context: TestContext){
-    val date0 = LocalDateTime.parse("2019-01-01T00:00")
-    var date1 = LocalDateTime.parse("2018-01-01T00:00")
-
-    println(Math.abs(Duration.between(date1, date0).toDays()))
-
-    while(!date1.isBefore(date0)){
-      date1 = date1.minusDays(1)
-    }
-
-    println(date1.minusDays(365))
-  }
 }
