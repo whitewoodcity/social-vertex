@@ -98,7 +98,7 @@ class LoginVerticle : ServletVerticle() {
       }
       "/portrait" ->{
         val dir = config.getString(DIR)
-        return Response(dir+ separator+session.get(ID)+ separator+"portrait")
+        Response(dir+ separator+session.get(ID)+ separator+"portrait")
       }
       else -> {
         profile(JsonObject().put(ID, id)
