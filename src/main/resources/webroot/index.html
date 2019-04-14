@@ -7,7 +7,7 @@
 <body>
 <div class="container">
     你好 [[${id}]]（[[${nickname}]]）：<br/>
-    <img src="portrait" th:src="@{portrait?}+${#strings.randomAlphanumeric(16)}"/><br/>
+    <img src="portrait" th:src="@{portrait?}+${#strings.randomAlphanumeric(16)}" height="100"/><br/>
     <a href="/update">更新个人信息</a><br/>
     <a href="community">社区由此进入</a><br/>
     好友列表：<br/>
