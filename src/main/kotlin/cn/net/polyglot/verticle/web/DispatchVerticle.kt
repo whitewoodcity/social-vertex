@@ -49,6 +49,10 @@ import kotlin.random.Random
 
 abstract class DispatchVerticle : CoroutineVerticle() {
 
+  open fun getDefaultContentTypeByHttpMethod(httpMethod: HttpMethod):String{
+    return "text/plain"
+  }
+
   abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String
 
   override suspend fun start() {
@@ -100,11 +104,12 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
       val requestJson = JsonObject()
 
-      val contentTypeString = routingContext.request().getHeader("Content-Type")
-      val mimeType = if (contentTypeString != null) getMimeTypeWithoutCharset(contentTypeString) else "TEXT/PLAIN"
-
       val path = routingContext.request().path()
       val httpMethod = routingContext.request().method()
+
+      val contentTypeString = routingContext.request().getHeader("Content-Type")
+      val mimeType = if (contentTypeString != null) getMimeTypeWithoutCharset(contentTypeString) else getDefaultContentTypeByHttpMethod(httpMethod)
+
       val cookies = routingContext.cookies()
       val headers = routingContext.request().headers()
       val params = routingContext.queryParams()
@@ -155,8 +160,12 @@ abstract class DispatchVerticle : CoroutineVerticle() {
       }
       requestJson.put(FORM_ATTRIBUTES, json)
 
-      if (mimeType.contains("JSON")) {
-        requestJson.put(BODY_AS_JSON, routingContext.bodyAsJson)
+      if (mimeType.toLowerCase().contains("json")) {
+        try {
+          requestJson.put(BODY_AS_JSON, routingContext.bodyAsJson)
+        }catch (exception:Exception){
+          exception.printStackTrace()
+        }
       }
 
       json = JsonObject()

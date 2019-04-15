@@ -5,6 +5,15 @@ import cn.net.polyglot.verticle.web.DispatchVerticle
 import io.vertx.core.http.HttpMethod
 
 class WebServerVerticle: DispatchVerticle() {
+
+  //设置http方法为put时候，http请求体缺省为application/json
+  override fun getDefaultContentTypeByHttpMethod(httpMethod: HttpMethod):String{
+    return when(httpMethod){
+      HttpMethod.PUT -> "application/json"
+      else -> super.getDefaultContentTypeByHttpMethod(httpMethod)
+    }
+  }
+
   override suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String {
     return when(httpMethod){
       HttpMethod.GET, HttpMethod.POST -> when(path){

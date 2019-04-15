@@ -58,11 +58,11 @@ fun JsonObject.lowerCaseValue(field:String):JsonObject{
  *
  * @param contentType
  *            e.g. "text/plain; charset=EUC-JP"
- * @return "TEXT/PLAIN"
+ * @return "text/plain"
  *
  */
 fun getMimeTypeWithoutCharset(contentType:String):String {
-  return contentType.split(";")[0].trim().toUpperCase()
+  return contentType.split(";")[0].trim()
 }
 
 /**
