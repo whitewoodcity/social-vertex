@@ -10,6 +10,7 @@ abstract class ServletVerticle : CoroutineVerticle() {
 
   override suspend fun start() {
     start(this::class.java.asSubclass(this::class.java).name)//缺省以实际继承类名作为地址
+    println("${this::class.java.asSubclass(this::class.java).name} is deployed")
   }
 
   protected fun start(address: String) {

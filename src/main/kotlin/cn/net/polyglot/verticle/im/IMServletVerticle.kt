@@ -11,12 +11,37 @@ class IMServletVerticle:ServletVerticle() {
 
     val bodyJson = json.getJsonObject(BODY_AS_JSON)
     val type = bodyJson.getString(TYPE)
+    val subtype = bodyJson.getString(SUBTYPE)
+
+    if(type.isNullOrBlank() || subtype.isNullOrBlank()){
+      Response(JsonObject().put("info", "未指定操作类型或操作子类型"))
+    }
 
     return when (type) {
-//      USER -> {
-//        val responseMessage = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, bodyJson)
-//        Response(responseMessage.body())
-//      }
+      USER -> {
+        when(subtype){
+          LOGIN -> {
+            bodyJson.put(SUBTYPE, PROFILE)
+            val responseMessage = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, bodyJson)
+            val resultJson = responseMessage.body()
+            if(resultJson.containsKey(PROFILE) && resultJson.getBoolean(PROFILE)){
+              if(bodyJson.getString(PASSWORD) == resultJson.getJsonObject(JSON_BODY).getString(PASSWORD)){
+                val responseJson = JsonObject().put(LOGIN, true).mergeIn(resultJson.getJsonObject(JSON_BODY))
+                responseJson.remove(PASSWORD)
+                Response(responseJson)
+              }else{
+                Response(JsonObject().put(LOGIN, false).put(INFO,"密码错误"))
+              }
+            }else{
+              Response(bodyJson.put(LOGIN, false))
+            }
+          }
+          else -> {
+            val responseMessage = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, bodyJson)
+            Response(responseMessage.body())
+          }
+        }
+      }
       FRIEND, MESSAGE -> {
         vertx.eventBus().send(IMMessageVerticle::class.java.name, bodyJson)
         Response()

@@ -94,6 +94,11 @@ class UserVerticle:CoroutineVerticle() {
           try{
             val jsonObject = vertx.fileSystem().readFileAwait(dir + File.separator + "user.json").toJsonObject()
 
+            if(vertx.fileSystem().existsAwait(dir + File.separator + "password")) {
+              val password = vertx.fileSystem().readFileAwait(dir + File.separator + "password").toString()
+              jsonObject.put(PASSWORD, password)
+            }
+
             val fs = vertx.fileSystem()
             val friendList = JsonArray()
             val friends = fs.readDirAwait(dir)

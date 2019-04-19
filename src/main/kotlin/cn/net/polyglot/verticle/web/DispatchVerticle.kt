@@ -200,7 +200,10 @@ abstract class DispatchVerticle : CoroutineVerticle() {
               routingContext.reroute(HttpMethod.GET, "/img/image_not_available.jpg")
             }
           }
-          responseJson.containsKey(RESPONSE_JSON) -> routingContext.response().end(responseJson.getJsonObject(RESPONSE_JSON).toString())
+          responseJson.containsKey(RESPONSE_JSON) -> {
+            routingContext.response().headers()["Content-Type"] = "application/json"
+            routingContext.response().end(responseJson.getJsonObject(RESPONSE_JSON).toString())
+          }
           responseJson.containsKey(EMPTY_RESPONSE) -> routingContext.response().end()
           else -> routingContext.reroute(HttpMethod.GET, "/error.htm")
         }
