@@ -41,6 +41,7 @@ import org.junit.runners.MethodSorters
 import java.io.File
 import java.nio.file.Paths
 
+@Deprecated("replaced by IMServerTest")
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class IMMessageVerticleTest {

@@ -108,7 +108,6 @@
         <artifactId>kotlin-maven-plugin</artifactId>
         <version>${kotlin.version}</version>
         <configuration>
-          <experimentalCoroutines>enable</experimentalCoroutines>
           <jvmTarget>${jvmTarget}</jvmTarget>
         </configuration>
         <executions>

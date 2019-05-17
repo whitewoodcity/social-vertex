@@ -65,6 +65,7 @@ class IMServerTest {
 
       val option = deploymentOptionsOf(config = config)
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.WebServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option, context.asyncAssertSuccess())
@@ -159,6 +160,21 @@ class IMServerTest {
       ) { response ->
         println(response.result().body())
         context.assertFalse(response.result().body().toJsonObject().getBoolean(LOGIN))
+        async.complete()
+      }
+  }
+
+  @Test
+  fun testSearch(context: TestContext) {
+    val async = context.async()
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+      .sendJsonObject(JsonObject()
+        .put(TYPE, SEARCH)
+        .put(KEYWORD, "zxj2017")
+      ) { response ->
+        println(response.result().body())
+        context.assertTrue(response.result().body().toJsonObject().getBoolean(SEARCH))
+        context.assertEquals("zxj2017",response.result().body().toJsonObject().getString(USER))
         async.complete()
       }
   }

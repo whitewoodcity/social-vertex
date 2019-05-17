@@ -1,6 +1,7 @@
 package cn.net.polyglot.verticle.im
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.verticle.search.SearchVerticle
 import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
@@ -41,6 +42,10 @@ class IMServletVerticle:ServletVerticle() {
             Response(responseMessage.body())
           }
         }
+      }
+      SEARCH -> {
+        val responseJson = vertx.eventBus().sendAwait<JsonObject>(SearchVerticle::class.java.name, bodyJson.getString(KEYWORD)?:"")
+        Response(responseJson.body())
       }
       FRIEND, MESSAGE -> {
         vertx.eventBus().send(IMMessageVerticle::class.java.name, bodyJson)
