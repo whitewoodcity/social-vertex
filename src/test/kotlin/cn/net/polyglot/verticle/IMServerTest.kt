@@ -174,7 +174,7 @@ class IMServerTest {
       ) { response ->
         println(response.result().body())
         context.assertTrue(response.result().body().toJsonObject().getBoolean(SEARCH))
-        context.assertEquals("zxj2017",response.result().body().toJsonObject().getString(USER))
+        context.assertNotNull(response.result().body().toJsonObject().getJsonObject(USER))
         async.complete()
       }
   }

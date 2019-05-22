@@ -5,6 +5,7 @@ import cn.net.polyglot.config.SEARCH
 import cn.net.polyglot.config.USER
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.existsAwait
+import io.vertx.kotlin.core.file.readFileAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
 import java.io.File
@@ -18,9 +19,9 @@ class SearchVerticle : CoroutineVerticle() {
 
   private suspend fun search(keyword: String): JsonObject {
     if(keyword.isBlank()) return JsonObject().put(SEARCH,false)
-    val dir = config.getString(DIR) + File.separator + keyword
-    if(vertx.fileSystem().existsAwait(dir)){
-      return JsonObject().put(SEARCH, true).put(USER, keyword)
+    val path = config.getString(DIR) + File.separator + keyword + File.separator + "user.json"
+      if(vertx.fileSystem().existsAwait(path)){
+      return JsonObject().put(SEARCH, true).put(USER, vertx.fileSystem().readFileAwait(path).toJsonObject())
     }
     return JsonObject().put(SEARCH, true)
   }
