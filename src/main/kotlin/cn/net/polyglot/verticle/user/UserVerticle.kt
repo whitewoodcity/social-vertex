@@ -91,6 +91,19 @@ class UserVerticle:CoroutineVerticle() {
           vertx.fileSystem().writeFileAwait(dir + File.separator + "user.json", json.toBuffer())
           result.put(subtype, true)
         }
+        VERIFY -> {
+          if (!vertx.fileSystem().existsAwait(dir)) {
+            return result.put(INFO, "用户不存在")
+          }
+          //检查password文件是否存在，若不存在，则表示密码存在user.json中，将其读出
+          val password =
+          if(vertx.fileSystem().existsAwait(dir + File.separator + "password")){
+            vertx.fileSystem().readFileAwait(dir + File.separator + "password").toString()
+          }else{
+            vertx.fileSystem().readFileAwait(dir + File.separator + "user.json").toJsonObject().getString(PASSWORD)
+          }
+          result.put(subtype, json.getString(PASSWORD) == password)
+        }
         PROFILE -> {
           try{
             val jsonObject = vertx.fileSystem().readFileAwait(dir + File.separator + "user.json").toJsonObject()

@@ -1,6 +1,7 @@
 package cn.net.polyglot.verticle.im
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.verticle.friend.FriendVerticle
 import cn.net.polyglot.verticle.search.SearchVerticle
 import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
@@ -47,7 +48,13 @@ class IMServletVerticle:ServletVerticle() {
         val responseJson = vertx.eventBus().sendAwait<JsonObject>(SearchVerticle::class.java.name, bodyJson.getString(KEYWORD)?:"")
         Response(responseJson.body())
       }
-      FRIEND, MESSAGE -> {
+      FRIEND -> {
+        if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.getString(PASSWORD)))
+          vertx.eventBus().send(FriendVerticle::class.java.name, bodyJson)
+
+        Response()
+      }
+      MESSAGE -> {
         vertx.eventBus().send(IMMessageVerticle::class.java.name, bodyJson)
         Response()
       }
@@ -56,5 +63,11 @@ class IMServletVerticle:ServletVerticle() {
         Response(responseJson)
       }
     }
+  }
+
+  suspend fun verifyIdAndPassword(id:String, password:String):Boolean{
+    val json = JsonObject().put(TYPE, USER).put(SUBTYPE, VERIFY).put(ID, id).put(PASSWORD, password)
+    val responseJson = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, json).body()
+    return responseJson.getBoolean(VERIFY)
   }
 }

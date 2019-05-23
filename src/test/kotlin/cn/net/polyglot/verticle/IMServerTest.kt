@@ -30,7 +30,6 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
-import io.vertx.kotlin.core.DeploymentOptions
 import io.vertx.kotlin.core.deploymentOptionsOf
 import org.awaitility.Awaitility.await
 import org.junit.AfterClass
@@ -39,11 +38,8 @@ import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import java.io.File
 import java.io.File.separator
 import java.nio.file.Paths
-import java.text.SimpleDateFormat
-import java.util.*
 
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
@@ -51,7 +47,7 @@ class IMServerTest {
   companion object {
     private val config = JsonObject()
       .put(VERSION, 0.1)
-      .put(DIR, Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
+      .put(DIR, Paths.get("").toAbsolutePath().toString() + separator + "social-vertex")
       .put(TCP_PORT, 7373)
       .put(HTTP_PORT, 7575)
       .put(HOST, "localhost")
@@ -64,6 +60,7 @@ class IMServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = deploymentOptionsOf(config = config)
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.friend.FriendVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.WebServerVerticle", option, context.asyncAssertSuccess())
@@ -177,6 +174,24 @@ class IMServerTest {
         context.assertNotNull(response.result().body().toJsonObject().getJsonObject(USER))
         async.complete()
       }
+  }
+
+  @Test
+  fun testFriend(context: TestContext){
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+      .sendJsonObject(JsonObject()
+        .put(TYPE, FRIEND)
+        .put(SUBTYPE, REQUEST)
+        .put(ID, "zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(FROM, "zxj2017")
+        .put(TO, "yangkui")
+      ){}
+    await().until {
+      //check zxj2017/.send/yangkui.json & yangkui/.receive/zxj2017.json two files exist
+      vertx.fileSystem().existsBlocking(config.getString(DIR)+ separator + "zxj2017"+ separator +".send"+ separator +"yangkui.json")
+        && vertx.fileSystem().existsBlocking(config.getString(DIR)+ separator + "yangkui"+ separator +".receive"+ separator +"zxj2017.json")
+    }
   }
 
 //  @Test
