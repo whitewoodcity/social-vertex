@@ -177,7 +177,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testFriend(context: TestContext){
+  fun testFriendRequest(context: TestContext){
     webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
         .put(TYPE, FRIEND)
