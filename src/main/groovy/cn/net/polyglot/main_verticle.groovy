@@ -70,6 +70,7 @@ retriever.getConfig { ar ->
     }
 
     def option = new DeploymentOptions().setConfig(config)
+    vertx.deployVerticle("kt:cn.net.polyglot.verticle.friend.FriendVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option)
