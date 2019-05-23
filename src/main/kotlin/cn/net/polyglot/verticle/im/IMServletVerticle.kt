@@ -49,8 +49,9 @@ class IMServletVerticle:ServletVerticle() {
         Response(responseJson.body())
       }
       FRIEND -> {
-        if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.getString(PASSWORD)))
+        if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.getString(PASSWORD))){
           vertx.eventBus().send(FriendVerticle::class.java.name, bodyJson)
+        }
 
         Response()
       }

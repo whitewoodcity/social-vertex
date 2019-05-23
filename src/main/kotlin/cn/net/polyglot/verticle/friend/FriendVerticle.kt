@@ -24,7 +24,7 @@ class FriendVerticle : CoroutineVerticle() {
 
   private suspend fun friend(json: JsonObject) {
     val subtype = json.getString(SUBTYPE)
-    val from = json.getString(FROM)
+    val from = json.getString(ID)
     val to = json.getString(TO)
     if (from == null || to == null) {
       //不做处理，不需要反复确认，因为io层次一多，反复确认会导致代码和性能上的浪费，不值得花大力气去确保这点意外
@@ -38,7 +38,7 @@ class FriendVerticle : CoroutineVerticle() {
       REQUEST -> {
         val dir = config.getString(DIR) + File.separator
         val fs = vertx.fileSystem()
-        if (!json.getString(FROM).contains("@")) {    //本地保存发送记录
+        if (!from.contains("@")) {    //本地保存发送记录
 
           if (!fs.existsAwait("$dir$from${File.separator}.send"))
             fs.mkdirsAwait("$dir$from${File.separator}.send")
@@ -50,7 +50,7 @@ class FriendVerticle : CoroutineVerticle() {
 
         }
         if (to.contains("@")) {    //如果跨域，转发给你相应的服务器
-          json.put(FROM, json.getString(FROM) + "@" + config.getString(HOST))//把from加上域名
+          json.put(FROM, from + "@" + config.getString(HOST))//把from加上域名
           webClient.put(config.getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$REQUEST")
             .sendJsonObject(json.put(TO, to.substringBeforeLast('@'))) {}
         } else {    //接受是其他服务器发送过来的请求
@@ -70,7 +70,7 @@ class FriendVerticle : CoroutineVerticle() {
         val dir = config.getString(DIR) + File.separator
         val fs = vertx.fileSystem()
 
-        if (!json.getString(FROM).contains("@")) {
+        if (!from.contains("@")) {
           if (fs.existsAwait("$dir$from${File.separator}.receive${File.separator}$to.json")) {
             fs.deleteAwait("$dir$from${File.separator}.receive${File.separator}$to.json")//删除
             if (json.getBoolean(ACCEPT)) {
@@ -90,7 +90,7 @@ class FriendVerticle : CoroutineVerticle() {
         }
 
         if (json.getString(TO).contains("@")) {
-          json.put(FROM, json.getString(FROM) + "@" + config.getString(HOST))//把from加上域名
+          json.put(FROM, from + "@" + config.getString(HOST))//把from加上域名
           webClient.put(config.getInteger(HTTP_PORT), to.substringAfterLast("@"), "/$USER/$RESPONSE")
             .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
         } else {
