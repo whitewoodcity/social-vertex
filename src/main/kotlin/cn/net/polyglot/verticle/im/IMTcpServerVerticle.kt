@@ -102,18 +102,17 @@ class IMTcpServerVerticle : CoroutineVerticle() {
 
       when (json.getString(TYPE)) {
         LOGIN -> {
-          println(json)
           val id = json.getString(ID)
           val password = json.getString(PASSWORD)
           val requestJson = JsonObject().put(TYPE, USER).put(SUBTYPE, VERIFY).put(ID, id).put(PASSWORD, password)
           val responseJson = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
           if(responseJson.getBoolean(VERIFY)){
-            if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
-              socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
+            if (socketMap.containsValue(id) && socketMap.inverse()[id] != socket) {
+              socketMap.inverse()[id]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
             }
             socketMap[socket] = id
           }else{
-            socketMap.inverse()[json.getString(ID)]?.close()
+            socketMap.inverse()[id]?.close()
           }
         }
         USER, SEARCH -> {

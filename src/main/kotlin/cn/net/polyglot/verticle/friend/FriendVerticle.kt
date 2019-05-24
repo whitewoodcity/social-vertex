@@ -23,6 +23,8 @@ class FriendVerticle : CoroutineVerticle() {
   }
 
   private suspend fun friend(json: JsonObject) {
+    json.remove(PASSWORD)
+
     val subtype = json.getString(SUBTYPE)
     val from = json.getString(ID)
     val to = json.getString(TO)
@@ -63,7 +65,6 @@ class FriendVerticle : CoroutineVerticle() {
           fs.writeFileAwait("$dir$to${File.separator}.receive${File.separator}$from.json", json.toBuffer().appendString(END))
           //尝试投递
           vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
-
         }
       }
       RESPONSE -> {
