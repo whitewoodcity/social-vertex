@@ -130,6 +130,22 @@ class UserVerticle:CoroutineVerticle() {
 
             jsonObject.put(FRIENDS, friendList)
 
+            val notificationList = JsonArray()
+            if(vertx.fileSystem().existsAwait(dir+File.separator+".receive")){
+              val notifications = vertx.fileSystem().readDirAwait(dir+File.separator+".receive")
+
+              for(notification in notifications){
+                try{
+                  if(notification.endsWith(".json")){
+                    notificationList.add(vertx.fileSystem().readFileAwait(notification).toJsonObject())
+                  }
+                }catch (e:Throwable){
+                  e.printStackTrace()
+                }
+              }
+            }
+            jsonObject.put(NOTIFICATIONS, notificationList)
+
             result.put(subtype, true)
               .put(JSON_BODY, jsonObject)
           }catch(e:Throwable){

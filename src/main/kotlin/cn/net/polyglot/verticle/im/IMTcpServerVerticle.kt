@@ -26,6 +26,7 @@ package cn.net.polyglot.verticle.im
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue
+import cn.net.polyglot.verticle.user.UserVerticle
 import com.google.common.collect.HashBiMap
 import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
@@ -75,22 +76,6 @@ class IMTcpServerVerticle : CoroutineVerticle() {
           .handle(it)
       }
 
-      //going to remove in the next version
-//      socket.handler {
-//        buffer.appendBuffer(it)
-//        if (buffer.toString().endsWith(END)) {
-//          val msgs = buffer.toString().substringBeforeLast(END).split(END)
-//          for (s in msgs) {
-//            processJsonString(s, socket)
-//          }
-//          buffer = Buffer.buffer()
-//        }
-//
-//        if (buffer.length() > 1 * 10240) {
-//          buffer = Buffer.buffer()
-//        }
-//      }
-
       socket.closeHandler {
         socketMap.remove(socket)
       }
@@ -116,6 +101,21 @@ class IMTcpServerVerticle : CoroutineVerticle() {
         .lowerCaseValue(ID)
 
       when (json.getString(TYPE)) {
+        LOGIN -> {
+          println(json)
+          val id = json.getString(ID)
+          val password = json.getString(PASSWORD)
+          val requestJson = JsonObject().put(TYPE, USER).put(SUBTYPE, VERIFY).put(ID, id).put(PASSWORD, password)
+          val responseJson = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
+          if(responseJson.getBoolean(VERIFY)){
+            if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
+              socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
+            }
+            socketMap[socket] = id
+          }else{
+            socketMap.inverse()[json.getString(ID)]?.close()
+          }
+        }
         USER, SEARCH -> {
           val asyncResult = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json)
           val jsonObject = asyncResult.body()
@@ -138,4 +138,5 @@ class IMTcpServerVerticle : CoroutineVerticle() {
       socket.write(result.put(INFO, "${e.message}").toString().plus(END))
     }
   }
+
 }
