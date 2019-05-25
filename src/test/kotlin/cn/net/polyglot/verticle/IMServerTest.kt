@@ -178,6 +178,33 @@ class IMServerTest {
 
   @Test
   fun testFriendRequest(context: TestContext){
+    //user:yangkui login
+    val async = context.async()
+
+    val client = vertx.createNetClient()
+
+    client.connect(config.getInteger(TCP_PORT), config.getString(HOST)) { asyncResult ->
+      val socket = asyncResult.result()
+      socket.write(JsonObject()
+        .put(TYPE, LOGIN)
+        .put(ID, "yangkui")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248").toString().plus(END)
+      )
+
+      socket.handler {
+        val result = JsonObject(it.toString().trim())
+        println(result)
+
+        if(result.getString(TYPE)== FRIEND && result.getString(SUBTYPE)==REQUEST){
+          socket.close()
+        }
+      }
+
+      socket.closeHandler{async.complete()}
+    }
+
+    //now send the frien request to the user:yangkui
+
     webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
         .put(TYPE, FRIEND)

@@ -40,6 +40,7 @@ import java.io.File.separator
 import java.text.SimpleDateFormat
 import java.util.*
 
+@Deprecated("Old Verticles", replaceWith = ReplaceWith("UserVerticle","cn.net.polyglot.verticle.user"))
 class IMMessageVerticle : CoroutineVerticle() {
 
   private lateinit var webClient: WebClient

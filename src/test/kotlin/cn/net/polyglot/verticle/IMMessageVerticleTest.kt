@@ -30,7 +30,6 @@ import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import io.vertx.kotlin.core.DeploymentOptions
 import io.vertx.kotlin.core.deploymentOptionsOf
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -41,7 +40,7 @@ import org.junit.runners.MethodSorters
 import java.io.File
 import java.nio.file.Paths
 
-@Deprecated("replaced by IMServerTest")
+@Deprecated("Old Verticle Test", replaceWith = ReplaceWith("UserVerticleTest", "cn.net.polyglot.verticle"))
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class IMMessageVerticleTest {
