@@ -211,7 +211,6 @@ class IMServerTest {
         .put(SUBTYPE, REQUEST)
         .put(ID, "zxj2017")
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
-        .put(FROM, "zxj2017")
         .put(TO, "yangkui")
       ){}
     await().until {
@@ -219,6 +218,46 @@ class IMServerTest {
       vertx.fileSystem().existsBlocking(config.getString(DIR)+ separator + "zxj2017"+ separator +".send"+ separator +"yangkui.json")
         && vertx.fileSystem().existsBlocking(config.getString(DIR)+ separator + "yangkui"+ separator +".receive"+ separator +"zxj2017.json")
     }
+  }
+
+  @Test
+  fun testFriendResponse(context: TestContext){
+    //user:zxj2017 login
+    val async = context.async()
+
+    val client = vertx.createNetClient()
+
+    client.connect(config.getInteger(TCP_PORT), config.getString(HOST)) { asyncResult ->
+      val socket = asyncResult.result()
+      socket.write(JsonObject()
+        .put(TYPE, LOGIN)
+        .put(ID, "zxj2017")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247").toString().plus(END)
+      )
+
+      socket.handler {
+        val result = JsonObject(it.toString().trim())
+        println(result)
+
+        if(result.getString(TYPE)== FRIEND && result.getString(SUBTYPE)==RESPONSE && result.getBoolean(ACCEPT)){
+          socket.close()
+        }
+      }
+
+      socket.closeHandler{async.complete()}
+    }
+
+    //now send the frien request to the user:zxj2017
+
+    webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+      .sendJsonObject(JsonObject()
+        .put(TYPE, FRIEND)
+        .put(SUBTYPE, RESPONSE)
+        .put(ID, "yangkui")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+        .put(TO, "zxj2017")
+        .put(ACCEPT, true)
+      ){}
   }
 
 //  @Test

@@ -74,7 +74,7 @@ class FriendVerticle : CoroutineVerticle() {
         if (!from.contains("@")) {
           if (fs.existsAwait("$dir$from${File.separator}.receive${File.separator}$to.json")) {
             fs.deleteAwait("$dir$from${File.separator}.receive${File.separator}$to.json")//删除
-            if (json.getBoolean(ACCEPT)) {
+            if (json.containsKey(ACCEPT)&&json.getBoolean(ACCEPT)) {
               if (!fs.existsAwait("$dir$from${File.separator}$to")) {
                 fs.mkdirsAwait("$dir$from${File.separator}$to")
                 val fileDir = "$dir$from${File.separator}$to${File.separator}$to.json"
@@ -84,6 +84,8 @@ class FriendVerticle : CoroutineVerticle() {
                   .put(NICKNAME, json.getString(NICKNAME) ?: to)
                   .toBuffer())
               }
+              //尝试投递
+              vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
             }
           } else {
             return //错误，没有收到好友请求，流程到此结束
