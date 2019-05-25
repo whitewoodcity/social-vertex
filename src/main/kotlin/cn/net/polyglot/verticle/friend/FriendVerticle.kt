@@ -99,7 +99,7 @@ class FriendVerticle : CoroutineVerticle() {
         } else {
           if (fs.existsAwait("$dir$to${File.separator}.send${File.separator}$from.json")) {
             fs.deleteAwait("$dir$to${File.separator}.send${File.separator}$from.json")
-            if (json.getBoolean(ACCEPT)) {
+            if (json.containsKey(ACCEPT)&&json.getBoolean(ACCEPT)) {
               if (!fs.existsAwait("$dir$to${File.separator}$from")) {
                 fs.mkdirsAwait("$dir$to${File.separator}$from")
                 val fileDir1 = "$dir$to${File.separator}$from${File.separator}$from.json"
