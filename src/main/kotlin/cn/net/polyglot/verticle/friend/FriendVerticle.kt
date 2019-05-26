@@ -84,8 +84,6 @@ class FriendVerticle : CoroutineVerticle() {
                   .put(NICKNAME, json.getString(NICKNAME) ?: to)
                   .toBuffer())
               }
-              //尝试投递
-              vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
             }
           } else {
             return //错误，没有收到好友请求，流程到此结束
