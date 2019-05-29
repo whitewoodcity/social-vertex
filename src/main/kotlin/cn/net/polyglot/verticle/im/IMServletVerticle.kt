@@ -2,6 +2,7 @@ package cn.net.polyglot.verticle.im
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.verticle.friend.FriendVerticle
+import cn.net.polyglot.verticle.message.MessageVerticle
 import cn.net.polyglot.verticle.search.SearchVerticle
 import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
@@ -49,20 +50,20 @@ class IMServletVerticle:ServletVerticle() {
         Response(responseJson.body())
       }
       FRIEND -> {
-        if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.getString(PASSWORD))){
+        if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
           vertx.eventBus().send(FriendVerticle::class.java.name, bodyJson)
         }
 
         Response()
       }
       MESSAGE -> {
-        vertx.eventBus().send(IMMessageVerticle::class.java.name, bodyJson)
+        if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
+          vertx.eventBus().send(MessageVerticle::class.java.name, bodyJson)
+        }
+
         Response()
       }
-      else ->{
-        val responseJson = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, bodyJson).body()
-        Response(responseJson)
-      }
+      else -> Response()
     }
   }
 

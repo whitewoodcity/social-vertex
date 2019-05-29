@@ -23,7 +23,6 @@ class FriendVerticle : CoroutineVerticle() {
   }
 
   private suspend fun friend(json: JsonObject) {
-    json.remove(PASSWORD)
 
     val subtype = json.getString(SUBTYPE)
     val from = json.getString(ID)
