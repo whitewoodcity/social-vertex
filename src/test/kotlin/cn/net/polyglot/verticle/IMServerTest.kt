@@ -33,6 +33,7 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
 import io.vertx.kotlin.coroutines.awaitEvent
 import io.vertx.kotlin.coroutines.dispatcher
+import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -212,7 +213,7 @@ class IMServerTest {
     //now send the frien request to the user:yangkui
 
     GlobalScope.launch(vertx.dispatcher()) {
-      delay(100)
+      delay(100)//延迟一下，防止发得太快，前面的tcp代码来不及登陆
       webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
         .sendJsonObject(JsonObject()
           .put(TYPE, FRIEND)
@@ -301,14 +302,16 @@ class IMServerTest {
     //now send the message to the user:zxj2017
     GlobalScope.launch(vertx.dispatcher()) {
       delay(100)
-      webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
-        .sendJsonObject(JsonObject()
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+        .sendJsonObjectAwait(JsonObject()
           .put(TYPE, MESSAGE)
+          .put(SUBTYPE, TEXT)
           .put(ID, "yangkui")
           .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
           .put(TO, "zxj2017")
           .put(MESSAGE, "hello")
-        ){}
+        )
+      context.assertTrue(response.bodyAsJsonObject().getBoolean(MESSAGE))
     }
   }
 }

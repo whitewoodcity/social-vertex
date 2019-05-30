@@ -20,15 +20,22 @@ class MessageVerticle : CoroutineVerticle() {
 
   override suspend fun start() {
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
-      launch { message(it.body()) }
+      launch { it.reply(message(it.body())) }
     }
   }
 
-  private suspend fun message(json: JsonObject) {
+  private suspend fun message(json: JsonObject):JsonObject {
+    return when(json.getString(SUBTYPE)){
+      TEXT -> text(json)
+      else -> json.put(MESSAGE, false)
+    }
+  }
+
+  private suspend fun text(json: JsonObject):JsonObject {
     val from = json.getString(ID)
     val to = json.getString(TO)
     if (from == null || to == null) {
-      return //wrong format
+      return json.put(MESSAGE, false)//wrong format
     }
     val fs = vertx.fileSystem()
 
@@ -43,7 +50,7 @@ class MessageVerticle : CoroutineVerticle() {
     if (!from.contains("@")) {
       val senderDir = "$dir$from${File.separator}$to"
       if (!fs.existsAwait(senderDir)) {
-        return //错误，该用户没有该好友
+        return json.put(MESSAGE, false)//错误，该用户没有该好友
       }
       val senderFile = "$senderDir${File.separator}$today.sv"
       if (!fs.existsAwait(senderFile)) fs.createFileAwait(senderFile)
@@ -58,7 +65,7 @@ class MessageVerticle : CoroutineVerticle() {
     } else {
       val receiverDir = "$dir$to${File.separator}$from"
       if (!fs.existsAwait(receiverDir)) {
-        return //错误，该用户没有该好友
+        return json.put(MESSAGE, false)//错误，该用户没有该好友
       }
       val receiverFile = "$receiverDir${File.separator}$today.sv"
       if (!fs.existsAwait(receiverFile)) fs.createFileAwait(receiverFile)
@@ -67,5 +74,7 @@ class MessageVerticle : CoroutineVerticle() {
       //尝试投递
       vertx.eventBus().send(IMTcpServerVerticle::class.java.name, json)
     }
+
+    return json.put(MESSAGE, true)
   }
 }

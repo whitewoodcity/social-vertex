@@ -58,10 +58,9 @@ class IMServletVerticle:ServletVerticle() {
       }
       MESSAGE -> {
         if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
-          vertx.eventBus().send(MessageVerticle::class.java.name, bodyJson)
-        }
-
-        Response()
+          Response(vertx.eventBus().sendAwait<JsonObject>(MessageVerticle::class.java.name, bodyJson).body())
+        }else
+          Response(bodyJson.put(MESSAGE, false))
       }
       else -> Response()
     }
