@@ -116,22 +116,23 @@ class IMTcpServerVerticle : CoroutineVerticle() {
             socketMap.inverse()[id]?.close()
           }
         }
-        USER, SEARCH -> {
-          val asyncResult = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json)
-          val jsonObject = asyncResult.body()
-
-          if (jsonObject.containsKey(LOGIN) && jsonObject.getBoolean(LOGIN)) {
-            if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
-              socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
-            }
-            socketMap[socket] = json.getString(ID)
-          }
-          jsonObject.mergeIn(json).remove(PASSWORD)
-          jsonObject.remove(FROM)
-          socket.write(jsonObject.toString().plus(END))
-        }
+//        USER, SEARCH -> {
+//          val asyncResult = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json)
+//          val jsonObject = asyncResult.body()
+//
+//          if (jsonObject.containsKey(LOGIN) && jsonObject.getBoolean(LOGIN)) {
+//            if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
+//              socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
+//            }
+//            socketMap[socket] = json.getString(ID)
+//          }
+//          jsonObject.mergeIn(json).remove(PASSWORD)
+//          jsonObject.remove(FROM)
+//          socket.write(jsonObject.toString().plus(END))
+//        }
         else -> {
-          vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
+          println(json)
+//          vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
         }
       }
     } catch (e: Exception) {
