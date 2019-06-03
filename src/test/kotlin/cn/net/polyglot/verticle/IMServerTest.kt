@@ -25,6 +25,9 @@ SOFTWARE.
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
+import cn.net.polyglot.module.inNextYear
+import cn.net.polyglot.module.tomorrow
+import cn.net.polyglot.module.yesterday
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -46,6 +49,8 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.io.File.separator
 import java.nio.file.Paths
+import java.text.SimpleDateFormat
+import java.util.*
 
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
@@ -291,7 +296,7 @@ class IMServerTest {
         val result = JsonObject(it.toString().trim())
         println(result)
 
-        if(result.getString(TYPE)== MESSAGE){
+        if(result.getString(TYPE) == MESSAGE && result.getString(MESSAGE) == "hello"){
           socket.close()
         }
       }
@@ -302,6 +307,17 @@ class IMServerTest {
     //now send the message to the user:zxj2017
     GlobalScope.launch(vertx.dispatcher()) {
       delay(100)
+
+      webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+        .sendJsonObjectAwait(JsonObject()
+          .put(TYPE, MESSAGE)
+          .put(SUBTYPE, TEXT)
+          .put(ID, "yangkui")
+          .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+          .put(TO, "zxj2017")
+          .put(MESSAGE, "hi")
+        )
+
       val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
         .sendJsonObjectAwait(JsonObject()
           .put(TYPE, MESSAGE)
@@ -312,6 +328,54 @@ class IMServerTest {
           .put(MESSAGE, "hello")
         )
       context.assertTrue(response.bodyAsJsonObject().getBoolean(MESSAGE))
+    }
+
+  }
+
+  @Test
+  fun testMessagingHistory(context: TestContext){
+    val async = context.async(3)
+    GlobalScope.launch(vertx.dispatcher()) {
+      webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+        .sendJsonObject(JsonObject()
+          .put(TYPE, MESSAGE)
+          .put(SUBTYPE, HISTORY)
+          .put(ID, "yangkui")
+          .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+          .put(FRIEND, "zxj2017")
+        ){
+          println(it.result().bodyAsJsonObject())
+          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==2)
+          async.countDown()
+        }
+
+      webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+        .sendJsonObject(JsonObject()
+          .put(TYPE, MESSAGE)
+          .put(SUBTYPE, HISTORY)
+          .put(ID, "yangkui")
+          .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+          .put(FRIEND, "zxj2017")
+          .put(DATE,SimpleDateFormat("yyyy-MM-dd").format(Date().inNextYear()))
+        ){
+          println(it.result().bodyAsJsonObject())
+          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==2)
+          async.countDown()
+        }
+
+      webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+        .sendJsonObject(JsonObject()
+          .put(TYPE, MESSAGE)
+          .put(SUBTYPE, HISTORY)
+          .put(ID, "yangkui")
+          .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+          .put(FRIEND, "zxj2017")
+          .put(DATE, SimpleDateFormat("yyyy-MM-dd").format(Date()))
+        ){
+          println(it.result().bodyAsJsonObject())
+          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==0)
+          async.countDown()
+        }
     }
   }
 }

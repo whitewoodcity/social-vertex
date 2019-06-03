@@ -28,6 +28,7 @@ import cn.net.polyglot.config.SENSITIVE_WORDS
 import io.vertx.core.json.JsonObject
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.util.*
 import java.util.regex.Pattern
 
 fun md5(string:String):String{
@@ -78,4 +79,40 @@ fun getCharsetFromContentType(contentType: String):String {
   return if (m.find()) {
     m.group(1).trim().toUpperCase()
   }else "UTF-8"
+}
+
+/**
+ * get tomorrow date
+ *
+ * @return Date
+ */
+fun Date.tomorrow(): Date {
+  val cal = Calendar.getInstance()
+  cal.time = this
+  cal.add(Calendar.DATE, 1)
+  return cal.time
+}
+
+/**
+ * get yesterday date
+ *
+ * @return Date
+ */
+fun Date.yesterday():Date{
+  val cal = Calendar.getInstance()
+  cal.time = this
+  cal.add(Calendar.DATE, -1)
+  return cal.time
+}
+
+/**
+ * get tomorrow date
+ *
+ * @return Date
+ */
+fun Date.inNextYear(): Date {
+  val cal = Calendar.getInstance()
+  cal.time = this
+  cal.add(Calendar.YEAR, 1)
+  return cal.time
 }

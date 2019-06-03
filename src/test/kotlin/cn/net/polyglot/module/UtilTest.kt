@@ -24,15 +24,14 @@ SOFTWARE.
 
 package cn.net.polyglot.module
 
+import cn.net.polyglot.config.DATE
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.text.SimpleDateFormat
-import java.time.Duration
+import java.util.*
 
 
 @RunWith(VertxUnitRunner::class)
@@ -59,5 +58,16 @@ class UtilTest{
     context.assertEquals(json.getInteger("field"), 111)
     context.assertEquals(json.getString("field0"), "zhaoce")
   }
+
+  @Test
+  fun testTomorrowAndYesterday(context: TestContext){
+    val simpleDateFormat = SimpleDateFormat("yyyy MM dd")
+    println(Date().tomorrow())
+    println(Date().yesterday())
+    println(Date().inNextYear())
+    context.assertEquals(simpleDateFormat.format(Date()),
+      simpleDateFormat.format(Date().tomorrow().yesterday()))
+  }
+
 
 }

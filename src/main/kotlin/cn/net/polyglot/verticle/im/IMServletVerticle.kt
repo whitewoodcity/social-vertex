@@ -66,7 +66,7 @@ class IMServletVerticle:ServletVerticle() {
     }
   }
 
-  suspend fun verifyIdAndPassword(id:String, password:String):Boolean{
+  private suspend fun verifyIdAndPassword(id:String, password:String):Boolean{
     val json = JsonObject().put(TYPE, USER).put(SUBTYPE, VERIFY).put(ID, id).put(PASSWORD, password)
     val responseJson = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, json).body()
     return responseJson.getBoolean(VERIFY)
