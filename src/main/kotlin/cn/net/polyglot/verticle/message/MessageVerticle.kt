@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.file.*
+import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
@@ -31,23 +32,7 @@ class MessageVerticle : CoroutineVerticle() {
     return try {
       when (json.getString(SUBTYPE)) {
         TEXT -> text(json)
-        HISTORY -> {
-          val result = history(json)
-          while(result.getJsonArray(HISTORY).size() in 1..9){
-            json.put(DATE, result.getString(DATE))
-            val tmpResult = history(json)
-            result.put(DATE, tmpResult.getString(DATE))
-            if(tmpResult.getJsonArray(HISTORY).size()==0){
-              break
-            }else{
-              val history = tmpResult.getJsonArray(HISTORY)
-              history.addAll(result.getJsonArray(HISTORY))
-              result.put(HISTORY, history)
-            }
-          }
-
-          result
-        }
+        HISTORY -> history(json)
         else -> json.put(MESSAGE, false)
       }
     } catch (e:Exception){
@@ -56,6 +41,7 @@ class MessageVerticle : CoroutineVerticle() {
     }
   }
 
+  //返回至少10条聊天记录，如果所有的聊天记录不超过10条，则全部返回
   private suspend fun history(json: JsonObject): JsonObject {
 
     if (json.getString(DATE) == null) {
@@ -69,11 +55,11 @@ class MessageVerticle : CoroutineVerticle() {
       json.put(DATE, tomorrow)
     }
 
-    val date = SimpleDateFormat("yyyy-MM-dd").parse(json.getString(DATE)).yesterday()
+    val yesterday = SimpleDateFormat("yyyy-MM-dd").parse(json.getString(DATE)).yesterday()
 
-    val yyyy = SimpleDateFormat("yyyy").format(date)
-    val mm = SimpleDateFormat("MM").format(date)
-    val dd = SimpleDateFormat("dd").format(date)
+    val yyyy = SimpleDateFormat("yyyy").format(yesterday)
+    val mm = SimpleDateFormat("MM").format(yesterday)
+    val dd = SimpleDateFormat("dd").format(yesterday)
 
     if(!json.containsKey(FRIEND)){
       return json.put(MESSAGE, false).put(INFO, "Field: friend is required")
@@ -84,13 +70,8 @@ class MessageVerticle : CoroutineVerticle() {
     val id = json.getString(ID)
     val resultJson = jsonObjectOf()
 
-    if(vertx.fileSystem().existsAwait("$dir$id$separator$friend$separator$yyyy$separator$mm$separator$dd.jsons")){
-      val jsonArray = Buffer.buffer("[")
-        .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$yyyy$separator$mm$separator$dd.jsons"))
-        .appendString("]")
-        .toJsonArray()
-      return resultJson.put(MESSAGE, true).put(HISTORY, jsonArray).put(DATE, "$yyyy-$mm-$dd")
-    }
+    val history = jsonArrayOf()
+    var date = ""
 
     val yyyys = vertx.fileSystem()
       .readDirAwait("$dir$id$separator$friend","\\d{4}")
@@ -109,23 +90,25 @@ class MessageVerticle : CoroutineVerticle() {
         val dds = vertx.fileSystem()
           .readDirAwait("$dir$id$separator$friend$separator$year$separator$month","\\d{2}.jsons")
           .map{it.substringAfterLast(separator).substringBefore(".")}
-          .filter { year + month + it < yyyy + mm + dd }
+          .filter { year + month + it <= yyyy + mm + dd }
           .sorted().reversed()
 
-        if(dds.isNotEmpty()){
-          val theDate = "$year-$month-${dds[0]}"
-
-          val history =  Buffer.buffer("[")
-            .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$year$separator$month$separator${dds[0]}.jsons"))
+        for(day in dds){
+          history.addAll(Buffer.buffer("[")
+            .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$year$separator$month$separator$day.jsons"))
             .appendString("]")
-            .toJsonArray()
+            .toJsonArray())
 
-          return resultJson.put(MESSAGE, true).put(HISTORY, history).put(DATE, theDate)
+          date = "$year-$month-$day"
+
+          if(history.size()>10){
+            return resultJson.put(MESSAGE, true).put(HISTORY, history).put(DATE, date)
+          }
         }
       }
     }
 
-    return resultJson.put(MESSAGE, true).put(HISTORY, JsonArray()).put(DATE, "$yyyy-$mm-$dd")
+    return resultJson.put(MESSAGE, true).put(HISTORY, history).put(DATE, date)
   }
 
   private suspend fun text(json: JsonObject): JsonObject {
