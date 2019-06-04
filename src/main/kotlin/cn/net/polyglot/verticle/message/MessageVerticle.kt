@@ -71,7 +71,7 @@ class MessageVerticle : CoroutineVerticle() {
     val resultJson = jsonObjectOf()
 
     val history = jsonArrayOf()
-    var date = ""
+    var date = "$yyyy-$mm-$dd"
 
     val yyyys = vertx.fileSystem()
       .readDirAwait("$dir$id$separator$friend","\\d{4}")

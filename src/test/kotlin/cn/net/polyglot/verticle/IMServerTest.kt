@@ -337,7 +337,7 @@ class IMServerTest {
 
   @Test
   fun testMessagingHistory(context: TestContext){
-    val async = context.async(3)
+    val async = context.async(4)
     GlobalScope.launch(vertx.dispatcher()) {
       val path0 = "${config.getString(DIR)}${separator}zxj2017${separator}yangkui${separator}2000${separator}01$separator"
       val path1 = "${config.getString(DIR)}${separator}yangkui${separator}zxj2017${separator}2000${separator}01$separator"
@@ -389,6 +389,20 @@ class IMServerTest {
         ){
           println(it.result().bodyAsJsonObject())
           context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==1)
+          async.countDown()
+        }
+
+      webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+        .sendJsonObject(JsonObject()
+          .put(TYPE, MESSAGE)
+          .put(SUBTYPE, HISTORY)
+          .put(ID, "yangkui")
+          .put(PASSWORD, "431fe828b9b8e8094235dee515562248")
+          .put(FRIEND, "zxj2017")
+          .put(DATE, "1999-12-31")
+        ){
+          println(it.result().bodyAsJsonObject())
+          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==0)
           async.countDown()
         }
     }
