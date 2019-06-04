@@ -93,14 +93,16 @@ class MessageVerticle : CoroutineVerticle() {
           .sorted().reversed()
 
         for(day in dds){
-          history.addAll(Buffer.buffer("[")
+          val mergedHistory = Buffer.buffer("[")
             .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$year$separator$month$separator$day.jsons"))
             .appendString("]")
-            .toJsonArray())
+            .toJsonArray().addAll(history)
+
+          history.clear().addAll(mergedHistory)
 
           date = "$year-$month-$day"
 
-          if(history.size()>10){
+          if(history.size()>=20){
             return json.put(MESSAGE, true).put(HISTORY, history).put(DATE, date)
           }
         }
