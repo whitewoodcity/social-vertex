@@ -41,28 +41,16 @@ import java.io.File.separator
 class IMTcpServerVerticle : CoroutineVerticle() {
 
   private val socketMap = HashBiMap.create<NetSocket, String>()
-//  private var buffer = Buffer.buffer()
 
   override suspend fun start() {
 
     val port = config.getInteger(TCP_PORT)
 
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
-//      val type = it.body().getString(TYPE)
       val target = it.body().getString(TO)
       if (socketMap.containsValue(target)) {
         socketMap.inverse()[target]!!.write(it.body().toString().plus(END))
       }
-//      else if (type == MESSAGE) {//仅是message类型的时候，投递不成功会在此处存入硬盘，friend类型已经先行处理
-//        val targetDir = config.getString(DIR) + separator + it.body().getString(TO) + separator + ".message"
-//        val fs = vertx.fileSystem()
-//        //注意此处不用异步处理，因为.message里面的文件都是临时的，不应该会影响性能，如果改成异步await函数，量大的时候这里会有并发处理异常
-//        if (!fs.existsBlocking(targetDir)) fs.mkdirBlocking(targetDir)
-//        if (!fs.existsBlocking("$targetDir$separator${it.body().getString(FROM)}.sv"))
-//          fs.createFileBlocking("$targetDir$separator${it.body().getString(FROM)}.sv")
-//        fs.openBlocking("$targetDir$separator${it.body().getString(FROM)}.sv", OpenOptions().setAppend(true))
-//          .write(it.body().toBuffer().appendString(END))
-//      }
     }
     vertx.createNetServer(NetServerOptions().setTcpKeepAlive(true)).connectHandler { socket ->
 

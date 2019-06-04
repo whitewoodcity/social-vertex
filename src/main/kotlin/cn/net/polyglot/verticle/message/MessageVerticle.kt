@@ -68,7 +68,6 @@ class MessageVerticle : CoroutineVerticle() {
     val dir = config.getString(DIR) + separator
     val friend = json.getString(FRIEND)
     val id = json.getString(ID)
-    val resultJson = jsonObjectOf()
 
     val history = jsonArrayOf()
     var date = "$yyyy-$mm-$dd"
@@ -102,13 +101,13 @@ class MessageVerticle : CoroutineVerticle() {
           date = "$year-$month-$day"
 
           if(history.size()>10){
-            return resultJson.put(MESSAGE, true).put(HISTORY, history).put(DATE, date)
+            return json.put(MESSAGE, true).put(HISTORY, history).put(DATE, date)
           }
         }
       }
     }
 
-    return resultJson.put(MESSAGE, true).put(HISTORY, history).put(DATE, date)
+    return json.put(MESSAGE, true).put(HISTORY, history).put(DATE, date)
   }
 
   private suspend fun text(json: JsonObject): JsonObject {
