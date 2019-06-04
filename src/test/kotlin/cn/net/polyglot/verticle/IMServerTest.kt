@@ -34,6 +34,9 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
+import io.vertx.kotlin.core.file.createFileAwait
+import io.vertx.kotlin.core.file.mkdirsAwait
+import io.vertx.kotlin.core.file.writeFileAwait
 import io.vertx.kotlin.coroutines.awaitEvent
 import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
@@ -336,6 +339,18 @@ class IMServerTest {
   fun testMessagingHistory(context: TestContext){
     val async = context.async(3)
     GlobalScope.launch(vertx.dispatcher()) {
+      val path0 = "${config.getString(DIR)}${separator}zxj2017${separator}yangkui${separator}2000${separator}01$separator"
+      val path1 = "${config.getString(DIR)}${separator}yangkui${separator}zxj2017${separator}2000${separator}01$separator"
+      vertx.fileSystem().mkdirsAwait(path0)
+      vertx.fileSystem().mkdirsAwait(path1)
+      vertx.fileSystem().createFileAwait(path0+"01.jsons")
+      vertx.fileSystem().createFileAwait(path1+"01.jsons")
+      val msg = JsonObject().put(TYPE, MESSAGE).put(SUBTYPE, TEXT)
+        .put(ID, "zxj2017").put(TO, "yangkui").put(MESSAGE, "hi")
+        .put(DATE, "2000-01-01").put(TIME, "00:00:00")
+      vertx.fileSystem().writeFileAwait(path0+"01.jsons",msg.toBuffer())
+      vertx.fileSystem().writeFileAwait(path1+"01.jsons",msg.toBuffer())
+
       webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
         .sendJsonObject(JsonObject()
           .put(TYPE, MESSAGE)
@@ -345,7 +360,7 @@ class IMServerTest {
           .put(FRIEND, "zxj2017")
         ){
           println(it.result().bodyAsJsonObject())
-          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==2)
+          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==3)
           async.countDown()
         }
 
@@ -359,7 +374,7 @@ class IMServerTest {
           .put(DATE,SimpleDateFormat("yyyy-MM-dd").format(Date().inNextYear()))
         ){
           println(it.result().bodyAsJsonObject())
-          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==2)
+          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==3)
           async.countDown()
         }
 
@@ -373,7 +388,7 @@ class IMServerTest {
           .put(DATE, SimpleDateFormat("yyyy-MM-dd").format(Date()))
         ){
           println(it.result().bodyAsJsonObject())
-          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==0)
+          context.assertTrue(it.result().bodyAsJsonObject().getJsonArray(HISTORY).size()==1)
           async.countDown()
         }
     }

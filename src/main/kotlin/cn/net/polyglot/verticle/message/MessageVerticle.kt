@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.file.*
+import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
 import java.io.File.separator
@@ -30,7 +31,23 @@ class MessageVerticle : CoroutineVerticle() {
     return try {
       when (json.getString(SUBTYPE)) {
         TEXT -> text(json)
-        HISTORY -> history(json)
+        HISTORY -> {
+          val result = history(json)
+          while(result.getJsonArray(HISTORY).size() in 1..9){
+            json.put(DATE, result.getString(DATE))
+            val tmpResult = history(json)
+            result.put(DATE, tmpResult.getString(DATE))
+            if(tmpResult.getJsonArray(HISTORY).size()==0){
+              break
+            }else{
+              val history = tmpResult.getJsonArray(HISTORY)
+              history.addAll(result.getJsonArray(HISTORY))
+              result.put(HISTORY, history)
+            }
+          }
+
+          result
+        }
         else -> json.put(MESSAGE, false)
       }
     } catch (e:Exception){
@@ -54,9 +71,9 @@ class MessageVerticle : CoroutineVerticle() {
 
     val date = SimpleDateFormat("yyyy-MM-dd").parse(json.getString(DATE)).yesterday()
 
-    var yyyy = SimpleDateFormat("yyyy").format(date)
-    var mm = SimpleDateFormat("MM").format(date)
-    var dd = SimpleDateFormat("dd").format(date)
+    val yyyy = SimpleDateFormat("yyyy").format(date)
+    val mm = SimpleDateFormat("MM").format(date)
+    val dd = SimpleDateFormat("dd").format(date)
 
     if(!json.containsKey(FRIEND)){
       return json.put(MESSAGE, false).put(INFO, "Field: friend is required")
@@ -65,80 +82,50 @@ class MessageVerticle : CoroutineVerticle() {
     val dir = config.getString(DIR) + separator
     val friend = json.getString(FRIEND)
     val id = json.getString(ID)
+    val resultJson = jsonObjectOf()
 
     if(vertx.fileSystem().existsAwait("$dir$id$separator$friend$separator$yyyy$separator$mm$separator$dd.jsons")){
       val jsonArray = Buffer.buffer("[")
         .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$yyyy$separator$mm$separator$dd.jsons"))
         .appendString("]")
         .toJsonArray()
-      return json.put(MESSAGE, true).put(HISTORY, jsonArray).put(DATE, "$yyyy-$mm-$dd")
+      return resultJson.put(MESSAGE, true).put(HISTORY, jsonArray).put(DATE, "$yyyy-$mm-$dd")
     }
 
-    val yyyys =
-      vertx.fileSystem().readDirAwait("$dir$id$separator$friend","\\d{4}")
+    val yyyys = vertx.fileSystem()
+      .readDirAwait("$dir$id$separator$friend","\\d{4}")
+      .map{it.substringAfterLast(separator)}
+      .filter { it <= yyyy }
+      .sorted().reversed()
+
+    for(year in yyyys){
+      val mms = vertx.fileSystem()
+        .readDirAwait("$dir$id$separator$friend$separator$year","\\d{2}")
         .map{it.substringAfterLast(separator)}
-    yyyys.sorted()
-    yyyys.reversed()
-    if(!yyyys.isEmpty()&& yyyys.last()<=yyyy){
-      for(i in 0 until yyyys.size){
-        if(yyyys[i]<=yyyy){
-          if(yyyys[i]!=yyyy){
-            mm = "12"
-            dd = "31"
-            yyyy = yyyys[i]
-          }
-          break
+        .filter { year + it <= yyyy + mm }
+        .sorted().reversed()
+
+      for(month in mms){
+        val dds = vertx.fileSystem()
+          .readDirAwait("$dir$id$separator$friend$separator$year$separator$month","\\d{2}.jsons")
+          .map{it.substringAfterLast(separator).substringBefore(".")}
+          .filter { year + month + it < yyyy + mm + dd }
+          .sorted().reversed()
+
+        if(dds.isNotEmpty()){
+          val theDate = "$year-$month-${dds[0]}"
+
+          val history =  Buffer.buffer("[")
+            .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$year$separator$month$separator${dds[0]}.jsons"))
+            .appendString("]")
+            .toJsonArray()
+
+          return resultJson.put(MESSAGE, true).put(HISTORY, history).put(DATE, theDate)
         }
       }
-    }else{
-      return json.put(MESSAGE, true).put(HISTORY, JsonArray()).put(DATE, "$yyyy-$mm-$dd")
     }
 
-    val mms =
-      vertx.fileSystem().readDirAwait("$dir$id$separator$friend$separator$yyyy","\\d{2}")
-        .map{it.substringAfterLast(separator)}
-    mms.sorted()
-    mms.reversed()
-    if(!mms.isEmpty()&& mms.last()<=mm){
-      for(i in 0 until mms.size){
-        if(mms[i]<=mm){
-          if(mms[i]!=mm){
-            dd = "31"
-            mm = mms[i]
-          }
-          break
-        }
-      }
-    }else{
-      return json.put(MESSAGE, true).put(HISTORY, JsonArray()).put(DATE, "$yyyy-$mm-$dd")
-    }
-
-    val dds =
-      vertx.fileSystem().readDirAwait("$dir$id$separator$friend$separator$yyyy$separator$mm","\\d{2}.jsons")
-        .map{it.substringAfterLast(separator).substringBefore(".")}
-    dds.sorted()
-    dds.reversed()
-    if(!dds.isEmpty()&& dds.last()<=dd){
-      for(i in 0 until dds.size){
-        if(dds[i]<=dd){
-          dd = dds[i]
-          break
-        }
-      }
-    }else{
-      return json.put(MESSAGE, true).put(HISTORY, JsonArray()).put(DATE, "$yyyy-$mm-$dd")
-    }
-
-    val history = if(vertx.fileSystem().existsAwait("$dir$id$separator$friend$separator$yyyy$separator$mm$separator$dd.jsons")){
-      Buffer.buffer("[")
-        .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$yyyy$separator$mm$separator$dd.jsons"))
-        .appendString("]")
-        .toJsonArray()
-    }else{
-      JsonArray()
-    }
-
-    return json.put(MESSAGE, true).put(HISTORY, history).put(DATE, "$yyyy-$mm-$dd")
+    return resultJson.put(MESSAGE, true).put(HISTORY, JsonArray()).put(DATE, "$yyyy-$mm-$dd")
   }
 
   private suspend fun text(json: JsonObject): JsonObject {
