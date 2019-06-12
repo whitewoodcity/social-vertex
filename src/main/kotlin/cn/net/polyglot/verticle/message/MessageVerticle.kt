@@ -41,7 +41,7 @@ class MessageVerticle : CoroutineVerticle() {
     }
   }
 
-  //返回至少10条聊天记录，如果所有的聊天记录不超过10条，则全部返回
+  //返回至少20条聊天记录，如果所有的聊天记录不超过20条，则全部返回
   private suspend fun history(json: JsonObject): JsonObject {
 
     if (json.getString(DATE) == null) {

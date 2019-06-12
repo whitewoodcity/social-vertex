@@ -217,34 +217,6 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     router.put("/*").handler(routingHandler)
     //web end
 
-//    //im start
-//    router.put("/:$TYPE/:$SUBTYPE").handler { routingContext ->
-//      try {
-//        val type = routingContext.request().getParam(TYPE)
-//        val subtype = routingContext.request().getParam(SUBTYPE)
-//
-//        val json = routingContext.bodyAsJson
-//          .put(TYPE, type)
-//          .put(SUBTYPE, subtype)
-//          .lowerCaseValue(ID)
-//
-//        when (type) {
-//          FRIEND, MESSAGE -> {
-//            vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
-//            routingContext.response().end()
-//          }
-//          else -> launch {
-//            val result = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json).body()
-//            routingContext.response().end(result.toString())
-//          }
-//        }
-//      } catch (e: Exception) {
-//        routingContext.response().end(e.message)
-//        return@handler
-//      }
-//    }
-//    //im end
-
     val httpServer = vertx.createHttpServer()
     httpServer.requestHandler(router).listen(config.getInteger(HTTP_PORT)) {
       if (it.succeeded()) {

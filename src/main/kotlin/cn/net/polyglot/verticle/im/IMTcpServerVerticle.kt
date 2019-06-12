@@ -28,7 +28,6 @@ import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lowerCaseValue
 import cn.net.polyglot.verticle.user.UserVerticle
 import com.google.common.collect.HashBiMap
-import io.vertx.core.file.OpenOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
@@ -36,7 +35,6 @@ import io.vertx.core.parsetools.RecordParser
 import io.vertx.kotlin.core.eventbus.sendAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
-import java.io.File.separator
 
 class IMTcpServerVerticle : CoroutineVerticle() {
 
@@ -52,6 +50,7 @@ class IMTcpServerVerticle : CoroutineVerticle() {
         socketMap.inverse()[target]!!.write(it.body().toString().plus(END))
       }
     }
+
     vertx.createNetServer(NetServerOptions().setTcpKeepAlive(true)).connectHandler { socket ->
 
       //因为是bimap，不能重复存入null，会抛异常，所以临时先放一个字符串，等用户登陆之后便会替换该字符串，以用户名取代
@@ -104,24 +103,7 @@ class IMTcpServerVerticle : CoroutineVerticle() {
             socketMap.inverse()[id]?.close()
           }
         }
-//        USER, SEARCH -> {
-//          val asyncResult = vertx.eventBus().sendAwait<JsonObject>(IMMessageVerticle::class.java.name, json)
-//          val jsonObject = asyncResult.body()
-//
-//          if (jsonObject.containsKey(LOGIN) && jsonObject.getBoolean(LOGIN)) {
-//            if (socketMap.containsValue(json.getString(ID)) && socketMap.inverse()[json.getString(ID)] != socket) {
-//              socketMap.inverse()[json.getString(ID)]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录
-//            }
-//            socketMap[socket] = json.getString(ID)
-//          }
-//          jsonObject.mergeIn(json).remove(PASSWORD)
-//          jsonObject.remove(FROM)
-//          socket.write(jsonObject.toString().plus(END))
-//        }
-        else -> {
-          println(json)
-//          vertx.eventBus().send(IMMessageVerticle::class.java.name, json)
-        }
+        else -> println(json)
       }
     } catch (e: Exception) {
       socket.write(result.put(INFO, "${e.message}").toString().plus(END))
