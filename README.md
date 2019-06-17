@@ -1,7 +1,7 @@
 
 [系统说明](SYSTEM.md)
 
-# 即时通信协议 V0.2
+# 即时通信协议 V0.4
 
 ## 术语
 
@@ -60,12 +60,14 @@ uri: /
 {
   "type":"user",
   "subtype":"register",
-  "id":"zxj5470",
+  "id":"zxj2019",
   "password":"431fe828b9b8e8094235dee515562247",
-  "version":0.2
+  "password2":"431fe828b9b8e8094235dee515562247",
+  "nickname":"哲学家2019",
+  "version":0.4
 }
 ```  
->传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。    
+>传输时 `password` 和 `password2` 为加密后的密码内容，使用 `MD5` 进行加密。    
 
 响应  
 ```json
@@ -76,8 +78,8 @@ uri: /
 或
 ```json
 {
-  "info": "用户名格式错误",
-  "register": false
+  "register": false,
+  "info": "用户名格式错误"
 }
 ```
 

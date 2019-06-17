@@ -24,7 +24,6 @@ SOFTWARE.
 
 package cn.net.polyglot.module
 
-import cn.net.polyglot.config.DATE
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
