@@ -37,19 +37,19 @@ import java.util.*
 @RunWith(VertxUnitRunner::class)
 class UtilTest{
   @Test
-  fun testMd5(context: TestContext){
+  fun `test md5`(context: TestContext){
     context.assertEquals(md5("123456"),"e10adc3949ba59abbe56e057f20f883e")
   }
 
   @Test
-  fun testSensitiveWords(context: TestContext){
+  fun `test sensitive words`(context: TestContext){
     context.assertTrue(containsSensitiveWords("shit001"))
     context.assertFalse(containsSensitiveWords("zhaoce"))
     context.assertTrue(containsSensitiveWords("fuckyou"))
   }
 
   @Test
-  fun testLowerCaseJsonField(context: TestContext){
+  fun `test lowercase json field`(context: TestContext){
     val json = JsonObject().put("field",111)
       .put("field0","ZHAOCE")
       .lowerCaseValue("field")
@@ -60,7 +60,7 @@ class UtilTest{
   }
 
   @Test
-  fun testTomorrowAndYesterday(context: TestContext){
+  fun `test tomorrow and yesterday`(context: TestContext){
     val simpleDateFormat = SimpleDateFormat("yyyy MM dd")
     println(Date().tomorrow())
     println(Date().yesterday())

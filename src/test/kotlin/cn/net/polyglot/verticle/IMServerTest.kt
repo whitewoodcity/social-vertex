@@ -94,7 +94,7 @@ class IMServerTest {
   private val webClient = WebClient.create(vertx)
 
   @Test
-  fun testAccountRegister(context: TestContext) {
+  fun `test account register`(context: TestContext) {
     val async = context.async()
     webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
@@ -143,7 +143,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testLogin(context: TestContext) {
+  fun `test login`(context: TestContext) {
     val async = context.async()
     webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
@@ -160,7 +160,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testLoginFail(context: TestContext) {
+  fun `test login fail`(context: TestContext) {
     val async = context.async()
     webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
@@ -177,7 +177,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testSearch(context: TestContext) {
+  fun `test search`(context: TestContext) {
     val async = context.async()
     webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
       .sendJsonObject(JsonObject()
@@ -192,7 +192,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testFriendRequest(context: TestContext){
+  fun `test friend request`(context: TestContext){
     //user:yangkui login
     val async = context.async()
 
@@ -239,7 +239,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testFriendResponse(context: TestContext){
+  fun `test friend response`(context: TestContext){
     //user:zxj2017 login
     val async = context.async()
 
@@ -281,7 +281,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testMessaging(context: TestContext){
+  fun `test messaging`(context: TestContext){
     //user:zxj2017 login
     val async = context.async()
 
@@ -336,7 +336,7 @@ class IMServerTest {
   }
 
   @Test
-  fun testMessagingHistory(context: TestContext){
+  fun `test messaging history`(context: TestContext){
     val async = context.async(4)
     GlobalScope.launch(vertx.dispatcher()) {
       val path0 = "${config.getString(DIR)}${separator}zxj2017${separator}yangkui${separator}2000${separator}01$separator"

@@ -49,7 +49,7 @@ class UserVerticleTest {
   }
 
   @Test
-  fun testUserCreation(context: TestContext) {
+  fun `test user creation`(context: TestContext) {
     val async = context.async()
     vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
@@ -66,7 +66,7 @@ class UserVerticleTest {
   }
 
   @Test
-  fun testUserCreationFail(context: TestContext) {
+  fun `test user creation fail`(context: TestContext) {
     val async = context.async()
     vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
@@ -83,7 +83,7 @@ class UserVerticleTest {
   }
 
   @Test
-  fun testUserCreationFail2(context: TestContext) {
+  fun `test user creation fail 2`(context: TestContext) {
     val async = context.async()
     vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
@@ -100,7 +100,7 @@ class UserVerticleTest {
   }
 
   @Test
-  fun testUserUpdate(context: TestContext) {
+  fun `test user update`(context: TestContext) {
     val async = context.async()
     vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
@@ -116,7 +116,7 @@ class UserVerticleTest {
   }
 
   @Test
-  fun testUserValid(context: TestContext) {
+  fun `test user valid`(context: TestContext) {
     val async = context.async()
     vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
@@ -132,7 +132,7 @@ class UserVerticleTest {
   }
 
   @Test
-  fun testUserSearch(context: TestContext) {
+  fun `test user search`(context: TestContext) {
     val async0 = context.async()
     vertx.eventBus().send<JsonObject>(SearchVerticle::class.java.name, "zxj2017") {
       println(it.result().body())
@@ -143,7 +143,7 @@ class UserVerticleTest {
   }
 
   @Test
-  fun testUserSearchFail(context: TestContext) {
+  fun `test user search fail`(context: TestContext) {
     val async1 = context.async()
     vertx.eventBus().send<JsonObject>(SearchVerticle::class.java.name, "") {
       println(it.result().body())
