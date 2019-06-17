@@ -50,7 +50,7 @@ uri: /message/text
 ### user - 用户类型   
 [用户注册（双向消息）](#用户注册)  
 [用户登陆（双向消息）](#用户登录)  
-[离线消息（双向消息）](#离线消息)  
+离线消息（双向消息）  
 [历史消息（双向消息）](#历史消息)  
 
 #### 用户注册  
@@ -85,14 +85,14 @@ uri: /
 
 #### 用户登录  
 method: PUT  
-uri: /user/login  
+uri: /
 ```json
 {
   "type":"user",
   "subtype":"login",
   "id":"zxj5470",
   "password":"431fe828b9b8e8094235dee515562247",
-  "version":0.2
+  "version":0.4
 }
 ```
 >传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
@@ -107,6 +107,9 @@ uri: /user/login
   "friends":[
     {"id":"yangkui","nickname":"杨奎"},
     {"id":"xiaopan","nickname":"小胖胖"}
+  ],
+  "notifications":[
+    {"type":"friend","subtype":"request","from":"zhaoce","message":"请加我为好友"}
   ]
 }
 ```
@@ -117,58 +120,28 @@ uri: /user/login
 }
 ```
 
-#### 离线消息  
-method: PUT  
-uri: /user/offline  
-```json
-{
-  "type":"user",
-  "subtype":"offline",
-  "id":"zxj5470",
-  "password":"431fe828b9b8e8094235dee515562247",
-  "version":0.2
-}
-```
->传输时 `password` 为加密后的密码内容，使用 `MD5` 进行加密。  
-
-响应  
-```json
-{
-  "offline":true,
-  "messages":[
-    {"type":"message","subtype":"text","from":"yangkui","body":"在吗？"},
-    {"type":"message","subtype":"text","from":"yangkui","body":"小胖胖过来了，一起吃饭"}
-  ],
-  "friends":[
-    {"type":"friend","subtype":"request","from":"zhaoce","message":"请加我为好友"}
-  ]
-}
-```
-或
-```json
-{
-  "offline":false
-}
-```
 #### 历史消息
 method:PUT       
-uri:/user/history
+uri:/
 ```json
 {
- "type":"user",
+ "type":"message",
  "subtype":"history",
  "date":"2018-08-17",
  "id":"zxj2017",
  "password":"431fe828b9b8e8094235dee515562247",
  "friend":"yangkui",
- "version":"0.2"
+ "version":"0.4"
 }
 ```
+
+>查询2018-08-17之前的聊天记录，若此项为空，则读取最新的大于20条聊天记录。  
+
 响应
 ```json
 {
-  "history":"true",
-  "messages":[
+  "message":true,
+  "history":[
     {
       "type":"message","subtype":"text","to":"zxj2017","body":"你好吗？","version":0.1,"from":"yangkui"
     },
@@ -181,7 +154,7 @@ uri:/user/history
 或
 ```json
 {
-  "history":"false"
+  "message":false
 }
 ```  
 
