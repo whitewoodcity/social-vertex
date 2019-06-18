@@ -16,18 +16,19 @@ abstract class ServletVerticle : CoroutineVerticle() {
   protected fun start(address: String) {
     vertx.eventBus().consumer<JsonObject>(address) {
       val reqJson = it.body()
-      val session = Session(reqJson.getJsonObject(COOKIES).getString(SESSION_ID))
+      val session = HttpSession(reqJson.getJsonObject(COOKIES).getString(SESSION_ID))
 
       launch {
+        val request = HttpServletRequest(reqJson, session)
         when (reqJson.getString(HTTP_METHOD)) {
           POST -> {
-            it.reply(doPost(reqJson, session).toJson())
+            it.reply(doPost(request).toJson())
           }
           GET -> {
-            it.reply(doGet(reqJson, session).toJson())
+            it.reply(doGet(request).toJson())
           }
           PUT -> {
-            it.reply(doPut(reqJson, session).toJson())
+            it.reply(doPut(request).toJson())
           }
           else -> it.reply(JsonObject().put(JSON_BODY, "Http Method is not specified"))
         }
@@ -36,7 +37,7 @@ abstract class ServletVerticle : CoroutineVerticle() {
   }
 
   //Service Proxy of the Session Verticle
-  inner class Session(private val id: String) {
+  inner class HttpSession(private val id: String) {
 
     fun put(key: String, value: String?) {
       vertx.eventBus().send(SessionVerticle::class.java.name,
@@ -58,35 +59,77 @@ abstract class ServletVerticle : CoroutineVerticle() {
     }
   }
 
-  enum class ResponseType {
+  enum class HttpServletResponseType {
     EMPTY_RESPONSE, TEMPLATE, FILE, JSON
   }
 
-  inner class Response(val type: ResponseType, val path: String = "index.htm", private val values: JsonObject = JsonObject()) {
-    constructor(json: JsonObject = JsonObject()) : this(ResponseType.JSON, "index.htm", json)
-    constructor() : this(ResponseType.EMPTY_RESPONSE)
-    constructor(filePath: String) : this(ResponseType.FILE, filePath)
-    constructor(templatePath: String, values: JsonObject) : this(ResponseType.TEMPLATE, templatePath, values)
+  inner class HttpServletResponse(val type: HttpServletResponseType, val path: String = "index.htm", private val values: JsonObject = JsonObject()) {
+    constructor(json: JsonObject = JsonObject()) : this(HttpServletResponseType.JSON, "index.htm", json)
+    constructor() : this(HttpServletResponseType.EMPTY_RESPONSE)
+    constructor(filePath: String) : this(HttpServletResponseType.FILE, filePath)
+    constructor(templatePath: String, values: JsonObject) : this(HttpServletResponseType.TEMPLATE, templatePath, values)
 
     fun toJson(): JsonObject {
       return when (type) {
-        ResponseType.TEMPLATE -> JsonObject().put(TEMPLATE_PATH, path).put(VALUES, values)
-        ResponseType.FILE -> JsonObject().put(FILE_PATH, path)
-        ResponseType.JSON -> JsonObject().put(RESPONSE_JSON, values)
+        HttpServletResponseType.TEMPLATE -> JsonObject().put(TEMPLATE_PATH, path).put(VALUES, values)
+        HttpServletResponseType.FILE -> JsonObject().put(FILE_PATH, path)
+        HttpServletResponseType.JSON -> JsonObject().put(RESPONSE_JSON, values)
         else -> JsonObject().put(EMPTY_RESPONSE, true)
       }
     }
   }
 
-  open suspend fun doGet(json: JsonObject, session: Session): Response {
-    return Response()
+  inner class HttpServletRequest(val json:JsonObject, val session: HttpSession){
+    fun getPath():String{
+      return json.getString(PATH)
+    }
+
+    fun getHttpMethod():String{
+      return json.getString(HTTP_METHOD)
+    }
+
+    fun getCookies():JsonObject{
+      return json.getJsonObject(COOKIES)
+    }
+
+    fun getHeaders():JsonObject{
+      return json.getJsonObject(HEADERS)
+    }
+
+    fun getParams():JsonObject{
+      return json.getJsonObject(PARAMS)
+    }
+
+    fun getQueryParams():JsonObject{
+      return json.getJsonObject(QUERY_PARAM)
+    }
+
+    fun getFormAttributes():JsonObject{
+      return json.getJsonObject(FORM_ATTRIBUTES)
+    }
+
+    fun getUploadFiles():JsonObject{
+      return json.getJsonObject(UPLOAD_FILES)
+    }
+
+    fun getUploadFileNames():JsonObject{
+      return json.getJsonObject(UPLOAD_FILE_NAMES)
+    }
+
+    fun bodyAsJson():JsonObject{
+      return json.getJsonObject(BODY_AS_JSON)
+    }
   }
 
-  open suspend fun doPost(json: JsonObject, session: Session): Response {
-    return Response()
+  open suspend fun doGet(request:HttpServletRequest): HttpServletResponse {
+    return HttpServletResponse()
   }
 
-  open suspend fun doPut(json: JsonObject, session: Session): Response {
-    return Response()
+  open suspend fun doPost(request:HttpServletRequest): HttpServletResponse {
+    return HttpServletResponse()
+  }
+
+  open suspend fun doPut(request:HttpServletRequest): HttpServletResponse {
+    return HttpServletResponse()
   }
 }

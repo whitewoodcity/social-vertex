@@ -1,7 +1,6 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
-import cn.net.polyglot.verticle.im.IMMessageVerticle
 import cn.net.polyglot.verticle.search.SearchVerticle
 import cn.net.polyglot.verticle.user.UserVerticle
 import io.vertx.core.Vertx

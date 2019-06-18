@@ -11,12 +11,12 @@ import java.io.File.separator
 
 class LoginVerticle : ServletVerticle() {
 
-  override suspend fun doPost(json: JsonObject, session: Session): Response {
+  override suspend fun doPost(request: HttpServletRequest): HttpServletResponse {
 
-    val reqJson = when(json.getString(PATH)){
+    val reqJson = when(request.getPath()){
       "/register" -> {
         val requestJson =
-          json.getJsonObject(FORM_ATTRIBUTES)
+          request.getFormAttributes()
             .put(SUBTYPE, REGISTER)
 
         val password = md5(requestJson.getString(PASSWORD))
@@ -27,7 +27,7 @@ class LoginVerticle : ServletVerticle() {
 
         val result = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
         if(!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)){
-          return Response(ResponseType.TEMPLATE, "register.html")
+          return HttpServletResponse(HttpServletResponseType.TEMPLATE, "register.html")
         }
 
         JsonObject().put(ID, requestJson.getString(ID))
@@ -36,19 +36,19 @@ class LoginVerticle : ServletVerticle() {
           .put(SUBTYPE, PROFILE)
       }
       "/update" -> {
-        if (session.get(ID) == null) {
-          return Response(ResponseType.TEMPLATE, "index.htm")
+        if (request.session.get(ID) == null) {
+          return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
         }
 
         val requestJson =
-          json.getJsonObject(FORM_ATTRIBUTES)
+          request.getFormAttributes()
             .put(TYPE, USER)
             .put(SUBTYPE, UPDATE)
-            .put(ID, session.get(ID))
+            .put(ID, request.session.get(ID))
         //update user data
         vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
         //update profile image
-        val uploadFile = json.getJsonObject(UPLOAD_FILES).getString("portrait")
+        val uploadFile = request.getUploadFiles().getString("portrait")
         if(!uploadFile.isNullOrBlank()){
 
           val jarDir = config.getString(JAR_DIR)
@@ -59,17 +59,17 @@ class LoginVerticle : ServletVerticle() {
             vertx.fileSystem().deleteAwait(jarDir + separator + uploadFile)
           else
             vertx.fileSystem().moveAwait(jarDir + separator + uploadFile,
-            dir + separator + session.get(ID) + separator + "portrait", copyOptionsOf().setReplaceExisting(true))
+            dir + separator + request.session.get(ID) + separator + "portrait", copyOptionsOf().setReplaceExisting(true))
         }
 
-        JsonObject().put(ID, session.get(ID))
-          .put(PASSWORD, session.get(PASSWORD))
+        JsonObject().put(ID, request.session.get(ID))
+          .put(PASSWORD, request.session.get(PASSWORD))
           .put(TYPE, USER)
           .put(SUBTYPE, PROFILE)
       }
       else -> {//default is login
-        val id = json.getJsonObject(FORM_ATTRIBUTES).getString(ID)
-        val password = md5(json.getJsonObject(FORM_ATTRIBUTES).getString(PASSWORD))
+        val id = request.getFormAttributes().getString(ID)
+        val password = md5(request.getFormAttributes().getString(PASSWORD))
 
         JsonObject().put(ID, id)
           .put(PASSWORD, password)
@@ -78,38 +78,39 @@ class LoginVerticle : ServletVerticle() {
       }
     }
 
-    return profile(reqJson, session)
+    return profile(reqJson, request.session)
   }
 
-  override suspend fun doGet(json: JsonObject, session: Session): Response {
-    if (session.get(ID) == null) {
-      return Response(ResponseType.TEMPLATE, "index.htm")
+  override suspend fun doGet(request: HttpServletRequest): HttpServletResponse {
+
+    if (request.session.get(ID) == null) {
+      return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
     }
 
-    val id = session.get(ID)
-    val password = session.get(PASSWORD)
+    val id = request.session.get(ID)
+    val password = request.session.get(PASSWORD)
 
-    return when(json.getString(PATH)){
+    return when(request.getPath()){
       "/update" -> {
         profile(JsonObject().put(ID, id)
           .put(PASSWORD, password)
           .put(TYPE, USER)
-          .put(SUBTYPE, PROFILE),session,"update.html")
+          .put(SUBTYPE, PROFILE),request.session,"update.html")
       }
       "/portrait" ->{
         val dir = config.getString(DIR)
-        Response(dir+ separator+session.get(ID)+ separator+"portrait")
+        HttpServletResponse(dir+ separator+request.session.get(ID)+ separator+"portrait")
       }
       else -> {
         profile(JsonObject().put(ID, id)
           .put(PASSWORD, password)
           .put(TYPE, USER)
-          .put(SUBTYPE, PROFILE),session)
+          .put(SUBTYPE, PROFILE),request.session)
       }
     }
   }
 
-  private suspend fun profile(reqJson: JsonObject, session: Session, defaultTemplatePath:String = "index.html"):Response{
+  private suspend fun profile(reqJson: JsonObject, session: HttpSession, defaultTemplatePath:String = "index.html"):HttpServletResponse{
     return try{
       val asyncResult = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, reqJson).body()
 
@@ -119,13 +120,13 @@ class LoginVerticle : ServletVerticle() {
         session.put(PASSWORD, reqJson.getString(PASSWORD))
         session.put(NICKNAME, asyncResult.getJsonObject(JSON_BODY).getString(NICKNAME))
 
-        Response(defaultTemplatePath, asyncResult.getJsonObject(JSON_BODY))
+        HttpServletResponse(defaultTemplatePath, asyncResult.getJsonObject(JSON_BODY))
       }else{
-        Response(ResponseType.TEMPLATE, "index.htm")
+        HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
       }
     }catch (e:Throwable){
       e.printStackTrace()
-      Response(ResponseType.TEMPLATE, "error.htm")
+      HttpServletResponse(HttpServletResponseType.TEMPLATE, "error.htm")
     }
   }
 }

@@ -10,14 +10,14 @@ import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.sendAwait
 
 class IMServletVerticle:ServletVerticle() {
-  override suspend fun doPut(json: JsonObject, session: ServletVerticle.Session): Response {
+  override suspend fun doPut(request: HttpServletRequest): HttpServletResponse {
 
-    val bodyJson = json.getJsonObject(BODY_AS_JSON)
+    val bodyJson = request.bodyAsJson()
     val type = bodyJson.getString(TYPE)
     val subtype = bodyJson.getString(SUBTYPE)
 
     if(type.isNullOrBlank() || subtype.isNullOrBlank()){
-      Response(JsonObject().put("info", "未指定操作类型或操作子类型"))
+      HttpServletResponse(JsonObject().put("info", "未指定操作类型或操作子类型"))
     }
 
     return when (type) {
@@ -31,38 +31,38 @@ class IMServletVerticle:ServletVerticle() {
               if(bodyJson.getString(PASSWORD) == resultJson.getJsonObject(JSON_BODY).getString(PASSWORD)){
                 val responseJson = JsonObject().put(LOGIN, true).mergeIn(resultJson.getJsonObject(JSON_BODY))
                 responseJson.remove(PASSWORD)
-                Response(responseJson)
+                HttpServletResponse(responseJson)
               }else{
-                Response(JsonObject().put(LOGIN, false).put(INFO,"密码错误"))
+                HttpServletResponse(JsonObject().put(LOGIN, false).put(INFO,"密码错误"))
               }
             }else{
-              Response(bodyJson.put(LOGIN, false))
+              HttpServletResponse(bodyJson.put(LOGIN, false))
             }
           }
           else -> {
             val responseMessage = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, bodyJson)
-            Response(responseMessage.body())
+            HttpServletResponse(responseMessage.body())
           }
         }
       }
       SEARCH -> {
         val responseJson = vertx.eventBus().sendAwait<JsonObject>(SearchVerticle::class.java.name, bodyJson.getString(KEYWORD)?:"")
-        Response(responseJson.body())
+        HttpServletResponse(responseJson.body())
       }
       FRIEND -> {
         if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
           vertx.eventBus().send(FriendVerticle::class.java.name, bodyJson)
         }
 
-        Response()
+        HttpServletResponse()
       }
       MESSAGE -> {
         if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
-          Response(vertx.eventBus().sendAwait<JsonObject>(MessageVerticle::class.java.name, bodyJson).body())
+          HttpServletResponse(vertx.eventBus().sendAwait<JsonObject>(MessageVerticle::class.java.name, bodyJson).body())
         }else
-          Response(bodyJson.put(MESSAGE, false))
+          HttpServletResponse(bodyJson.put(MESSAGE, false))
       }
-      else -> Response()
+      else -> HttpServletResponse()
     }
   }
 
