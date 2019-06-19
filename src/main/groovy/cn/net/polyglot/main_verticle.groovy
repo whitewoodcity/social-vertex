@@ -75,7 +75,6 @@ retriever.getConfig { ar ->
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option)
-    vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMMessageVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.WebServerVerticle", option)
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.LoginVerticle", option)

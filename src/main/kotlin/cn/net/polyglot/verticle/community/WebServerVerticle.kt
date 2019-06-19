@@ -6,6 +6,12 @@ import io.vertx.core.http.HttpMethod
 
 class WebServerVerticle: DispatchVerticle() {
 
+  //设置静态文件后缀，path若是这些后缀，则自动读取对应路径文件予以返回
+  override fun initDispatchVerticle() {
+    super.initDispatchVerticle()
+    staticFileSuffix.addAll(setOf("ico", "css", "js","text","png","jpg","gif","jpeg","mp3","avi","mp4"))
+  }
+
   //设置http方法为put时候，http请求体缺省为application/json，但是flutter中以及需要设置Content-Type为application/json，否则会自动设为text/plain
   override fun getDefaultContentTypeByHttpMethod(httpMethod: HttpMethod):String{
     return when(httpMethod){

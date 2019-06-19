@@ -53,10 +53,19 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     return "text/plain"
   }
 
+  val staticFileSuffix = HashSet<String>()
+  var indexPage = "/index.htm"
+
   abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String
+
+  open fun initDispatchVerticle(){
+    staticFileSuffix.add("htm")
+  }
 
   override suspend fun start() {
     vertx.deployVerticle("kt:cn.net.polyglot.verticle.web.SessionVerticle")
+
+    initDispatchVerticle()
 
     val router = Router.router(vertx)
 
@@ -86,14 +95,21 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     }
 
     //web start
-    router.routeWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
+    val routePattern = StringBuilder("/.*(")
+    val suffixes = staticFileSuffix.iterator()
+    while(suffixes.hasNext()){
+      routePattern.append("\\.${suffixes.next()}")
+      routePattern.append(if(suffixes.hasNext()) "|" else ")")
+    }
+    router.routeWithRegex(routePattern.toString())   //.routeWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create()) //StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
       .handler { it.response().end("no matched file") }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
+
     //reroute to the static files
     router.get("/*").handler { routingContext: RoutingContext ->
       val path = routingContext.request().path()
       when (path) {
-        "", "/", "/index" -> routingContext.reroute(HttpMethod.GET, "/index.htm")
+        "", "/", "/index" -> routingContext.reroute(HttpMethod.GET, indexPage)
         else -> routingContext.next()
       }
     }

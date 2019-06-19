@@ -13,7 +13,7 @@ class LoginVerticle : ServletVerticle() {
 
   override suspend fun doPost(request: HttpServletRequest): HttpServletResponse {
 
-    val reqJson = when(request.getPath()){
+    val reqJson = when (request.getPath()) {
       "/register" -> {
         val requestJson =
           request.getFormAttributes()
@@ -25,8 +25,8 @@ class LoginVerticle : ServletVerticle() {
         requestJson.put(PASSWORD, password)
         requestJson.put(PASSWORD2, password2)
 
-        val result = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
-        if(!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)){
+        val result = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
+        if (!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)) {
           return HttpServletResponse(HttpServletResponseType.TEMPLATE, "register.html")
         }
 
@@ -46,20 +46,20 @@ class LoginVerticle : ServletVerticle() {
             .put(SUBTYPE, UPDATE)
             .put(ID, request.session.get(ID))
         //update user data
-        vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name,requestJson).body()
+        vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
         //update profile image
         val uploadFile = request.getUploadFiles().getString("portrait")
-        if(!uploadFile.isNullOrBlank()){
+        if (!uploadFile.isNullOrBlank()) {
 
           val jarDir = config.getString(JAR_DIR)
           val dir = config.getString(DIR)
 
           val file = vertx.fileSystem().propsAwait(jarDir + separator + uploadFile)
-          if(file.size()==0L)
+          if (file.size() == 0L)
             vertx.fileSystem().deleteAwait(jarDir + separator + uploadFile)
           else
             vertx.fileSystem().moveAwait(jarDir + separator + uploadFile,
-            dir + separator + request.session.get(ID) + separator + "portrait", copyOptionsOf().setReplaceExisting(true))
+              dir + separator + request.session.get(ID) + separator + "portrait", copyOptionsOf().setReplaceExisting(true))
         }
 
         JsonObject().put(ID, request.session.get(ID))
@@ -83,48 +83,50 @@ class LoginVerticle : ServletVerticle() {
 
   override suspend fun doGet(request: HttpServletRequest): HttpServletResponse {
 
-    if (request.session.get(ID) == null) {
+    val session = request.session
+
+    if (session.get(ID) == null) {
       return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
     }
 
-    val id = request.session.get(ID)
-    val password = request.session.get(PASSWORD)
+    val id = session.get(ID)
+    val password = session.get(PASSWORD)
 
-    return when(request.getPath()){
+    return when (request.getPath()) {
       "/update" -> {
         profile(JsonObject().put(ID, id)
           .put(PASSWORD, password)
           .put(TYPE, USER)
-          .put(SUBTYPE, PROFILE),request.session,"update.html")
+          .put(SUBTYPE, PROFILE), session, "update.html")
       }
-      "/portrait" ->{
+      "/portrait" -> {
         val dir = config.getString(DIR)
-        HttpServletResponse(dir+ separator+request.session.get(ID)+ separator+"portrait")
+        HttpServletResponse(dir + separator + session.get(ID) + separator + "portrait")
       }
       else -> {
         profile(JsonObject().put(ID, id)
           .put(PASSWORD, password)
           .put(TYPE, USER)
-          .put(SUBTYPE, PROFILE),request.session)
+          .put(SUBTYPE, PROFILE), session)
       }
     }
   }
 
-  private suspend fun profile(reqJson: JsonObject, session: HttpSession, defaultTemplatePath:String = "index.html"):HttpServletResponse{
-    return try{
+  private suspend fun profile(reqJson: JsonObject, session: HttpSession, defaultTemplatePath: String = "index.html"): HttpServletResponse {
+    return try {
       val asyncResult = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, reqJson).body()
 
-      if(asyncResult.containsKey(PROFILE) && asyncResult.getBoolean(PROFILE)){
+      if (asyncResult.containsKey(PROFILE) && asyncResult.getBoolean(PROFILE)) {
 
         session.put(ID, reqJson.getString(ID))
         session.put(PASSWORD, reqJson.getString(PASSWORD))
         session.put(NICKNAME, asyncResult.getJsonObject(JSON_BODY).getString(NICKNAME))
 
         HttpServletResponse(defaultTemplatePath, asyncResult.getJsonObject(JSON_BODY))
-      }else{
+      } else {
         HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
       }
-    }catch (e:Throwable){
+    } catch (e: Throwable) {
       e.printStackTrace()
       HttpServletResponse(HttpServletResponseType.TEMPLATE, "error.htm")
     }
