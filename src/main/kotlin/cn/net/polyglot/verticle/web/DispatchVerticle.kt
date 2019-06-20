@@ -37,6 +37,7 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CookieHandler
+import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.vertx.kotlin.core.eventbus.sendAwait
@@ -49,7 +50,7 @@ import kotlin.random.Random
 
 abstract class DispatchVerticle : CoroutineVerticle() {
 
-  open fun getDefaultContentTypeByHttpMethod(httpMethod: HttpMethod):String{
+  open fun getDefaultContentTypeByHttpMethod(httpMethod: HttpMethod): String {
     return "text/plain"
   }
 
@@ -58,7 +59,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
   abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String
 
-  open fun initDispatchVerticle(){
+  open fun initDispatchVerticle() {
     staticFileSuffix.add("htm")
   }
 
@@ -72,6 +73,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     val generator = UUIDGenerator(SecureRandom())
 
     router.route().handler(CookieHandler.create())
+    router.route().handler(CorsHandler.create("*").allowedMethods(setOf(HttpMethod.OPTIONS, HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE)))
     router.route().handler(BodyHandler.create().setBodyLimit(1 * 1048576L))//1MB = 1048576L
 
     router.route().handler { routingContext ->
@@ -97,9 +99,9 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     //web start
     val routePattern = StringBuilder("/.*(")
     val suffixes = staticFileSuffix.iterator()
-    while(suffixes.hasNext()){
+    while (suffixes.hasNext()) {
       routePattern.append("\\.${suffixes.next()}")
-      routePattern.append(if(suffixes.hasNext()) "|" else ")")
+      routePattern.append(if (suffixes.hasNext()) "|" else ")")
     }
     router.routeWithRegex(routePattern.toString())   //.routeWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create()) //StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
@@ -179,7 +181,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
       if (mimeType.toLowerCase().contains("json")) {
         try {
           requestJson.put(BODY_AS_JSON, routingContext.bodyAsJson)
-        }catch (exception:Exception){
+        } catch (exception: Exception) {
           exception.printStackTrace()
         }
       }
