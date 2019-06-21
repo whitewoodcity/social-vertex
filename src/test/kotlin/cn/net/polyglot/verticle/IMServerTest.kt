@@ -78,7 +78,7 @@ class IMServerTest {
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.friend.FriendVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.WebServerVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option, context.asyncAssertSuccess())
     }

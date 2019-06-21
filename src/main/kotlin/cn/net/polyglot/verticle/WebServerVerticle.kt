@@ -1,5 +1,7 @@
-package cn.net.polyglot.verticle.community
+package cn.net.polyglot.verticle
 
+import cn.net.polyglot.verticle.community.CommunityVerticle
+import cn.net.polyglot.verticle.community.LoginVerticle
 import cn.net.polyglot.verticle.im.IMServletVerticle
 import cn.net.polyglot.verticle.web.DispatchVerticle
 import io.vertx.core.http.HttpMethod

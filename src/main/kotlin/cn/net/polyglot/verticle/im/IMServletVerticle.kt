@@ -3,6 +3,7 @@ package cn.net.polyglot.verticle.im
 import cn.net.polyglot.config.*
 import cn.net.polyglot.verticle.friend.FriendVerticle
 import cn.net.polyglot.verticle.message.MessageVerticle
+import cn.net.polyglot.verticle.publication.PublicationVerticle
 import cn.net.polyglot.verticle.search.SearchVerticle
 import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
@@ -61,6 +62,12 @@ class IMServletVerticle:ServletVerticle() {
           HttpServletResponse(vertx.eventBus().sendAwait<JsonObject>(MessageVerticle::class.java.name, bodyJson).body())
         }else
           HttpServletResponse(bodyJson.put(MESSAGE, false))
+      }
+      PUBLICATION -> {
+        if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
+          HttpServletResponse(vertx.eventBus().sendAwait<JsonObject>(PublicationVerticle::class.java.name, bodyJson).body())
+        }else
+          HttpServletResponse(bodyJson.put(PUBLICATION, false))
       }
       else -> HttpServletResponse()
     }

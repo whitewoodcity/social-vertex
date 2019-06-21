@@ -69,5 +69,16 @@ class UtilTest{
   }
 
 
+  @Test
+  fun `test`(context: TestContext){
+    val list = ArrayList<String>()
+    list.add("22_3")
+    list.add("2_4")
+    list.add("1_3")
+    list.sortBy {
+      it.substringBefore("_").toInt()
+    }
+    println(list)
+  }
 
 }

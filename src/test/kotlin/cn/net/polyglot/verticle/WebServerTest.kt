@@ -8,6 +8,7 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
+import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -36,7 +37,7 @@ class WebServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = deploymentOptionsOf(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.WebServerVerticle", option, context.asyncAssertSuccess())
+      vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
       vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.LoginVerticle", option, context.asyncAssertSuccess())
     }
 
