@@ -87,7 +87,7 @@ class PostServerTest {
   }
 
   @Test
-  fun `test history`(context: TestContext){
+  fun `test post history`(context: TestContext){
     val async = context.async()
     val json =
       JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
@@ -101,7 +101,7 @@ class PostServerTest {
   }
 
   @Test
-  fun `test history by zxj001 and retrieve the post published by zxj001`(context: TestContext){
+  fun `test history posted by zxj001 and retrieve the post published by zxj001`(context: TestContext){
     val async = context.async()
     val json =
       JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
