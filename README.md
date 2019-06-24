@@ -1,6 +1,6 @@
 
 [系统说明](SYSTEM.md)  
-[文档说明](doc/README.md)
+[文档说明](doc/COMMUNITY.md)
 
 # 即时通信协议 V0.4
 
