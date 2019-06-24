@@ -73,7 +73,12 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     val generator = UUIDGenerator(SecureRandom())
 
     router.route().handler(CookieHandler.create())
-    router.route().handler(CorsHandler.create("*").allowedMethods(setOf(HttpMethod.OPTIONS, HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE)))
+    router.route().handler(CorsHandler
+      .create("*")
+      .allowCredentials(true)
+      .allowedMethods(setOf(HttpMethod.OPTIONS, HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE))
+      .maxAgeSeconds(3600)
+    )
     router.route().handler(BodyHandler.create().setBodyLimit(1 * 1048576L))//1MB = 1048576L
 
     router.route().handler { routingContext ->
