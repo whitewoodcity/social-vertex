@@ -116,3 +116,28 @@ fun Date.inNextYear(): Date {
   cal.add(Calendar.YEAR, 1)
   return cal.time
 }
+
+/**
+ * get netx hour
+ *
+ * @return Date
+ */
+fun Date.nextHour(): Date{
+  val cal = Calendar.getInstance()
+  cal.time = this
+  cal.add(Calendar.HOUR, 1)
+  return cal.time
+}
+
+/**
+ * get netx hour
+ *
+ * @return Date
+ */
+fun Date.lastHour(): Date{
+  val cal = Calendar.getInstance()
+  cal.time = this
+  cal.add(Calendar.HOUR, -1)
+  return cal.time
+}
+

@@ -73,11 +73,40 @@ class PostServerTest {
   }
 
   @Test
-  fun `test post`(context: TestContext){
+  fun `test create post`(context: TestContext){
     val async = context.async()
     val json =
       JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(TYPE, PUBLICATION).put(SUBTYPE, QUESTION).put(QUESTION, "小胖胖来了吗？").put(DESCRIPTION,"如题")
+    GlobalScope.launch(vertx.dispatcher()) {
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      println(response.bodyAsJsonObject())
+      context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
+      async.complete()
+    }
+  }
+
+  @Test
+  fun `test history`(context: TestContext){
+    val async = context.async()
+    val json =
+      JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
+    GlobalScope.launch(vertx.dispatcher()) {
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      println(response.bodyAsJsonObject())
+      context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
+      async.complete()
+    }
+  }
+
+  @Test
+  fun `test history by id`(context: TestContext){
+    val async = context.async()
+    val json =
+      JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
+        .put(FROM, "zxj001")
     GlobalScope.launch(vertx.dispatcher()) {
       val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
       println(response.bodyAsJsonObject())
