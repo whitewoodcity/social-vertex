@@ -101,7 +101,7 @@ class PostServerTest {
   }
 
   @Test
-  fun `test history by id`(context: TestContext){
+  fun `test history by zxj001`(context: TestContext){
     val async = context.async()
     val json =
       JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
