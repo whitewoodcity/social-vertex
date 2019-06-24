@@ -3,10 +3,7 @@ package cn.net.polyglot.verticle.publication
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lastHour
 import cn.net.polyglot.module.nextHour
-import cn.net.polyglot.module.tomorrow
-import cn.net.polyglot.module.yesterday
 import com.codahale.fastuuid.UUIDGenerator
-import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.*
 import io.vertx.kotlin.core.json.jsonArrayOf
@@ -32,6 +29,7 @@ class PublicationVerticle : CoroutineVerticle() {
       when (json.getString(SUBTYPE)) {
         QUESTION,ARTICLE,IDEA, ANSWER -> post(json)
         HISTORY -> history(json)
+        RETRIEVE -> retrieve(json)
         else -> json.put(PUBLICATION, false)
       }
     } catch (e:Exception){
@@ -41,6 +39,7 @@ class PublicationVerticle : CoroutineVerticle() {
   }
 
   private suspend fun post(json: JsonObject): JsonObject {
+
     val fs = vertx.fileSystem()
 
     val date = Date()
@@ -67,6 +66,19 @@ class PublicationVerticle : CoroutineVerticle() {
     fs.createFileAwait("$linkPath$separator$dirName")
 
     return json.put(PUBLICATION, true).put(PATH, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
+  }
+
+  private suspend fun retrieve(json:JsonObject):JsonObject{
+    if(!json.containsKey(DIR)) return json.put(PUBLICATION, false).put(INFO, "Directory is required")
+
+    val path = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication.json"
+
+    return try{
+      vertx.fileSystem().readFileAwait(path).toJsonObject().put(PUBLICATION, true)
+    }catch (e:Throwable){
+      e.printStackTrace()
+      json.put(PUBLICATION, false).put(INFO, e.message)
+    }
   }
 
   private suspend fun history(json: JsonObject): JsonObject {
