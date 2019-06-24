@@ -56,7 +56,6 @@ class PostServerTest {
 
   @Test
   fun `test account registration`(context: TestContext){
-
     val async = context.async()
     GlobalScope.launch(vertx.dispatcher()) {
       webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
@@ -69,13 +68,12 @@ class PostServerTest {
           .put(PASSWORD2, "431fe828b9b8e8094235dee515562247")
           .put(VERSION, 0.1)
         )
-      println(111)
       async.complete()
     }
   }
 
   @Test
-  fun `test post`(context: TestContext){
+  fun `test create post`(context: TestContext){
     val async = context.async()
     val json =
       JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
@@ -84,6 +82,44 @@ class PostServerTest {
       val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
       println(response.bodyAsJsonObject())
       context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
+      async.complete()
+    }
+  }
+
+  @Test
+  fun `test post history`(context: TestContext){
+    val async = context.async()
+    val json =
+      JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
+    GlobalScope.launch(vertx.dispatcher()) {
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      println(response.bodyAsJsonObject())
+      context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
+      async.complete()
+    }
+  }
+
+  @Test
+  fun `test history posted by zxj001 and retrieve the post published by zxj001`(context: TestContext){
+    val async = context.async()
+    val json =
+      JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
+        .put(FROM, "zxj001")
+    GlobalScope.launch(vertx.dispatcher()) {
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      println(response.bodyAsJsonObject())
+      context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
+
+      json.put(DIR, response.bodyAsJsonObject().getJsonArray(HISTORY).getJsonObject(0).getString(DIR))
+        .put(SUBTYPE, RETRIEVE)
+
+      val response2 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      println(response2.bodyAsJsonObject())
+
+      context.assertTrue(response2.bodyAsJsonObject().getBoolean(PUBLICATION))
+
       async.complete()
     }
   }
