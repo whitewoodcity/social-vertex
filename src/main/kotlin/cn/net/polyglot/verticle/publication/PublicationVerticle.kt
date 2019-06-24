@@ -3,6 +3,7 @@ package cn.net.polyglot.verticle.publication
 import cn.net.polyglot.config.*
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.json.JsonObject
+import io.vertx.kotlin.core.file.createFileAwait
 import io.vertx.kotlin.core.file.mkdirsAwait
 import io.vertx.kotlin.core.file.writeFileAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -55,10 +56,14 @@ class PublicationVerticle : CoroutineVerticle() {
 
     val dirName = generator.generate().toString()
 
-    val path = "${config.getString(DIR)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName"
+    val communityPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName"
 
-    fs.mkdirsAwait(path)
-    fs.writeFileAwait("$path${separator}publication.json",json.toBuffer())
+    fs.mkdirsAwait(communityPath)
+    fs.writeFileAwait("$communityPath${separator}publication.json",json.toBuffer())
+
+    val linkPath = "${config.getString(DIR)}$separator${json.getString(ID)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh"
+    fs.mkdirsAwait(linkPath)
+    fs.createFileAwait("$linkPath$separator$dirName")
 
     return json.put(PUBLICATION, true).put(PATH, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
   }

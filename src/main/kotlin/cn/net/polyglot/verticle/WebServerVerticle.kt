@@ -10,7 +10,7 @@ class WebServerVerticle: DispatchVerticle() {
 
   //设置静态文件后缀，path若是这些后缀，则自动读取对应路径文件予以返回
   override fun initDispatchVerticle() {
-    super.initDispatchVerticle()
+    super.initDispatchVerticle()//.htm
     staticFileSuffix.addAll(setOf("ico", "css", "js","text","png","jpg","gif","jpeg","mp3","avi","mp4"))
   }
 

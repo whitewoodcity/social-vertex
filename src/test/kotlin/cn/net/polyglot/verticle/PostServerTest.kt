@@ -56,7 +56,6 @@ class PostServerTest {
 
   @Test
   fun `test account registration`(context: TestContext){
-
     val async = context.async()
     GlobalScope.launch(vertx.dispatcher()) {
       webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
@@ -69,7 +68,6 @@ class PostServerTest {
           .put(PASSWORD2, "431fe828b9b8e8094235dee515562247")
           .put(VERSION, 0.1)
         )
-      println(111)
       async.complete()
     }
   }
