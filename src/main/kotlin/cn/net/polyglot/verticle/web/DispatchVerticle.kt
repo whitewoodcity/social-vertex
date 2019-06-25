@@ -74,7 +74,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
     router.route().handler(CookieHandler.create())
     router.route().handler(CorsHandler
-      .create("*")
+      .create(".*")
       .allowCredentials(true)
       .allowedMethods(setOf(HttpMethod.OPTIONS, HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE))
       .maxAgeSeconds(3600)
