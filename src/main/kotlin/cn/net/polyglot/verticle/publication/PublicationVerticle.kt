@@ -27,12 +27,12 @@ class PublicationVerticle : CoroutineVerticle() {
   private suspend fun article(json: JsonObject): JsonObject {
     return try {
       when (json.getString(SUBTYPE)) {
-        QUESTION,ARTICLE,IDEA, ANSWER -> post(json)
+        QUESTION, ARTICLE, IDEA, THOUGHT, ANSWER -> post(json)
         HISTORY -> history(json)
         RETRIEVE -> retrieve(json)
         else -> json.put(PUBLICATION, false)
       }
-    } catch (e:Exception){
+    } catch (e: Exception) {
       e.printStackTrace()
       json.put(PUBLICATION, false).put(INFO, e.message)
     }
@@ -59,7 +59,7 @@ class PublicationVerticle : CoroutineVerticle() {
     val communityPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName"
 
     fs.mkdirsAwait(communityPath)
-    fs.writeFileAwait("$communityPath${separator}publication.json",json.toBuffer())
+    fs.writeFileAwait("$communityPath${separator}publication.json", json.toBuffer())
 
     val linkPath = "${config.getString(DIR)}$separator${json.getString(ID)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh"
     fs.mkdirsAwait(linkPath)
@@ -68,14 +68,14 @@ class PublicationVerticle : CoroutineVerticle() {
     return json.put(PUBLICATION, true).put(PATH, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
   }
 
-  private suspend fun retrieve(json:JsonObject):JsonObject{
-    if(!json.containsKey(DIR)) return json.put(PUBLICATION, false).put(INFO, "Directory is required")
+  private suspend fun retrieve(json: JsonObject): JsonObject {
+    if (!json.containsKey(DIR)) return json.put(PUBLICATION, false).put(INFO, "Directory is required")
 
     val path = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication.json"
 
-    return try{
+    return try {
       vertx.fileSystem().readFileAwait(path).toJsonObject().put(PUBLICATION, true)
-    }catch (e:Throwable){
+    } catch (e: Throwable) {
       e.printStackTrace()
       json.put(PUBLICATION, false).put(INFO, e.message)
     }
@@ -101,15 +101,15 @@ class PublicationVerticle : CoroutineVerticle() {
     val dd = SimpleDateFormat("dd").format(time)
     val hh = SimpleDateFormat("HH").format(time)
 
-    val dir = if(json.containsKey(FROM)){
-      if(!vertx.fileSystem().existsAwait("${config.getString(DIR)}$separator${json.getString(FROM)}")){
+    val dir = if (json.containsKey(FROM)) {
+      if (!vertx.fileSystem().existsAwait("${config.getString(DIR)}$separator${json.getString(FROM)}")) {
         return json.put(PUBLICATION, false).put(INFO, "User doesn't exist")
       }
       "${config.getString(DIR)}$separator${json.getString(FROM)}$separator$COMMUNITY"
-    }else{
+    } else {
       "${config.getString(DIR)}$separator$COMMUNITY"
     }
-    if(!vertx.fileSystem().existsAwait(dir)){
+    if (!vertx.fileSystem().existsAwait(dir)) {
       vertx.fileSystem().mkdirsAwait(dir)
     }
 
@@ -117,41 +117,41 @@ class PublicationVerticle : CoroutineVerticle() {
     var until = "$yyyy-$mm-$dd-$hh"
 
     val yyyys = vertx.fileSystem()
-      .readDirAwait(dir,"\\d{4}")
-      .map{it.substringAfterLast(separator)}
+      .readDirAwait(dir, "\\d{4}")
+      .map { it.substringAfterLast(separator) }
       .filter { it <= yyyy }
       .sorted().reversed()
 
-    loop@for(year in yyyys){
+    loop@ for (year in yyyys) {
       val mms = vertx.fileSystem()
-        .readDirAwait("$dir$separator$year","\\d{2}")
-        .map{it.substringAfterLast(separator)}
+        .readDirAwait("$dir$separator$year", "\\d{2}")
+        .map { it.substringAfterLast(separator) }
         .filter { year + it <= yyyy + mm }
         .sorted().reversed()
 
-      for(month in mms){
+      for (month in mms) {
         val dds = vertx.fileSystem()
-          .readDirAwait("$dir$separator$year$separator$month","\\d{2}")
-          .map{it.substringAfterLast(separator)}
+          .readDirAwait("$dir$separator$year$separator$month", "\\d{2}")
+          .map { it.substringAfterLast(separator) }
           .filter { year + month + it <= yyyy + mm + dd }
           .sorted().reversed()
 
-        for(day in dds){
+        for (day in dds) {
           val hhs = vertx.fileSystem()
-            .readDirAwait("$dir$separator$year$separator$month$separator$day","\\d{2}")
-            .map{it.substringAfterLast(separator)}
+            .readDirAwait("$dir$separator$year$separator$month$separator$day", "\\d{2}")
+            .map { it.substringAfterLast(separator) }
             .filter { year + month + day + it <= yyyy + mm + dd + hh }
             .sorted().reversed()
 
-          for(hour in hhs){
+          for (hour in hhs) {
             val publicationList = vertx.fileSystem()
               .readDirAwait("$dir$separator$year$separator$month$separator$day$separator$hour")
 
-            for(publicationPath in publicationList){
+            for (publicationPath in publicationList) {
               val props = vertx.fileSystem().propsAwait(publicationPath)
-              val publicationFilePath = if(props.isDirectory){
+              val publicationFilePath = if (props.isDirectory) {
                 "$publicationPath$separator" + "publication.json"
-              }else{
+              } else {
                 "${config.getString(DIR)}$separator$COMMUNITY$separator$year$separator$month$separator$day$separator$hour$separator${publicationPath.substringAfterLast(separator)}$separator" + "publication.json"
               }
               val file = vertx.fileSystem().readFileAwait(publicationFilePath)
@@ -160,7 +160,7 @@ class PublicationVerticle : CoroutineVerticle() {
               history.add(file)
             }
 
-            if(history.size()>=20) break@loop
+            if (history.size() >= 20) break@loop
           }
         }
       }

@@ -15,7 +15,7 @@ java -jar social-vertex-${version}-prod.jar 1>>out.log 2>>err.log &
 
 ```json
 { 
-  "version":0.2,
+  "version":0.4,
   "dir":"./social-vertex",
   "tcp-port":7373,
   "http-port":80,
