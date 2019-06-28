@@ -1,5 +1,4 @@
-
-[即时通信协议](README.md)
+[主菜单](../README.md)  
 
 # 系统说明
 
@@ -60,6 +59,6 @@ user.json文件储存用户的信息，例如密码，昵称，手机号等，
 "/r/n"  
 ```
 系统可根据需要用"/r/n"做切割成独立的Json字符串。  
-.send和.receive文件夹下的Json为好友请求Json，格式可参考[即时通信协议添加请求部分](README.md#添加请求)  
+.send和.receive文件夹下的Json为好友请求Json，格式可参考[即时通信协议添加请求部分](../README.md#添加请求)  
 好友同名文件夹下的好友同名json格式同user.json一致  
-所有sv文件内Json均为消息类型，格式可参考[即时通信协议消息类型部分](README.md#message---消息类型)  
+所有sv文件内Json均为消息类型，格式可参考[即时通信协议消息类型部分](../README.md#message---消息类型)  
