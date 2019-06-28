@@ -8,6 +8,6 @@
 用户回答（answer）  
 发表文章（article）  
 发表想法（thought）  
-历史信息（history）
-获取信息（retrieve）
+历史信息（history）  
+获取信息（retrieve）  
 
