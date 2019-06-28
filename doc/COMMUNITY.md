@@ -14,7 +14,7 @@
 ## 历史信息  
 以下是一个时序查询历史信息的例子：  
 HTTP方法: PUT  
-RUI: /  
+URI: /  
 ```json
 {
   "type":"publication",
@@ -32,7 +32,27 @@ RUI: /
   "subtype":"history",                            history表示时序查询
   "id":"zxj2019",                                 用户名
   "password":"431fe828b9b8e8094235dee515562247",  密码
-  "from":"zxj2019",                               非必填项，搜索zxj2019用户下发表的问题答案文章等，若不填则搜索所有用户发表的内容
-  "time":"2019-11-04-04"                          非必填项，搜索2019年11月4日凌晨4点之前发表的内容，若不填则搜索当前时间之前公开发表的内容
+  "from":"zxj2019",                               非必填项，查询zxj2019用户下发表的问题答案文章等，若不填则查询所有用户发表的内容
+  "time":"2019-11-04-04"                          非必填项，查询2019年11月4日凌晨4点之前发表的内容，若不填则查询当前时间之前公开发表的内容
+}
+```  
+发送上述请求至social vertex服务器后，服务器返回样例：
+```json
+{
+  "publication":true,
+  "history":[
+    {"type":"publication","subtype":"question","description": "where is 小胖胖"}
+  ],
+  "time":"2019-11-04-04"
+}
+```  
+解释说明  
+```text
+{
+  "publication":true,                             true表示查询成功，false则表示失败
+  "history":[                                     history为查询到的publication json列表
+    {"type":"publication","subtype":"question","description": "where is 小胖胖"}
+  ],
+  "time":"2019-11-04-04"                          time表示查询至该时间点，下次时序查询时填入该字符串，便可继续向前查询
 }
 ```  
