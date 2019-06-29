@@ -9,7 +9,7 @@
 发表文章（article）  
 发表想法（thought）  
 [历史信息（history）](#历史信息)  
-获取信息（retrieve）  
+[获取信息（retrieve）](#获取信息)  
 
 ## 历史信息  
 以下是一个时序查询历史信息的例子：  
@@ -54,5 +54,40 @@ URI: /
     {"type":"publication","subtype":"question","description": "where is 小胖胖"}
   ],
   "time":"2019-11-04-04"                          time表示查询至该时间点，下次时序查询时填入该字符串，便可继续向前查询
+}
+```  
+
+## 获取信息  
+以下是一个获取公开信息的例子：  
+HTTP方法: PUT  
+URI: /  
+```json
+{
+  "type":"publication",
+  "subtype":"retrieve",
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd"
+}
+```  
+解释说明  
+```text
+{
+  "type":"publication",                                       固定使用publication，与系统其他类型相区分
+  "subtype":"retrieve",                                       获取特定信息
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd" 特性信息所在路径
+}
+```  
+发送上述请求至social vertex服务器后，服务器返回样例：
+```json
+{
+  "publication": true,
+  "type": "publication",
+  "subtype": "question"
+}
+```  
+解释说明  
+```text
+{
+  "publication":true,                             true表示查询成功，false则表示失败
+  "type": "publication"...                        其余字段为信息存入时信息
 }
 ```  
