@@ -65,6 +65,8 @@ URI: /
 {
   "type":"publication",
   "subtype":"retrieve",
+  "id":"zxj2019",
+  "password":"431fe828b9b8e8094235dee515562247",
   "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd"
 }
 ```  
@@ -73,7 +75,9 @@ URI: /
 {
   "type":"publication",                                       固定使用publication，与系统其他类型相区分
   "subtype":"retrieve",                                       获取特定信息
-  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd" 特性信息所在路径
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",特性信息所在路径
+  "id":"zxj2019",                                             用户名
+  "password":"431fe828b9b8e8094235dee515562247"               密码
 }
 ```  
 发送上述请求至social vertex服务器后，服务器返回样例：
