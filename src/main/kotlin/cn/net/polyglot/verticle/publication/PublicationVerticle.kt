@@ -65,7 +65,7 @@ class PublicationVerticle : CoroutineVerticle() {
     fs.mkdirsAwait(linkPath)
     fs.createFileAwait("$linkPath$separator$dirName")
 
-    return json.put(PUBLICATION, true).put(PATH, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
+    return json.put(PUBLICATION, true).put(DIR, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
   }
 
   private suspend fun retrieve(json: JsonObject): JsonObject {
