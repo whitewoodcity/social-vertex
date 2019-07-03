@@ -70,7 +70,7 @@ class UtilTest{
 
 
   @Test
-  fun `test`(context: TestContext){
+  fun `test alphabetical order`(context: TestContext){
     val list = ArrayList<String>()
     list.add("22_3")
     list.add("2_4")
@@ -79,6 +79,11 @@ class UtilTest{
       it.substringBefore("_").toInt()
     }
     println(list)
+  }
+
+  @Test
+  fun `test regular expression for latin latter & digits`(context: TestContext){
+    println("0123456789abcdefghijlkmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".matches(Regex("[a-zA-Z0-9]+")))
   }
 
 }

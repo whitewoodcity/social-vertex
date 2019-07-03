@@ -39,11 +39,11 @@ class UserVerticle:CoroutineVerticle() {
       val validId = when {
         id.length < 4 || id.length > 20 -> false
         id[0].isDigit() -> false
-        else -> id.all { it.isLetterOrDigit() } && !containsSensitiveWords(id)//不包含有敏感词
+        else -> id.matches(Regex(pattern = "[a-zA-Z0-9]+")) && !containsSensitiveWords(id)//不包含有敏感词
       }
 
       if (!validId)
-        return result.put(INFO, "用户名格式错误，仅允许不以数字开头的数字和字母组合，长度在4到20位之间")
+        return result.put(INFO, "用户名格式错误，仅允许不以数字开头的数字和拉丁字母组合，长度在4到20位之间")
 
       val dir = config.getString(DIR) + File.separator + id
 
