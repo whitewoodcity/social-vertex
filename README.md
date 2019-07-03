@@ -3,4 +3,4 @@
 [公共社区接口说明](doc/COMMUNITY.md)    
 [即时消息接口说明](doc/MESSENGER.md)    
 
-![topo](https://user-images.githubusercontent.com/5525436/60568794-69fc9580-9da0-11e9-9269-061ad52890b6.png)
+![topo](https://user-images.githubusercontent.com/5525436/60580281-645e7a00-9db7-11e9-8bbc-6dfbae03ebdd.png)
