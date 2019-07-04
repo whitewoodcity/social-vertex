@@ -24,9 +24,12 @@ SOFTWARE.
 
 package cn.net.polyglot.module
 
+import cn.net.polyglot.config.CONTENT
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
+import io.vertx.kotlin.core.json.get
+import io.vertx.kotlin.core.json.jsonObjectOf
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.text.SimpleDateFormat
@@ -84,6 +87,20 @@ class UtilTest{
   @Test
   fun `test regular expression for latin latter & digits`(context: TestContext){
     println("0123456789abcdefghijlkmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".matches(Regex("[a-zA-Z0-9]+")))
+
+    val json = jsonObjectOf(Pair(CONTENT,"test"))
+    println(json.get<Any>(CONTENT))
+
+    val briefJson = json.copy()
+    println(briefJson.containsKey(CONTENT) && briefJson.getValue(CONTENT) !=null &&
+      briefJson.getValue(CONTENT) is String)
+//    if(briefJson.containsKey(CONTENT) && briefJson.get<Any>(CONTENT) != null &&
+//      briefJson.get<Any>(CONTENT) is String){
+//      println(true)
+//    }else{
+//      println(false)
+//    }
+
   }
 
 }

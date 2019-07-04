@@ -25,7 +25,7 @@ import java.nio.file.Paths
 class PostServerTest {
   companion object {
     private val config = JsonObject()
-      .put(VERSION, 0.1)
+      .put(VERSION, 0.4)
       .put(DIR, Paths.get("").toAbsolutePath().toString() + File.separator + "social-vertex")
       .put(TCP_PORT, 7373)
       .put(HTTP_PORT, 7575)
@@ -74,15 +74,27 @@ class PostServerTest {
 
   @Test
   fun `test create post`(context: TestContext){
-    val async = context.async()
-    val json =
+    val async = context.async(2)
+    val json0 =
       JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
-        .put(TYPE, PUBLICATION).put(SUBTYPE, QUESTION).put(QUESTION, "小胖胖来了吗？").put(DESCRIPTION,"如题")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, QUESTION).put(TITLE, "小胖胖来了吗？")
+        .put(CONTENT,"新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。")
+
+    val json1 =
+      JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, QUESTION).put(TITLE, "qingming来了吗？")
+        .put(CONTENT,"新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。")
+
     GlobalScope.launch(vertx.dispatcher()) {
-      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
-      println(response.bodyAsJsonObject())
-      context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
-      async.complete()
+      val response0 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json0)
+      println(response0.bodyAsJsonObject())
+      context.assertTrue(response0.bodyAsJsonObject().getBoolean(PUBLICATION))
+      async.countDown()
+
+      val response1 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json1)
+      println(response1.bodyAsJsonObject())
+      context.assertTrue(response1.bodyAsJsonObject().getBoolean(PUBLICATION))
+      async.countDown()
     }
   }
 

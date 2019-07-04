@@ -6,7 +6,9 @@ import cn.net.polyglot.module.nextHour
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.*
+import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.core.json.jsonArrayOf
+import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
 import java.io.File.separator
@@ -61,11 +63,19 @@ class PublicationVerticle : CoroutineVerticle() {
     fs.mkdirsAwait(communityPath)
     fs.writeFileAwait("$communityPath${separator}publication.json", json.toBuffer())
 
+    val briefJson = json.copy()
+    if(briefJson.containsKey(CONTENT) && briefJson.getValue(CONTENT) !=null &&
+      briefJson.getValue(CONTENT) is String && briefJson.getString(CONTENT).length>100){
+      val briefContent = briefJson.getString(CONTENT).substring(0,100).plus("...")
+      briefJson.put(CONTENT, briefContent)
+      fs.writeFileAwait("$communityPath${separator}brief.json", briefJson.toBuffer())
+    }
+
     val linkPath = "${config.getString(DIR)}$separator${json.getString(ID)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh"
     fs.mkdirsAwait(linkPath)
     fs.createFileAwait("$linkPath$separator$dirName")
 
-    return json.put(PUBLICATION, true).put(DIR, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
+    return jsonObjectOf().put(PUBLICATION, true).put(DIR, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
   }
 
   private suspend fun retrieve(json: JsonObject): JsonObject {
@@ -154,7 +164,13 @@ class PublicationVerticle : CoroutineVerticle() {
               } else {
                 "${config.getString(DIR)}$separator$COMMUNITY$separator$year$separator$month$separator$day$separator$hour$separator${publicationPath.substringAfterLast(separator)}$separator" + "publication.json"
               }
-              val file = vertx.fileSystem().readFileAwait(publicationFilePath)
+              val briefFilePath = publicationFilePath.replace("publication.json","brief.json")
+              val filePath = if(vertx.fileSystem().existsAwait(briefFilePath))
+                briefFilePath
+              else
+                publicationFilePath
+
+              val file = vertx.fileSystem().readFileAwait(filePath)
                 .toJsonObject().put(DIR, publicationFilePath.substringAfterLast(COMMUNITY).substringBeforeLast(separator))
               until = "$year-$month-$day-$hour"
               history.add(file)

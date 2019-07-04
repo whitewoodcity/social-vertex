@@ -81,6 +81,7 @@ const val SESSION_ID = "social-vertex-id"
 const val COMMUNITY = ".community"
 
 const val TITLE = "title"
+const val CONTENT = "content"
 const val PARAMETERS = "parameters"
 const val ARTICLES = "articles"
 
