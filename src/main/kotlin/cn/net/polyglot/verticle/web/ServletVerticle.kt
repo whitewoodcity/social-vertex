@@ -2,7 +2,7 @@ package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.core.eventbus.requestAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
 
@@ -52,7 +52,7 @@ abstract class ServletVerticle : CoroutineVerticle() {
     }
 
     suspend fun get(key: String): String? {
-      val result = vertx.eventBus().sendAwait<String>(SessionVerticle::class.java.name,
+      val result = vertx.eventBus().requestAwait<String>(SessionVerticle::class.java.name,
         JsonObject().put(ACTION, GET).put(SESSION_ID, id).put(INFORMATION, key)
       )
       return result.body()

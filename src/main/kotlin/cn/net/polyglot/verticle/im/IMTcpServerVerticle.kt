@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.core.net.NetServerOptions
 import io.vertx.core.net.NetSocket
 import io.vertx.core.parsetools.RecordParser
-import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.core.eventbus.requestAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import kotlinx.coroutines.launch
 
@@ -93,7 +93,7 @@ class IMTcpServerVerticle : CoroutineVerticle() {
           val id = json.getString(ID)
           val password = json.getString(PASSWORD)
           val requestJson = JsonObject().put(TYPE, USER).put(SUBTYPE, VERIFY).put(ID, id).put(PASSWORD, password)
-          val responseJson = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
+          val responseJson = vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
           if(responseJson.getBoolean(VERIFY)){
             if (socketMap.containsValue(id) && socketMap.inverse()[id] != socket) {
               socketMap.inverse()[id]?.close()//表示之前连接的socket跟当前socket不是一个，设置单点登录

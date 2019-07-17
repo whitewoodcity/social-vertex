@@ -6,7 +6,6 @@ import cn.net.polyglot.module.nextHour
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.*
-import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -32,12 +31,38 @@ class PublicationVerticle : CoroutineVerticle() {
         QUESTION, ARTICLE, IDEA, THOUGHT, ANSWER -> post(json)
         HISTORY -> history(json)
         RETRIEVE -> retrieve(json)
+        REPLY -> reply(json)
         else -> json.put(PUBLICATION, false)
       }
     } catch (e: Exception) {
       e.printStackTrace()
       json.put(PUBLICATION, false).put(INFO, e.message)
     }
+  }
+
+  //todo 需完善以及unit tests
+  private suspend fun reply(json:JsonObject):JsonObject{
+    return try{
+      val dir = json.getString(DIR)
+
+      val dirPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
+
+      if(!vertx.fileSystem().existsAwait(dirPath)){
+        return jsonObjectOf().put(PUBLICATION, false).put(INFO, "$dirPath doesn't exist")
+      }
+
+      json.put(TIME_ORDER_STRING, "${System.currentTimeMillis()}")
+      json.put(DEFAULT_ORDER_STRING, "${System.currentTimeMillis()}")
+
+      val file = generator.generate()
+
+      vertx.fileSystem().writeFileAwait("$dirPath$separator$file.reply.json", json.toBuffer())
+
+      json
+    }catch (e:Throwable){
+      jsonObjectOf().put(PUBLICATION, false).put(INFO, e.message)
+    }
+
   }
 
   private suspend fun post(json: JsonObject): JsonObject {
@@ -75,7 +100,7 @@ class PublicationVerticle : CoroutineVerticle() {
     fs.mkdirsAwait(linkPath)
     fs.createFileAwait("$linkPath$separator$dirName")
 
-    return jsonObjectOf().put(PUBLICATION, true).put(DIR, "$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
+    return jsonObjectOf().put(PUBLICATION, true).put(DIR, "$separator$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
   }
 
   private suspend fun retrieve(json: JsonObject): JsonObject {
@@ -130,28 +155,28 @@ class PublicationVerticle : CoroutineVerticle() {
       .readDirAwait(dir, "\\d{4}")
       .map { it.substringAfterLast(separator) }
       .filter { it <= yyyy }
-      .sorted().reversed()
+      .sortedDescending()
 
     loop@ for (year in yyyys) {
       val mms = vertx.fileSystem()
         .readDirAwait("$dir$separator$year", "\\d{2}")
         .map { it.substringAfterLast(separator) }
         .filter { year + it <= yyyy + mm }
-        .sorted().reversed()
+        .sortedDescending()
 
       for (month in mms) {
         val dds = vertx.fileSystem()
           .readDirAwait("$dir$separator$year$separator$month", "\\d{2}")
           .map { it.substringAfterLast(separator) }
           .filter { year + month + it <= yyyy + mm + dd }
-          .sorted().reversed()
+          .sortedDescending()
 
         for (day in dds) {
           val hhs = vertx.fileSystem()
             .readDirAwait("$dir$separator$year$separator$month$separator$day", "\\d{2}")
             .map { it.substringAfterLast(separator) }
             .filter { year + month + day + it <= yyyy + mm + dd + hh }
-            .sorted().reversed()
+            .sortedDescending()
 
           for (hour in hhs) {
             val publicationList = vertx.fileSystem()
@@ -170,9 +195,14 @@ class PublicationVerticle : CoroutineVerticle() {
               else
                 publicationFilePath
 
-              val file = vertx.fileSystem().readFileAwait(filePath)
-                .toJsonObject().put(DIR, publicationFilePath.substringAfterLast(COMMUNITY).substringBeforeLast(separator))
               until = "$year-$month-$day-$hour"
+
+              val file = try {
+                vertx.fileSystem().readFileAwait(filePath).toJsonObject()
+              }catch (e:Throwable){
+                jsonObjectOf(Pair(INFO, e.message))
+              }.put(DIR, publicationFilePath.substringAfterLast(COMMUNITY).substringBeforeLast(separator))
+
               history.add(file)
             }
 

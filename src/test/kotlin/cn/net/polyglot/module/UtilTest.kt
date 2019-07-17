@@ -75,13 +75,12 @@ class UtilTest{
   @Test
   fun `test alphabetical order`(context: TestContext){
     val list = ArrayList<String>()
-    list.add("22_3")
-    list.add("2_4")
-    list.add("1_3")
-    list.sortBy {
-      it.substringBefore("_").toInt()
-    }
+    list.add("1562232525005")
+    list.add("1562232525005_1562232525007")
+    list.add("1562232525006")
+    list.sortBy{it}
     println(list)
+    println(System.currentTimeMillis())
   }
 
   @Test

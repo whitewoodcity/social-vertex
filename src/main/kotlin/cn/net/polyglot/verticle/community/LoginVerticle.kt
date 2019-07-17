@@ -5,7 +5,7 @@ import cn.net.polyglot.module.md5
 import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.core.eventbus.requestAwait
 import io.vertx.kotlin.core.file.*
 import java.io.File.separator
 
@@ -25,7 +25,7 @@ class LoginVerticle : ServletVerticle() {
         requestJson.put(PASSWORD, password)
         requestJson.put(PASSWORD2, password2)
 
-        val result = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
+        val result = vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
         if (!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)) {
           return HttpServletResponse(HttpServletResponseType.TEMPLATE, "register.html")
         }
@@ -46,7 +46,7 @@ class LoginVerticle : ServletVerticle() {
             .put(SUBTYPE, UPDATE)
             .put(ID, request.session.get(ID))
         //update user data
-        vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
+        vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
         //update profile image
         val uploadFile = request.getUploadFiles().getString("portrait")
         if (!uploadFile.isNullOrBlank()) {
@@ -114,7 +114,7 @@ class LoginVerticle : ServletVerticle() {
 
   private suspend fun profile(reqJson: JsonObject, session: HttpSession, defaultTemplatePath: String = "index.html"): HttpServletResponse {
     return try {
-      val asyncResult = vertx.eventBus().sendAwait<JsonObject>(UserVerticle::class.java.name, reqJson).body()
+      val asyncResult = vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, reqJson).body()
 
       if (asyncResult.containsKey(PROFILE) && asyncResult.getBoolean(PROFILE)) {
 

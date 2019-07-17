@@ -10,7 +10,7 @@
 
   <properties>
     <kotlin.version>1.3.20</kotlin.version>
-    <vertx.version>3.7.1</vertx.version>
+    <vertx.version>3.8.0</vertx.version>
     <main.class>io.vertx.core.Launcher</main.class>
     <main.verticle>cn/net/polyglot/main_verticle.groovy</main.verticle>
     <jvmTarget>1.8</jvmTarget>

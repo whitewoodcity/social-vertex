@@ -40,7 +40,7 @@ import io.vertx.ext.web.handler.CookieHandler
 import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
-import io.vertx.kotlin.core.eventbus.sendAwait
+import io.vertx.kotlin.core.eventbus.requestAwait
 import io.vertx.kotlin.core.http.sendFileAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.ext.web.common.template.renderAwait
@@ -206,7 +206,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
         val address = getVerticleAddressByPath(httpMethod, path)
 
         val responseJson = if (address != "") {
-          vertx.eventBus().sendAwait<JsonObject>(address, requestJson).body()
+          vertx.eventBus().requestAwait<JsonObject>(address, requestJson).body()
         } else {
           JsonObject()
         }
