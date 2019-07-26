@@ -144,8 +144,7 @@ class MessageVerticle : CoroutineVerticle() {
         fs.writeFileAwait(senderFile, json.toBuffer())
       } else {
         fs.openAwait(senderFile, OpenOptions().setAppend(true))
-          .write(Buffer.buffer(","))
-          .write(json.toBuffer())
+          .write(Buffer.buffer(",").appendBuffer(json.toBuffer()))
       }
     }
 
@@ -166,8 +165,7 @@ class MessageVerticle : CoroutineVerticle() {
         fs.writeFileAwait(receiverFile, json.toBuffer())
       } else {
         fs.openAwait(receiverFile, OpenOptions().setAppend(true))
-          .write(Buffer.buffer(","))
-          .write(json.toBuffer())
+          .write(Buffer.buffer(",").appendBuffer(json.toBuffer()))
       }
 
       //尝试投递

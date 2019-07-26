@@ -50,7 +50,7 @@ class UserVerticleTest {
   @Test
   fun `test user creation`(context: TestContext) {
     val async = context.async()
-    vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
+    vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, REGISTER)
@@ -67,7 +67,7 @@ class UserVerticleTest {
   @Test
   fun `test user creation fail`(context: TestContext) {
     val async = context.async()
-    vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
+    vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, REGISTER)
@@ -84,7 +84,7 @@ class UserVerticleTest {
   @Test
   fun `test user creation fail 2`(context: TestContext) {
     val async = context.async()
-    vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
+    vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, REGISTER)
@@ -101,7 +101,7 @@ class UserVerticleTest {
   @Test
   fun `test user update`(context: TestContext) {
     val async = context.async()
-    vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
+    vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, UPDATE)
@@ -117,7 +117,7 @@ class UserVerticleTest {
   @Test
   fun `test user valid`(context: TestContext) {
     val async = context.async()
-    vertx.eventBus().send<JsonObject>(UserVerticle::class.java.name,
+    vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name,
       JsonObject()
         .put(TYPE, USER)
         .put(SUBTYPE, PROFILE)
@@ -133,7 +133,7 @@ class UserVerticleTest {
   @Test
   fun `test user search`(context: TestContext) {
     val async0 = context.async()
-    vertx.eventBus().send<JsonObject>(SearchVerticle::class.java.name, "zxj2017") {
+    vertx.eventBus().request<JsonObject>(SearchVerticle::class.java.name, "zxj2017") {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey(SEARCH))
       context.assertTrue(it.result().body().getBoolean(SEARCH))
@@ -144,7 +144,7 @@ class UserVerticleTest {
   @Test
   fun `test user search fail`(context: TestContext) {
     val async1 = context.async()
-    vertx.eventBus().send<JsonObject>(SearchVerticle::class.java.name, "") {
+    vertx.eventBus().request<JsonObject>(SearchVerticle::class.java.name, "") {
       println(it.result().body())
       context.assertTrue(it.result().body().containsKey(SEARCH))
       context.assertFalse(it.result().body().getBoolean(SEARCH))

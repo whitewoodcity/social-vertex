@@ -115,8 +115,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
     //reroute to the static files
     router.get("/*").handler { routingContext: RoutingContext ->
-      val path = routingContext.request().path()
-      when (path) {
+      when (routingContext.request().path()) {
         "", "/", "/index" -> routingContext.reroute(HttpMethod.GET, indexPage)
         else -> routingContext.next()
       }
