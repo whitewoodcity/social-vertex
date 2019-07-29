@@ -116,6 +116,26 @@ class PublicationVerticle : CoroutineVerticle() {
     }
   }
 
+  //todo update article
+  private suspend fun update(json: JsonObject): JsonObject {
+    //check arg of DIR
+    if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
+    val originalPath = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication.json"
+    val newPath = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication_new.json"
+    try {
+      //create publication_new.json
+      vertx.fileSystem().writeFileAwait(newPath, json.toBuffer())
+      //remove the older file
+      vertx.fileSystem().deleteAwait(originalPath)
+      //rename new file to publication.json
+      vertx.fileSystem().moveAwait(newPath, originalPath)
+    }catch (e: Throwable){
+      e.printStackTrace()
+      json.put(PUBLICATION,false).put(INFO,e.message)
+    }
+    return jsonObjectOf().put(TYPE,json.getString(TYPE)).put(SUBTYPE,json.getString(SUBTYPE)).put(PUBLICATION,true)
+  }
+
   private suspend fun history(json: JsonObject): JsonObject {
 
     if (json.getString(TIME) == null) {
