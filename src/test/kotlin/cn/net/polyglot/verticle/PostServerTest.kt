@@ -7,6 +7,7 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
+import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
 import kotlinx.coroutines.GlobalScope
@@ -132,6 +133,48 @@ class PostServerTest {
 
       context.assertTrue(response2.bodyAsJsonObject().getBoolean(PUBLICATION))
 
+      async.complete()
+    }
+  }
+
+  @Test
+  fun `test update article`(context: TestContext){
+    val async = context.async()
+    val json = JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
+
+    GlobalScope.launch(vertx.dispatcher()) {
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val body = response.bodyAsJsonObject()
+      context.assertTrue(body.getBoolean(PUBLICATION))
+      context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
+
+      val oneArticle = body.getJsonArray(HISTORY).getJsonObject(0)
+      val originalTitle = oneArticle.getString(TITLE)
+      val originalContent = oneArticle.getString(CONTENT)
+      val dir = oneArticle.getString(DIR)
+      println("originalTitle:$originalTitle, originalContent:$originalContent, dir:$dir")
+
+      oneArticle.put(TITLE,"new title hahaha")
+      oneArticle.put(CONTENT,"new Content")
+      oneArticle.put(SUBTYPE, UPDATE).put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+
+      val updateResps = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(oneArticle)
+      context.assertTrue(updateResps.bodyAsJsonObject().getBoolean(PUBLICATION))
+
+      val json0 = JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, RETRIEVE).put(DIR,dir)
+
+      val retrieveResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json0)
+      val newAritcle = retrieveResponse.bodyAsJsonObject()
+      val newTitle = newAritcle.getString(TITLE)
+      val newContent = newAritcle.getString(CONTENT)
+      println("new article: $newAritcle")
+      context.assertNotEquals(originalTitle,newTitle)
+      context.assertNotEquals(originalContent,newContent)
+
+      context.assertEquals(newAritcle.getString(TITLE),oneArticle.getString(TITLE))
+      context.assertEquals(newAritcle.getString(CONTENT),oneArticle.getString(CONTENT))
       async.complete()
     }
   }

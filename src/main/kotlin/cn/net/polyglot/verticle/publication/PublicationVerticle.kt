@@ -30,6 +30,7 @@ class PublicationVerticle : CoroutineVerticle() {
       when (json.getString(SUBTYPE)) {
         QUESTION, ARTICLE, IDEA, THOUGHT, ANSWER -> post(json)
         HISTORY -> history(json)
+        UPDATE -> update(json)
         RETRIEVE -> retrieve(json)
         REPLY -> reply(json)
         else -> json.put(PUBLICATION, false)
@@ -123,10 +124,16 @@ class PublicationVerticle : CoroutineVerticle() {
     val originalPath = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication.json"
     val newPath = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication_new.json"
     try {
+      //set the subtype
+      val originalArticle = vertx.fileSystem().readFileAwait(originalPath).toJsonObject()
+      json.put(SUBTYPE,originalArticle.getString(SUBTYPE))
+
       //create publication_new.json
       vertx.fileSystem().writeFileAwait(newPath, json.toBuffer())
+
       //remove the older file
       vertx.fileSystem().deleteAwait(originalPath)
+
       //rename new file to publication.json
       vertx.fileSystem().moveAwait(newPath, originalPath)
     }catch (e: Throwable){
