@@ -156,7 +156,9 @@ class PostServerTest {
       println("originalTitle:$originalTitle, originalContent:$originalContent, dir:$dir")
 
       oneArticle.put(TITLE,"new title hahaha")
-      oneArticle.put(CONTENT,"new Content")
+      oneArticle.put(CONTENT,"new Content new Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Content" +
+        "new Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Content" +
+        "new Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Content")
       oneArticle.put(SUBTYPE, UPDATE).put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
 
       val updateResps = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(oneArticle)

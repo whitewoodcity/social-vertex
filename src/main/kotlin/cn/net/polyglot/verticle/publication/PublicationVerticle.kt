@@ -121,12 +121,22 @@ class PublicationVerticle : CoroutineVerticle() {
   private suspend fun update(json: JsonObject): JsonObject {
     //check arg of DIR
     if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
-    val originalPath = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication.json"
-    val newPath = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication_new.json"
+    val dir = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}"
+    val originalPath = "$dir${separator}publication.json"
+    val newPath = "$dir${separator}publication_new.json"
     try {
       //set the subtype
       val originalArticle = vertx.fileSystem().readFileAwait(originalPath).toJsonObject()
       json.put(SUBTYPE,originalArticle.getString(SUBTYPE))
+
+      //handle brief
+      val briefJson = json.copy()
+      if(briefJson.containsKey(CONTENT) && briefJson.getValue(CONTENT) !=null &&
+        briefJson.getValue(CONTENT) is String && briefJson.getString(CONTENT).length>100){
+        val briefContent = briefJson.getString(CONTENT).substring(0,100).plus("...")
+        briefJson.put(CONTENT, briefContent)
+        vertx.fileSystem().writeFileAwait("$dir${separator}brief.json", briefJson.toBuffer())
+      }
 
       //create publication_new.json
       vertx.fileSystem().writeFileAwait(newPath, json.toBuffer())
