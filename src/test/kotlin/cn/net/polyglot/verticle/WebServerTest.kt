@@ -2,6 +2,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import io.vertx.core.Vertx
+import io.vertx.core.http.HttpHeaders
 import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -57,8 +58,9 @@ class WebServerTest {
       .send{
         response ->
         context.assertTrue(response.result().body().toString().contains("Social Vertex"))
-        context.assertTrue(response.result().headers().contains("access-control-allow-origin", "*", true))
-        context.assertTrue(response.result().headers().contains("access-control-allow-methods", "*", true))
+        println(response.result().headers().toList())
+        context.assertTrue(response.result().headers().contains(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*", true))
+        context.assertTrue(response.result().headers().contains(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "*", true))
         async.complete()
       }
   }

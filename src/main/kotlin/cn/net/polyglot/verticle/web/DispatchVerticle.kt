@@ -27,16 +27,17 @@ package cn.net.polyglot.verticle.web
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.getMimeTypeWithoutCharset
 import com.codahale.fastuuid.UUIDGenerator
+import io.vertx.core.http.Cookie
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.PemKeyCertOptions
-import io.vertx.ext.web.Cookie
+//import io.vertx.ext.web.Cookie
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
-import io.vertx.ext.web.handler.CookieHandler
+//import io.vertx.ext.web.handler.CookieHandler
 import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
@@ -72,9 +73,8 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
     val generator = UUIDGenerator(SecureRandom())
 
-    router.route().handler(CookieHandler.create())
-    router.route().handler(CorsHandler
-      .create(".*")
+//    router.route().handler(CookieHandler.create())
+    router.route().handler(CorsHandler.create(".*")
       .allowCredentials(true)
       .allowedMethods(setOf(HttpMethod.OPTIONS, HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE))
       .allowedHeader("*")
@@ -95,9 +95,10 @@ abstract class DispatchVerticle : CoroutineVerticle() {
         routingContext.addCookie(cookie)
 
         routingContext.response().isChunked = true
-        routingContext.response().putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
-        routingContext.response().putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "*")
       }
+
+      routingContext.response().putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+      routingContext.response().putHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "*")
 
       routingContext.next()
     }
@@ -133,7 +134,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
       val contentTypeString = routingContext.request().getHeader("Content-Type")
       val mimeType = if (contentTypeString != null) getMimeTypeWithoutCharset(contentTypeString) else getDefaultContentTypeByHttpMethod(httpMethod)
 
-      val cookies = routingContext.cookies()
+      val cookies = routingContext.cookieMap().values//.cookies()
       val headers = routingContext.request().headers()
       val params = routingContext.queryParams()
       val attributes = routingContext.request().formAttributes()
