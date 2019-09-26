@@ -33,12 +33,38 @@ class PublicationVerticle : CoroutineVerticle() {
         UPDATE -> update(json)
         RETRIEVE -> retrieve(json)
         REPLY -> reply(json)
+        COMMENT -> comment(json)
+        COMMENT_LIST -> commentList(json)
+        LIKE -> like(json)
+        DISLIKE -> dislike(json)
+        COLLECT -> collect(json)
+
         else -> json.put(PUBLICATION, false)
       }
     } catch (e: Exception) {
       e.printStackTrace()
       json.put(PUBLICATION, false).put(INFO, e.message)
     }
+  }
+
+  private fun collect(json: JsonObject): JsonObject {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  private fun dislike(json: JsonObject): JsonObject {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  private fun like(json: JsonObject): JsonObject {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  private fun commentList(json: JsonObject): JsonObject {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  private suspend fun comment(json: JsonObject): JsonObject {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
   //todo 需完善以及unit tests
