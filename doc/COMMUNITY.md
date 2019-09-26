@@ -193,7 +193,7 @@ URI: /
 }
 ```
 
-返回值样例:
+返回值样例(暂定 后续会完善):
 
 ```text
 {
@@ -202,6 +202,7 @@ URI: /
   "subtype":"comments_list",
   "info":{
   	"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",
+  	"id":"zxj01",
   	"comments":[
   	  {
   	  	"id":"zxj01",
