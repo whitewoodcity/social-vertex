@@ -180,6 +180,8 @@ URI: /
 
 ## 获取文章评论列表(包含coments of comment)：
 
+参数：
+
 ```text
 {
   "type":"publication",                                      
@@ -188,6 +190,40 @@ URI: /
   "comment":"str.....this is a comment for an article or a comment",评论内容
   "id":"zxj2019",                                             用户名
   "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
+返回值样例:
+
+```text
+{
+  "publication":true,                             true表示查询成功，false则表示失败
+  "type": "publication",
+  "subtype":"comments_list",
+  "info":{
+  	"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",
+  	"comments":[
+  	  {
+  	  	"id":"zxj01",
+  	  	"time":"",
+  			"content":" a comment",
+  	  },
+  		{
+  			"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd/sub1",
+  			"content":"comment for this dir",
+  			"id":"zxj01",
+  			"time":"",
+  			"comments":[...]
+  		},
+  		{
+  			"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd/sub2",
+  			"content":"comment for this dir",
+  			"id":"zxj01",
+  			"time":"",
+  			"comments":[...]
+  		}
+  	]
+  }
 }
 ```
 
