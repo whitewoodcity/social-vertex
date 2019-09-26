@@ -117,3 +117,77 @@ URI: /
 ```
 
 返回样例：
+
+```
+{
+  "publication":true,                             true表示点赞成功，false则表示失败
+  "type": "publication"...                        其余字段为信息存入时信息
+}
+```
+
+## 踩
+
+同[点赞](#点赞)（subtype 改为`"subtype":"like"`）
+
+## 收藏
+
+参数：
+
+```
+{
+  "type":"publication",                                      
+  "subtype":"collect",                                          
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
+  "id":"zxj2019",                                             用户名
+  "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
+返回值样例：
+
+```
+{
+  "publication":true,                             true表示收藏成功，false则表示失败
+  "type": "publication"...                        其余字段为信息存入时信息
+}
+```
+
+## 评论
+
+对一个article/thought..... /comment 进行评论
+
+参数：
+
+```
+{
+  "type":"publication",                                      
+  "subtype":"comment",                                          
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
+  "comment":"str.....this is a comment for an article or a comment",评论内容
+  "id":"zxj2019",                                             用户名
+  "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
+返回值样例：
+
+```
+{
+  "publication":true,                             true表示查询成功，false则表示失败
+  "type": "publication"...                        其余字段为信息存入时信息
+}
+```
+
+## 获取文章评论列表(包含coments of comment)：
+
+```text
+{
+  "type":"publication",                                      
+  "subtype":"comment_list",                                          
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
+  "comment":"str.....this is a comment for an article or a comment",评论内容
+  "id":"zxj2019",                                             用户名
+  "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
