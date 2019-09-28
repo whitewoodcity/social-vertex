@@ -49,48 +49,45 @@ class PublicationVerticle : CoroutineVerticle() {
   }
 
 
-  //收藏
+  //收藏  todo UT
   private suspend fun collect(json: JsonObject): JsonObject {
     //get the brief or publicationo of the article
     if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
     val dir = json.getString(DIR)
-    val communityPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
-    //todo : for ext field cases
+    val communityArticlePath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
     val articleBrief:JsonObject
-    if(vertx.fileSystem().existsAwait("$communityPath$separator${BRIEF}.json")){
-      articleBrief = vertx.fileSystem().readFileAwait("$communityPath$separator${BRIEF}.json").toJsonObject()
-    }else if (vertx.fileSystem().existsAwait("$dir$separator${PUBLICATION}.json")){
-      articleBrief = vertx.fileSystem().readFileAwait("$communityPath$separator${PUBLICATION}.json").toJsonObject()
-    }else {
-      return json.put(PUBLICATION,false).put(INFO,"Article $dir dose not exists!")
+    val fs = vertx.fileSystem()
+    articleBrief = when {
+      fs.existsAwait("$communityArticlePath$separator${BRIEF}.json") -> fs.readFileAwait("$communityArticlePath$separator${BRIEF}.json").toJsonObject()
+      fs.existsAwait("$dir$separator${PUBLICATION}.json") -> fs.readFileAwait("$communityArticlePath$separator${PUBLICATION}.json").toJsonObject()
+      else -> return json.put(PUBLICATION,false).put(INFO,"Article $dir dose not exists!")
     }
 
     //create a .collect/ dir at the root dir for the user and create empty file to index the article
     val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
     val userCollectDir = "$userDir$separator$_COLLECT"
-    if (!vertx.fileSystem().existsAwait(userCollectDir)) {
-      vertx.fileSystem().mkdirAwait(userCollectDir)
+    if (!fs.existsAwait(userCollectDir)) {
+      fs.mkdirAwait(userCollectDir)
     }
-    val collectedArticles = vertx.fileSystem().readDirAwait(userCollectDir)
+    val collectedArticles = fs.readDirAwait(userCollectDir)
     if (collectedArticles.contains(dir)){
       //uncollect case
-      vertx.fileSystem().deleteAwait("$userCollectDir$separator$dir")
+      fs.deleteAwait("$userCollectDir$separator$dir")
     }else{
-      //todo collect case
-      //record the collected time at the tail of dir for sorting
+      //collect case
       articleBrief.put(COLLECTED_TIME,System.currentTimeMillis())
-      vertx.fileSystem().createFileAwait("$userCollectDir$separator$dir")
-      vertx.fileSystem().writeFileAwait("$userCollectDir$separator$dir",articleBrief.toBuffer())
+      fs.createFileAwait("$userCollectDir$separator$dir")
+      fs.writeFileAwait("$userCollectDir$separator$dir",articleBrief.toBuffer())
     }
 
     //create a collect.json at the article's dir , aiming to store the userIds/num of collection
-    val collectFilePath = "$communityPath$separator${COLLECT}.json"
-    if (!vertx.fileSystem().existsAwait(collectFilePath)){
-      vertx.fileSystem().createFileAwait(collectFilePath)
+    val collectFilePath = "$communityArticlePath$separator${COLLECT}.json"
+    if (!fs.existsAwait(collectFilePath)){
+      fs.createFileAwait(collectFilePath)
       val initialContent = jsonObjectOf().put(COUNT,0).put(IDS, JsonArray())
-      vertx.fileSystem().writeFileAwait(collectFilePath,initialContent.toBuffer())
+      fs.writeFileAwait(collectFilePath,initialContent.toBuffer())
     }
-    val collectInfo = vertx.fileSystem().readFileAwait(collectFilePath).toJsonObject()
+    val collectInfo = fs.readFileAwait(collectFilePath).toJsonObject()
     val count = collectInfo.getInteger(COUNT)
     val ids:JsonArray = collectInfo.getJsonArray(IDS)
     if (ids.contains(json.getString(ID))){
@@ -102,34 +99,134 @@ class PublicationVerticle : CoroutineVerticle() {
       collectInfo.put(COUNT, count + 1)
       collectInfo.put(IDS, ids.add(json.getString(ID)))
     }
-    vertx.fileSystem().writeFileAwait(collectFilePath,collectInfo.toBuffer())
+    fs.writeFileAwait(collectFilePath,collectInfo.toBuffer())
 
     return jsonObjectOf().put(PUBLICATION,true).put(TYPE, PUBLICATION).put(SUBTYPE, COLLECT)
   }
 
 
-  //get a list of a user's collected articles
+  //get a list of a user's collected articles. todo UT
   private suspend fun collectList(json: JsonObject): JsonObject {
-    TODO()
+    val fs = vertx.fileSystem()
+    //current userId
+    val id = json.getString(ID)
+    val collectPath = "${config.getString(DIR)}$separator$id$separator$_COLLECT"
+    val collectedArticles = fs.readDirAwait(collectPath)
+    val articles = collectedArticles.map { fs.readFileAwait("$collectPath$separator$it").toJsonObject() }.sortedBy { it.getLong(COLLECTED_TIME) }.reversed()
+    //todo pageable list
+    // get pageable params and return one page
+    return jsonObjectOf().put(SUBTYPE, COLLECT_LIST).put(PUBLICATION,true).put(INFO,articles)
   }
 
 
-  //踩
+  //踩 todo UT
   private suspend fun dislike(json: JsonObject): JsonObject {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    val fs = vertx.fileSystem()
+    if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
+    val dir = json.getString(DIR)
+    val communityArticlePath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
+    //handle community dislike info
+    if (!fs.existsAwait("$communityArticlePath$separator${DISLIKE}.json")){
+      fs.createFileAwait("$communityArticlePath$separator${DISLIKE}.json")
+      val initialDislike = jsonObjectOf().put(COUNT,0).put(IDS, JsonArray())
+      fs.writeFileAwait("$communityArticlePath$separator${DISLIKE}.json",initialDislike.toBuffer())
+    }
+    val articleDislikeInfo = fs.readFileAwait("$communityArticlePath$separator${DISLIKE}.json").toJsonObject()
+    val ids = articleDislikeInfo.getJsonArray(IDS)
+    val count = articleDislikeInfo.getInteger(COUNT)
+    if (articleDislikeInfo.getJsonArray(IDS).contains(dir)){
+      ids.remove(dir)
+      articleDislikeInfo.put(IDS,ids)
+      articleDislikeInfo.put(COUNT,count-1)
+    }else{
+      ids.add(dir)
+      articleDislikeInfo.put(IDS,ids)
+      articleDislikeInfo.put(COUNT,count+1)
+    }
+    fs.writeFileAwait("$communityArticlePath$separator${DISLIKE}.json",articleDislikeInfo.toBuffer())
+
+    //-----------------------------------------------------------
+    //handle user dislike info
+    val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
+    val userDislikeJsonDir = "$userDir$separator${DISLIKE}.json"
+    if(!fs.existsAwait(userDislikeJsonDir)) {
+      fs.createFileAwait(userDislikeJsonDir)
+      fs.writeFileAwait(userDislikeJsonDir, JsonArray().toBuffer())
+    }
+    val dislikedArticles = fs.readFileAwait(userDislikeJsonDir).toJsonArray()
+    when{
+      dislikedArticles.contains(dir) -> {
+        // if already disliked,cancle it
+        dislikedArticles.remove(dir)
+        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+      }
+      else->{
+        //if not disliked, then dislike it
+        dislikedArticles.add(dir)
+        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+      }
+    }
+    //-------------
+    return jsonObjectOf().put(SUBTYPE, DISLIKE).put(PUBLICATION,true)
   }
 
-  //顶
+  //点赞 todo UT
   private suspend fun like(json: JsonObject): JsonObject {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    val fs = vertx.fileSystem()
+    if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
+    val dir = json.getString(DIR)
+    val communityArticlePath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
+    //handle community dislike info
+    if (!fs.existsAwait("$communityArticlePath$separator${LIKE}.json")){
+      fs.createFileAwait("$communityArticlePath$separator${LIKE}.json")
+      val initialDislike = jsonObjectOf().put(COUNT,0).put(IDS, JsonArray())
+      fs.writeFileAwait("$communityArticlePath$separator${LIKE}.json",initialDislike.toBuffer())
+    }
+    val articleDislikeInfo = fs.readFileAwait("$communityArticlePath$separator${LIKE}.json").toJsonObject()
+    val ids = articleDislikeInfo.getJsonArray(IDS)
+    val count = articleDislikeInfo.getInteger(COUNT)
+    if (articleDislikeInfo.getJsonArray(IDS).contains(dir)){
+      ids.remove(dir)
+      articleDislikeInfo.put(IDS,ids)
+      articleDislikeInfo.put(COUNT,count-1)
+    }else{
+      ids.add(dir)
+      articleDislikeInfo.put(IDS,ids)
+      articleDislikeInfo.put(COUNT,count+1)
+    }
+    fs.writeFileAwait("$communityArticlePath$separator${LIKE}.json",articleDislikeInfo.toBuffer())
+
+    //-----------------------------------------------------------
+    //handle user dislike info
+    val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
+    val userDislikeJsonDir = "$userDir$separator${LIKE}.json"
+    if(!fs.existsAwait(userDislikeJsonDir)) {
+      fs.createFileAwait(userDislikeJsonDir)
+      fs.writeFileAwait(userDislikeJsonDir, JsonArray().toBuffer())
+    }
+    val dislikedArticles = fs.readFileAwait(userDislikeJsonDir).toJsonArray()
+    when{
+      dislikedArticles.contains(dir) -> {
+        // if already disliked,cancle it
+        dislikedArticles.remove(dir)
+        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+      }
+      else->{
+        //if not disliked, then dislike it
+        dislikedArticles.add(dir)
+        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+      }
+    }
+    //-------------
+    return jsonObjectOf().put(SUBTYPE, LIKE).put(PUBLICATION,true)
   }
 
-  //获取评论列表
+  //获取评论列表 todo UT
   private suspend fun commentList(json: JsonObject): JsonObject {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
-  //评论
+  //评论 todo UT
   private suspend fun comment(json: JsonObject): JsonObject {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
