@@ -4,6 +4,7 @@ import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lastHour
 import cn.net.polyglot.module.nextHour
 import com.codahale.fastuuid.UUIDGenerator
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.*
 import io.vertx.kotlin.core.json.jsonArrayOf
@@ -38,7 +39,7 @@ class PublicationVerticle : CoroutineVerticle() {
         LIKE -> like(json)
         DISLIKE -> dislike(json)
         COLLECT -> collect(json)
-
+        COLLECT_LIST -> collectList(json)
         else -> json.put(PUBLICATION, false)
       }
     } catch (e: Exception) {
@@ -47,22 +48,88 @@ class PublicationVerticle : CoroutineVerticle() {
     }
   }
 
-  private fun collect(json: JsonObject): JsonObject {
+
+  //收藏
+  private suspend fun collect(json: JsonObject): JsonObject {
+    //get the brief or publicationo of the article
+    if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
+    val dir = json.getString(DIR)
+    val communityPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
+    //todo : for ext field cases
+    val articleBrief:JsonObject
+    if(vertx.fileSystem().existsAwait("$communityPath$separator${BRIEF}.json")){
+      articleBrief = vertx.fileSystem().readFileAwait("$communityPath$separator${BRIEF}.json").toJsonObject()
+    }else if (vertx.fileSystem().existsAwait("$dir$separator${PUBLICATION}.json")){
+      articleBrief = vertx.fileSystem().readFileAwait("$communityPath$separator${PUBLICATION}.json").toJsonObject()
+    }else {
+      return json.put(PUBLICATION,false).put(INFO,"Article $dir dose not exists!")
+    }
+
+    //create a .collect/ dir at the root dir for the user and create empty file to index the article
+    val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
+    val userCollectDir = "$userDir$separator$_COLLECT"
+    if (!vertx.fileSystem().existsAwait(userCollectDir)) {
+      vertx.fileSystem().mkdirAwait(userCollectDir)
+    }
+    val collectedArticles = vertx.fileSystem().readDirAwait(userCollectDir)
+    if (collectedArticles.contains(dir)){
+      //uncollect case
+      vertx.fileSystem().deleteAwait("$userCollectDir$separator$dir")
+    }else{
+      //todo collect case
+      //record the collected time at the tail of dir for sorting
+      articleBrief.put(COLLECTED_TIME,System.currentTimeMillis())
+      vertx.fileSystem().createFileAwait("$userCollectDir$separator$dir")
+      vertx.fileSystem().writeFileAwait("$userCollectDir$separator$dir",articleBrief.toBuffer())
+    }
+
+    //create a collect.json at the article's dir , aiming to store the userIds/num of collection
+    val collectFilePath = "$communityPath$separator${COLLECT}.json"
+    if (!vertx.fileSystem().existsAwait(collectFilePath)){
+      vertx.fileSystem().createFileAwait(collectFilePath)
+      val initialContent = jsonObjectOf().put(COUNT,0).put(IDS, JsonArray())
+      vertx.fileSystem().writeFileAwait(collectFilePath,initialContent.toBuffer())
+    }
+    val collectInfo = vertx.fileSystem().readFileAwait(collectFilePath).toJsonObject()
+    val count = collectInfo.getInteger(COUNT)
+    val ids:JsonArray = collectInfo.getJsonArray(IDS)
+    if (ids.contains(json.getString(ID))){
+      //if a user has never collected the article,add the count and ids
+      collectInfo.put(COUNT,count-1)
+      collectInfo.put(IDS,ids.remove(json.getString(ID)))
+    }else {
+      //if the user already collected the artcle, this case means that uncollect
+      collectInfo.put(COUNT, count + 1)
+      collectInfo.put(IDS, ids.add(json.getString(ID)))
+    }
+    vertx.fileSystem().writeFileAwait(collectFilePath,collectInfo.toBuffer())
+
+    return jsonObjectOf().put(PUBLICATION,true).put(TYPE, PUBLICATION).put(SUBTYPE, COLLECT)
+  }
+
+
+  //get a list of a user's collected articles
+  private suspend fun collectList(json: JsonObject): JsonObject {
+    TODO()
+  }
+
+
+  //踩
+  private suspend fun dislike(json: JsonObject): JsonObject {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
-  private fun dislike(json: JsonObject): JsonObject {
+  //顶
+  private suspend fun like(json: JsonObject): JsonObject {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
-  private fun like(json: JsonObject): JsonObject {
+  //获取评论列表
+  private suspend fun commentList(json: JsonObject): JsonObject {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
-  private fun commentList(json: JsonObject): JsonObject {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-  }
-
+  //评论
   private suspend fun comment(json: JsonObject): JsonObject {
     TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
@@ -143,7 +210,7 @@ class PublicationVerticle : CoroutineVerticle() {
     }
   }
 
-  //todo update article
+  //update article
   private suspend fun update(json: JsonObject): JsonObject {
     //check arg of DIR
     if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
