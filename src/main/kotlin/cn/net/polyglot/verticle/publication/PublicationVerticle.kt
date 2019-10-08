@@ -4,6 +4,7 @@ import cn.net.polyglot.config.*
 import cn.net.polyglot.module.lastHour
 import cn.net.polyglot.module.nextHour
 import com.codahale.fastuuid.UUIDGenerator
+import io.netty.util.internal.StringUtil
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.file.*
@@ -223,12 +224,62 @@ class PublicationVerticle : CoroutineVerticle() {
 
   //获取评论列表 todo UT
   private suspend fun commentList(json: JsonObject): JsonObject {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    TODO()
   }
 
   //评论 todo UT
   private suspend fun comment(json: JsonObject): JsonObject {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    /*
+    # interface args structure:
+    {
+      "type":"publication",
+      "subtype":"comment",
+      "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",被评论的 "文章/评论" 的路径
+      "content":"str.....this is a comment for an article or a comment",评论内容
+      "id":"zxj2019",                                             用户名
+      "password":"431fe828b9b8e8094235dee515562247"               密码
+    }
+    //------------------------
+    # directory structure
+    uuid(dir)
+      |--publication.json
+      |--comments
+           |--uuid1(dir)
+                |--comments
+                |--publication.json
+           |--uuid2(dir)
+                |--comments
+                |--publication.json
+    */
+    //check the dir and comment
+    val commentContent = json.getString(CONTENT)
+    if(StringUtil.isNullOrEmpty(commentContent)) {
+      return json.put(PUBLICATION,false).put(INFO,"The comment can not be null or empty!")
+    }
+    val dir = json.getString(DIR)
+    val fs = vertx.fileSystem()
+    if (!fs.existsAwait(dir)){
+      json.put(PUBLICATION,false).put(INFO,"no such dir: $dir")
+    }
+    //this is a path of an article or a path of comment going to be commented
+    val articlePath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
+    //create comments dir
+    val commentsPath = "$articlePath$separator$COMMENTS"
+
+    if (!fs.existsAwait(commentsPath)){
+      //if comments dir dose not exists create one
+      fs.mkdirAwait(commentsPath)
+    }
+
+    val uuid = generator.generate().toString()
+    val newCommentPath = "$commentsPath$separator$uuid"
+    fs.mkdirAwait(newCommentPath)
+    val commentFilePath = "$newCommentPath$separator${PUBLICATION}.json"
+    fs.createFileAwait(commentFilePath)
+    json.put(DIR,newCommentPath)
+    json.remove(PASSWORD)//remove the password field for security
+    fs.writeFileAwait(commentFilePath,json.toBuffer())
+    return jsonObjectOf().put(SUBTYPE, COMMENT).put(PUBLICATION,true)
   }
 
   //todo 需完善以及unit tests
@@ -245,7 +296,7 @@ class PublicationVerticle : CoroutineVerticle() {
       json.put(TIME_ORDER_STRING, "${System.currentTimeMillis()}")
       json.put(DEFAULT_ORDER_STRING, "${System.currentTimeMillis()}")
 
-      val file = generator.generate()
+      val file = generator.generate().toString()
 
       vertx.fileSystem().writeFileAwait("$dirPath$separator$file.reply.json", json.toBuffer())
 
