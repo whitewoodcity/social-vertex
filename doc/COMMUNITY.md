@@ -163,7 +163,7 @@ URI: /
   "type":"publication",                                      
   "subtype":"comment",                                          
   "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
-  "comment":"str.....this is a comment for an article or a comment",评论内容
+  "content":"str.....this is a comment for an article or a comment",评论内容
   "id":"zxj2019",                                             用户名
   "password":"431fe828b9b8e8094235dee515562247"               密码
 }
@@ -187,7 +187,6 @@ URI: /
   "type":"publication",                                      
   "subtype":"comment_list",                                          
   "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
-  "comment":"str.....this is a comment for an article or a comment",评论内容
   "id":"zxj2019",                                             用户名
   "password":"431fe828b9b8e8094235dee515562247"               密码
 }

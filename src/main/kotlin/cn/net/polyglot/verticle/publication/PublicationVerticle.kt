@@ -240,7 +240,7 @@ class PublicationVerticle : CoroutineVerticle() {
       "password":"431fe828b9b8e8094235dee515562247"               密码
     }
     //------------------------
-    # directory structure
+    # directory structure example
     uuid(dir)
       |--publication.json
       |--comments
