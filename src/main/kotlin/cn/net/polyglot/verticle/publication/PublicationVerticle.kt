@@ -224,33 +224,47 @@ class PublicationVerticle : CoroutineVerticle() {
 
   //获取评论列表 todo UT
   private suspend fun commentList(json: JsonObject): JsonObject {
-    TODO()
+    val dir = json.getString(DIR)
+    if (StringUtil.isNullOrEmpty(dir)){
+      return json.put(PUBLICATION,false).put(INFO,"Dir field is required!")
+    }
+    val fs = vertx.fileSystem()
+    if (!fs.existsAwait(dir)){
+      json.put(PUBLICATION,false).put(INFO,"no such dir: $dir")
+    }
+    val commentsPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir$separator$COMMENTS"
+    val comments = fs.readDirAwait(commentsPath)
+    val commentsList = comments.map { fs.readFileAwait("$commentsPath$separator$it$separator${PUBLICATION}.json").toJsonObject() }
+      .sortedBy { "${it.getString(DATE)}${it.getString(TIME)}" }
+    return json.put(INFO,commentsList).put(PUBLICATION,true)
   }
 
   //评论 todo UT
   private suspend fun comment(json: JsonObject): JsonObject {
-    /*
-    # interface args structure:
-    {
-      "type":"publication",
-      "subtype":"comment",
-      "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",被评论的 "文章/评论" 的路径
-      "content":"str.....this is a comment for an article or a comment",评论内容
-      "id":"zxj2019",                                             用户名
-      "password":"431fe828b9b8e8094235dee515562247"               密码
-    }
-    //------------------------
-    # directory structure example
-    uuid(dir)
-      |--publication.json
-      |--comments
-           |--uuid1(dir)
-                |--comments
-                |--publication.json
-           |--uuid2(dir)
-                |--comments
-                |--publication.json
+    /* ********************************************************************************************
+     #  interface args structure:
+     #{
+     #  "type":"publication",
+     #  "subtype":"comment",
+     #  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",被评论的 "文章/评论" 的路径
+     #  "content":"str.....this is a comment for an article or a comment",评论内容
+     #  "id":"zxj2019",                                             用户名
+     #  "password":"431fe828b9b8e8094235dee515562247"               密码
+     #}
+     # # # # # # # # # #
+     # directory structure example
+     #  uuid(dir)
+     #    |--publication.json
+     #    |--comments
+     #         |--uuid1(dir)
+     #              |--comments
+     #              |--publication.json
+     #         |--uuid2(dir)
+     #              |--comments
+     #              |--publication.json
+     *************************************************************************************************
     */
+    //--------------------------------------------------
     //check the dir and comment
     val commentContent = json.getString(CONTENT)
     if(StringUtil.isNullOrEmpty(commentContent)) {
@@ -276,8 +290,20 @@ class PublicationVerticle : CoroutineVerticle() {
     fs.mkdirAwait(newCommentPath)
     val commentFilePath = "$newCommentPath$separator${PUBLICATION}.json"
     fs.createFileAwait(commentFilePath)
+    //-----------------------------------------------------------
+    //commented user(被回复的用户id)
+    val commentedUserId = fs.readFileAwait(articlePath).toJsonObject().getString(COMMENTED_USER_ID)
+    json.put(COMMENTED_USER_ID,commentedUserId)
+    //remove the unnecessary password field
+    json.remove(PASSWORD)
     json.put(DIR,newCommentPath)
-    json.remove(PASSWORD)//remove the password field for security
+    //fill in date and time
+    val date = Date()
+    val today = SimpleDateFormat("yyyy-MM-dd").format(date)
+    val time = SimpleDateFormat("hh:mm:ss").format(date)
+    json.put(DATE, today)
+    json.put(TIME, time)
+    //---------
     fs.writeFileAwait(commentFilePath,json.toBuffer())
     return jsonObjectOf().put(SUBTYPE, COMMENT).put(PUBLICATION,true)
   }

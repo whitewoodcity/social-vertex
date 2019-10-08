@@ -188,6 +188,7 @@ URI: /
   "subtype":"comment_list",                                          
   "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
   "id":"zxj2019",                                             用户名
+  "comment_type":0                                          	评论类型：0评论帖子，1回复评论
   "password":"431fe828b9b8e8094235dee515562247"               密码
 }
 ```
@@ -202,9 +203,13 @@ URI: /
   "info":{
   	"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",
   	"id":"zxj01",
+  	"commented_user_id":"zxj01",
   	"comments":[
   	  {
   	  	"id":"zxj01",
+  	  	"commented_user_id":"zxj01",
+  	  	"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",
+  	  	"date":"",
   	  	"time":"",
   			"content":" a comment",
   	  },
@@ -212,6 +217,8 @@ URI: /
   			"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd/sub1",
   			"content":"comment for this dir",
   			"id":"zxj01",
+  			"commented_user_id":"zxj01",
+  			"date":"",
   			"time":"",
   			"comments":[...]
   		},
@@ -219,6 +226,8 @@ URI: /
   			"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd/sub2",
   			"content":"comment for this dir",
   			"id":"zxj01",
+  			"commented_user_id":"zxj01",
+  			"date":"",
   			"time":"",
   			"comments":[...]
   		}
