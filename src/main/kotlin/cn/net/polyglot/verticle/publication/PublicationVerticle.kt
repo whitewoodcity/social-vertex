@@ -212,7 +212,7 @@ class PublicationVerticle : CoroutineVerticle() {
         fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
       }
       else->{
-        //if not disliked, then dislike it
+        //if not liked, then like it
         dislikedArticles.add(dir)
         fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
       }
