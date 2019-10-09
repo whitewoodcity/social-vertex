@@ -377,7 +377,10 @@ class PublicationVerticle : CoroutineVerticle() {
     val path = "${config.getString(DIR)}$separator$COMMUNITY${json.getString(DIR)}$separator" + "publication.json"
 
     return try {
-      vertx.fileSystem().readFileAwait(path).toJsonObject().put(PUBLICATION, true)
+      //--- fill in like/dislike/collect info ---
+      val file = vertx.fileSystem().readFileAwait(path).toJsonObject()
+      handleRelatedInfo(json,file)
+      file.put(PUBLICATION, true)
     } catch (e: Throwable) {
       e.printStackTrace()
       json.put(PUBLICATION, false).put(INFO, e.message)
@@ -507,6 +510,9 @@ class PublicationVerticle : CoroutineVerticle() {
                 jsonObjectOf(Pair(INFO, e.message))
               }.put(DIR, publicationFilePath.substringAfterLast(COMMUNITY).substringBeforeLast(separator))
 
+              //--- fill in like/dislike/collect info ---
+              handleRelatedInfo(json, file)
+              //------------------------------------------------
               history.add(file)
             }
 
@@ -517,5 +523,31 @@ class PublicationVerticle : CoroutineVerticle() {
     }
 
     return json.put(PUBLICATION, true).put(HISTORY, history).put(TIME, until)
+  }
+
+  /**
+   * this method handles likes/dislikes/collect number for an article
+   */
+  private suspend fun handleRelatedInfo(json: JsonObject, file: JsonObject) {
+    val basePath = "${config.getString(DIR)}$separator$COMMUNITY$separator${json.getString(DIR)}"
+    if (!vertx.fileSystem().existsAwait("$basePath$separator${LIKE}.json")) {
+      //No like.json case means no one has liked before
+      file.put(LIKE, 0)
+    } else {
+      val like = vertx.fileSystem().readFileAwait("$basePath$separator${LIKE}.json").toJsonObject()
+      file.put(LIKE, like.getInteger(COUNT))
+    }
+    if (vertx.fileSystem().existsAwait("$basePath$separator${DISLIKE}.json")) {
+      file.put(DISLIKE, 0)
+    } else {
+      val dislike = vertx.fileSystem().readFileAwait("$basePath$separator${DISLIKE}.json").toJsonObject()
+      file.put(DISLIKE, dislike.getInteger(COUNT))
+    }
+    if (vertx.fileSystem().existsAwait("$basePath$separator${COLLECT}.json")) {
+      file.put(COLLECT, 0)
+    } else {
+      val dislike = vertx.fileSystem().readFileAwait("$basePath$separator${COLLECT}.json").toJsonObject()
+      file.put(COLLECT, dislike.getInteger(COUNT))
+    }
   }
 }
