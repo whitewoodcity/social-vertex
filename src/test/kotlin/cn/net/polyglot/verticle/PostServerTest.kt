@@ -8,6 +8,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
 import io.vertx.kotlin.core.json.get
+import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
 import kotlinx.coroutines.GlobalScope
@@ -100,20 +101,6 @@ class PostServerTest {
   }
 
   @Test
-  fun `test post history`(context: TestContext){
-    val async = context.async()
-    val json =
-      JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
-        .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
-    GlobalScope.launch(vertx.dispatcher()) {
-      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
-      println(response.bodyAsJsonObject())
-      context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
-      async.complete()
-    }
-  }
-
-  @Test
   fun `test history posted by zxj001 and retrieve the post published by zxj001`(context: TestContext){
     val async = context.async()
     val json =
@@ -135,6 +122,73 @@ class PostServerTest {
 
       async.complete()
     }
+  }
+
+  @Test
+  fun `test post history`(context: TestContext){
+    val async = context.async()
+    val json =
+      JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
+    GlobalScope.launch(vertx.dispatcher()) {
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      println(response.bodyAsJsonObject())
+      context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
+      async.complete()
+    }
+  }
+
+  @Test
+  fun `test related function_like_dislike_collect`(context: TestContext){
+    val async = context.async()
+    val json = jsonObjectOf().put(ID, "zxj001")
+      .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+      .put(TYPE, PUBLICATION)
+      .put(SUBTYPE, HISTORY)
+    GlobalScope.launch(vertx.dispatcher()) {
+      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val body = response.bodyAsJsonObject()
+      context.assertTrue(body.getBoolean(PUBLICATION))
+      context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
+      //get one article : check the liked dislike collect
+      val oneArticle = body.getJsonArray(HISTORY).getJsonObject(0)
+      val dir = oneArticle.getString(DIR)
+      context.assertTrue(oneArticle.getInteger(LIKE)==0)
+      context.assertTrue(oneArticle.getInteger(DISLIKE)==0)
+      context.assertTrue(oneArticle.getInteger(COLLECT)==0)
+
+      //like an article
+      json.put(SUBTYPE,LIKE)
+      json.put(DIR,dir)
+      val likeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val likeRespBody = likeResponse.bodyAsJsonObject()
+      context.assertTrue(likeRespBody.getBoolean(PUBLICATION))
+
+      //dislike an article
+      json.put(SUBTYPE, DISLIKE)
+      json.put(DIR,dir)
+      val disLikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val disLikeRespBody = disLikeResponse.bodyAsJsonObject()
+      context.assertTrue(disLikeRespBody.getBoolean(PUBLICATION))
+
+      //collect an article
+      json.put(SUBTYPE, COLLECT)
+      json.put(DIR,dir)
+      val collectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val collectRespBody = collectResponse.bodyAsJsonObject()
+      context.assertTrue(collectRespBody.getBoolean(PUBLICATION))
+      //--------------------------------
+      json.put(SUBTYPE, RETRIEVE)
+      json.put(DIR,dir)
+      val retrieveResponse = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val retrieveRespBody = retrieveResponse.bodyAsJsonObject()
+      context.assertTrue(retrieveRespBody.getInteger(LIKE)==1)
+      context.assertTrue(retrieveRespBody.getInteger(DISLIKE)==1)
+      context.assertTrue(retrieveRespBody.getInteger(COLLECT)==1)
+
+      async.complete()
+    }
+
   }
 
   @Test
