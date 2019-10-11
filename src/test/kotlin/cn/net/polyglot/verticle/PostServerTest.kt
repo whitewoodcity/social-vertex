@@ -186,6 +186,13 @@ class PostServerTest {
       context.assertTrue(retrieveRespBody.getInteger(DISLIKE)==1)
       context.assertTrue(retrieveRespBody.getInteger(COLLECT)==1)
 
+      //--collect list
+      json.put(SUBTYPE, COLLECT_LIST)
+      json.remove(DIR)
+      val collectListResponse = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val collectListRespBody = collectListResponse.bodyAsJsonObject()
+      context.assertTrue(collectListRespBody.getBoolean(PUBLICATION))
+      context.assertTrue(collectListRespBody.getJsonArray(INFO).size() > 0)
       async.complete()
     }
 

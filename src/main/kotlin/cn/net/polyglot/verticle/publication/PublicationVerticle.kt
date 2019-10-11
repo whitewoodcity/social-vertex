@@ -20,6 +20,7 @@ import java.util.*
 
 class PublicationVerticle : CoroutineVerticle() {
   private val generator = UUIDGenerator(SecureRandom())
+  private val transferedSeparator = "#"
 
   override suspend fun start() {
     vertx.eventBus().consumer<JsonObject>(this::class.java.name) {
@@ -71,15 +72,15 @@ class PublicationVerticle : CoroutineVerticle() {
       fs.mkdirAwait(userCollectDir)
     }
     val collectedArticles = fs.readDirAwait(userCollectDir)
-    val _dir = dir.replace("/","#")
-    if (collectedArticles.contains(_dir)){
+    val dir_ = dir.replace(separator,transferedSeparator)
+    if (collectedArticles.contains(dir_)){
 //      //uncollect case
-      fs.deleteAwait("$userCollectDir$separator$_dir")
+      fs.deleteAwait("$userCollectDir$separator$dir_")
     }else{
 //      //collect case
       articleBrief.put(COLLECTED_TIME,System.currentTimeMillis())
-      fs.createFileAwait("$userCollectDir$separator$_dir")
-      fs.writeFileAwait("$userCollectDir$separator$_dir",articleBrief.toBuffer())
+      fs.createFileAwait("$userCollectDir$separator$dir_")
+      fs.writeFileAwait("$userCollectDir$separator$dir_",articleBrief.toBuffer())
     }
 
     //create a collect.json at the article's dir , aiming to store the userIds/num of collection
@@ -115,7 +116,12 @@ class PublicationVerticle : CoroutineVerticle() {
     val id = json.getString(ID)
     val collectPath = "${config.getString(DIR)}$separator$id$separator$_COLLECT"
     val collectedArticles = fs.readDirAwait(collectPath)
-    val articles = collectedArticles.map { fs.readFileAwait("$collectPath$separator$it").toJsonObject() }.sortedBy { it.getLong(COLLECTED_TIME) }.reversed()
+    val articles = collectedArticles
+      .map {
+        val simplifiedDir = it.substringAfterLast(separator).replace(transferedSeparator, separator)
+        fs.readFileAwait(it).toJsonObject().put(DIR,simplifiedDir)
+      }
+      .sortedBy { it.getLong(COLLECTED_TIME) }.reversed()
     //todo pageable list
     // get pageable params and return one page
     return jsonObjectOf().put(SUBTYPE, COLLECT_LIST).put(PUBLICATION,true).put(INFO,articles)
