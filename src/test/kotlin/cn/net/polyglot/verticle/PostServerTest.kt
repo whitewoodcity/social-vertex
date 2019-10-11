@@ -2,6 +2,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import io.vertx.core.Vertx
+import io.vertx.core.VertxOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
@@ -21,6 +22,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.io.File
 import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
 
 @RunWith(VertxUnitRunner::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)//按照名字升序执行代码
@@ -32,7 +34,10 @@ class PostServerTest {
       .put(TCP_PORT, 7373)
       .put(HTTP_PORT, 7575)
       .put(HOST, "localhost")
-    private val vertx = Vertx.vertx()
+    val vOptions = VertxOptions()
+      .setWarningExceptionTime(5).setWarningExceptionTimeUnit(TimeUnit.MINUTES)
+      .setBlockedThreadCheckInterval(5).setBlockedThreadCheckIntervalUnit(TimeUnit.MINUTES)
+    private val vertx = Vertx.vertx(vOptions)
 
     @BeforeClass
     @JvmStatic
@@ -194,6 +199,36 @@ class PostServerTest {
       context.assertTrue(collectListRespBody.getBoolean(PUBLICATION))
       context.assertTrue(collectListRespBody.getJsonArray(INFO).size() > 0)
       async.complete()
+
+      //----------undo the like/dislike/collect-----------------------------------------
+      //cancle like an article
+      json.put(SUBTYPE,LIKE)
+      json.put(DIR,dir)
+      val unlikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val unlikeRespBody = unlikeResponse.bodyAsJsonObject()
+      context.assertTrue(unlikeRespBody.getBoolean(PUBLICATION))
+
+      //cancle dislike an article
+      json.put(SUBTYPE, DISLIKE)
+      json.put(DIR,dir)
+      val undisLikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val undisLikeRespBody = undisLikeResponse.bodyAsJsonObject()
+      context.assertTrue(undisLikeRespBody.getBoolean(PUBLICATION))
+
+      //cancle collect an article
+      json.put(SUBTYPE, COLLECT)
+      json.put(DIR,dir)
+      val uncollectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val uncollectRespBody = uncollectResponse.bodyAsJsonObject()
+      context.assertTrue(uncollectRespBody.getBoolean(PUBLICATION))
+
+      json.put(SUBTYPE, RETRIEVE)
+      json.put(DIR,dir)
+      val retrieveResponse2 = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val retrieveRespBody2 = retrieveResponse2.bodyAsJsonObject()
+      context.assertTrue(retrieveRespBody2.getInteger(LIKE)==0)
+      context.assertTrue(retrieveRespBody2.getInteger(DISLIKE)==0)
+      context.assertTrue(retrieveRespBody2.getInteger(COLLECT)==0)
     }
 
   }

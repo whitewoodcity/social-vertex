@@ -72,15 +72,15 @@ class PublicationVerticle : CoroutineVerticle() {
       fs.mkdirAwait(userCollectDir)
     }
     val collectedArticles = fs.readDirAwait(userCollectDir)
-    val dir_ = dir.replace(separator,transferedSeparator)
-    if (collectedArticles.contains(dir_)){
+    val transferedDir = dir.replace(separator,transferedSeparator)
+    if (collectedArticles.contains("$userCollectDir$separator$transferedDir")){
 //      //uncollect case
-      fs.deleteAwait("$userCollectDir$separator$dir_")
+      fs.deleteAwait("$userCollectDir$separator$transferedDir")
     }else{
 //      //collect case
       articleBrief.put(COLLECTED_TIME,System.currentTimeMillis())
-      fs.createFileAwait("$userCollectDir$separator$dir_")
-      fs.writeFileAwait("$userCollectDir$separator$dir_",articleBrief.toBuffer())
+      fs.createFileAwait("$userCollectDir$separator$transferedDir")
+      fs.writeFileAwait("$userCollectDir$separator$transferedDir",articleBrief.toBuffer())
     }
 
     //create a collect.json at the article's dir , aiming to store the userIds/num of collection
@@ -143,7 +143,7 @@ class PublicationVerticle : CoroutineVerticle() {
     val articleDislikeInfo = fs.readFileAwait("$communityArticlePath$separator${DISLIKE}.json").toJsonObject()
     val ids = articleDislikeInfo.getJsonArray(IDS)
     val count = articleDislikeInfo.getInteger(COUNT)
-    if (articleDislikeInfo.getJsonArray(IDS).contains(dir)){
+    if (articleDislikeInfo.getJsonArray(IDS).contains(json.getString(ID))){
       ids.remove(json.getString(ID))
       articleDislikeInfo.put(IDS,ids)
       articleDislikeInfo.put(COUNT,count-1)
@@ -194,7 +194,7 @@ class PublicationVerticle : CoroutineVerticle() {
     val articleDislikeInfo = fs.readFileAwait("$communityArticlePath$separator${LIKE}.json").toJsonObject()
     val ids = articleDislikeInfo.getJsonArray(IDS)
     val count = articleDislikeInfo.getInteger(COUNT)
-    if (articleDislikeInfo.getJsonArray(IDS).contains(dir)){
+    if (articleDislikeInfo.getJsonArray(IDS).contains(json.getString(ID))){
       ids.remove(json.getString(ID))
       articleDislikeInfo.put(IDS,ids)
       articleDislikeInfo.put(COUNT,count-1)
