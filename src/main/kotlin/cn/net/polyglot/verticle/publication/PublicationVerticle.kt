@@ -51,7 +51,7 @@ class PublicationVerticle : CoroutineVerticle() {
   }
 
 
-  //收藏  todo UT
+  //收藏
   private suspend fun collect(json: JsonObject): JsonObject {
     //get the brief or publicationo of the article
     if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
@@ -128,7 +128,7 @@ class PublicationVerticle : CoroutineVerticle() {
   }
 
 
-  //踩 todo UT
+  //踩
   private suspend fun dislike(json: JsonObject): JsonObject {
     val fs = vertx.fileSystem()
     if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
@@ -179,7 +179,7 @@ class PublicationVerticle : CoroutineVerticle() {
     return jsonObjectOf().put(SUBTYPE, DISLIKE).put(PUBLICATION,true)
   }
 
-  //点赞 todo UT
+  //点赞
   private suspend fun like(json: JsonObject): JsonObject {
     val fs = vertx.fileSystem()
     if(!json.containsKey(DIR)) return json.put(PUBLICATION,false).put(INFO,"Directory is required")
@@ -230,7 +230,7 @@ class PublicationVerticle : CoroutineVerticle() {
     return jsonObjectOf().put(SUBTYPE, LIKE).put(PUBLICATION,true)
   }
 
-  //获取评论列表 todo UT
+  //获取评论列表
   private suspend fun commentList(json: JsonObject): JsonObject {
     val dir = json.getString(DIR)
     val atcPath = "${config.getString(DIR)}$separator$COMMUNITY$dir"
@@ -251,7 +251,7 @@ class PublicationVerticle : CoroutineVerticle() {
     return json.put(INFO,commentsList).put(PUBLICATION,true)
   }
 
-  //评论 todo UT
+  //评论
   private suspend fun comment(json: JsonObject): JsonObject {
     /* ********************************************************************************************
      #  interface args structure:
