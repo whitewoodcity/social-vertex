@@ -188,12 +188,11 @@ URI: /
   "subtype":"comment_list",                                          
   "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
   "id":"zxj2019",                                             用户名
-  "comment_type":0                                          	评论类型：0评论帖子，1回复评论
   "password":"431fe828b9b8e8094235dee515562247"               密码
 }
 ```
 
-返回值样例(暂定 后续会完善):
+返回值样例(注：	`commented_user_id` 为被评论者的用户id ，`id`为评论者id):
 
 ```text
 {
