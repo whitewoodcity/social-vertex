@@ -24,6 +24,7 @@ SOFTWARE.
 
 package cn.net.polyglot.config
 
+const val BRIEF = "brief"
 const val MESSAGE = "message"
 const val PUBLICATION = "publication"
 const val SEARCH = "search"
@@ -78,6 +79,18 @@ const val TIME_ORDER_STRING = "time-order-string"
 const val DEFAULT_ORDER_STRING = "default-order-string"
 const val UUID = "uuid"
 const val DESCRIPTION = "description"
+const val LIKE = "like"
+const val DISLIKE = "dislike"
+const val COMMENT = "comment"
+const val COMMENTS = "comments"
+const val COMMENTED_USER_ID = "commented_user_id"
+const val COMMENT_LIST = "comment_list"
+const val COLLECT = "collect"
+const val _COLLECT = ".collect"
+const val COLLECT_LIST = "collect_list"
+const val COLLECTED_TIME = "collected_time"
+const val COUNT = "count"
+const val IDS = "ids"
 
 const val END = "\r\n"
 const val SESSION_ID = "social-vertex-id"

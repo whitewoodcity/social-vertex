@@ -10,6 +10,10 @@
 发表想法（thought）  
 [历史信息（history）](#历史信息)  
 [获取信息（retrieve）](#获取信息)  
+点赞(like)  
+踩(dislike)  
+收藏(collect)  
+评论(comment)  
 
 ## 历史信息  
 以下是一个时序查询历史信息的例子：  
@@ -24,7 +28,7 @@ URI: /
   "from":"zxj2019",
   "time":"2019-11-04-04"
 }
-```  
+```
 解释说明  
 ```text
 {
@@ -35,7 +39,7 @@ URI: /
   "from":"zxj2019",                               非必填项，查询zxj2019用户下发表的问题答案文章等，若不填则查询所有用户发表的内容
   "time":"2019-11-04-04"                          非必填项，查询2019年11月4日凌晨4点之前发表的内容，若不填则查询当前时间之前公开发表的内容
 }
-```  
+```
 发送上述请求至social vertex服务器后，服务器返回样例：
 ```json
 {
@@ -45,7 +49,7 @@ URI: /
   ],
   "time":"2019-11-04-04"
 }
-```  
+```
 解释说明  
 ```text
 {
@@ -55,7 +59,7 @@ URI: /
   ],
   "time":"2019-11-04-04"                          time表示查询至该时间点，下次时序查询时填入该字符串，便可继续向前查询
 }
-```  
+```
 
 ## 获取信息  
 以下是一个获取公开信息的例子：  
@@ -69,7 +73,7 @@ URI: /
   "password":"431fe828b9b8e8094235dee515562247",
   "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd"
 }
-```  
+```
 解释说明  
 ```text
 {
@@ -79,7 +83,7 @@ URI: /
   "id":"zxj2019",                                             用户名
   "password":"431fe828b9b8e8094235dee515562247"               密码
 }
-```  
+```
 发送上述请求至social vertex服务器后，服务器返回样例：
 ```json
 {
@@ -87,11 +91,148 @@ URI: /
   "type": "publication",
   "subtype": "question"
 }
-```  
+```
 解释说明  
 ```text
 {
   "publication":true,                             true表示查询成功，false则表示失败
   "type": "publication"...                        其余字段为信息存入时信息
 }
-```  
+```
+
+## 点赞
+
+
+
+参数：
+
+```text
+{
+  "type":"publication",                                      
+  "subtype":"like",                                          
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",特性信息所在路径
+  "id":"zxj2019",                                             用户名
+  "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
+返回样例：
+
+```
+{
+  "publication":true,                             true表示点赞成功，false则表示失败
+  "type": "publication"...                        其余字段为信息存入时信息
+}
+```
+
+## 踩
+
+同[点赞](#点赞)（subtype 改为`"subtype":"like"`）
+
+## 收藏
+
+参数：
+
+```
+{
+  "type":"publication",                                      
+  "subtype":"collect",                                          
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
+  "id":"zxj2019",                                             用户名
+  "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
+返回值样例：
+
+```
+{
+  "publication":true,                             true表示收藏成功，false则表示失败
+  "type": "publication"...                        其余字段为信息存入时信息
+}
+```
+
+## 评论
+
+对一个article/thought..... /comment 进行评论
+
+参数：
+
+```
+{
+  "type":"publication",                                      
+  "subtype":"comment",                                          
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
+  "content":"str.....this is a comment for an article or a comment",评论内容
+  "id":"zxj2019",                                             用户名
+  "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
+返回值样例：
+
+```
+{
+  "publication":true,                             true表示查询成功，false则表示失败
+  "type": "publication"...                        其余字段为信息存入时信息
+}
+```
+
+## 获取文章评论列表(包含coments of comment)：
+
+参数：
+
+```text
+{
+  "type":"publication",                                      
+  "subtype":"comment_list",                                          
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",文章或评论的路径
+  "id":"zxj2019",                                             用户名
+  "comment_type":0                                          	评论类型：0评论帖子，1回复评论
+  "password":"431fe828b9b8e8094235dee515562247"               密码
+}
+```
+
+返回值样例(暂定 后续会完善):
+
+```text
+{
+  "publication":true,                             true表示查询成功，false则表示失败
+  "type": "publication",
+  "subtype":"comments_list",
+  "info":{
+  	"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",
+  	"id":"zxj01",
+  	"commented_user_id":"zxj01",
+  	"comments":[
+  	  {
+  	  	"id":"zxj01",
+  	  	"commented_user_id":"zxj01",
+  	  	"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",
+  	  	"date":"",
+  	  	"time":"",
+  			"content":" a comment",
+  	  },
+  		{
+  			"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd/sub1",
+  			"content":"comment for this dir",
+  			"id":"zxj01",
+  			"commented_user_id":"zxj01",
+  			"date":"",
+  			"time":"",
+  			"comments":[...]
+  		},
+  		{
+  			"dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd/sub2",
+  			"content":"comment for this dir",
+  			"id":"zxj01",
+  			"commented_user_id":"zxj01",
+  			"date":"",
+  			"time":"",
+  			"comments":[...]
+  		}
+  	]
+  }
+}
+```
+
