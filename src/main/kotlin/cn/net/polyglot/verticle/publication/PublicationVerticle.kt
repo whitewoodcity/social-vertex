@@ -233,16 +233,20 @@ class PublicationVerticle : CoroutineVerticle() {
   //获取评论列表 todo UT
   private suspend fun commentList(json: JsonObject): JsonObject {
     val dir = json.getString(DIR)
+    val atcPath = "${config.getString(DIR)}$separator$COMMUNITY$dir"
+    val commentsPath = "$atcPath$separator$COMMENTS"
     if (StringUtil.isNullOrEmpty(dir)){
       return json.put(PUBLICATION,false).put(INFO,"Dir field is required!")
     }
     val fs = vertx.fileSystem()
-    if (!fs.existsAwait(dir)){
+    if (!fs.existsAwait(atcPath)){
       json.put(PUBLICATION,false).put(INFO,"no such dir: $dir")
     }
-    val commentsPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir$separator$COMMENTS"
+    if (!fs.existsAwait(commentsPath)){
+      return json.put(PUBLICATION,true).put(INFO, JsonArray())
+    }
     val comments = fs.readDirAwait(commentsPath)
-    val commentsList = comments.map { fs.readFileAwait("$commentsPath$separator$it$separator${PUBLICATION}.json").toJsonObject() }
+    val commentsList = comments.map { fs.readFileAwait("$it$separator${PUBLICATION}.json").toJsonObject() }
       .sortedBy { "${it.getString(DATE)}${it.getString(TIME)}" }
     return json.put(INFO,commentsList).put(PUBLICATION,true)
   }
@@ -279,14 +283,15 @@ class PublicationVerticle : CoroutineVerticle() {
       return json.put(PUBLICATION,false).put(INFO,"The comment can not be null or empty!")
     }
     val dir = json.getString(DIR)
-    val fs = vertx.fileSystem()
-    if (!fs.existsAwait(dir)){
-      json.put(PUBLICATION,false).put(INFO,"no such dir: $dir")
-    }
     //this is a path of an article or a path of comment going to be commented
-    val articlePath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
+    val articlePath = "${config.getString(DIR)}$separator$COMMUNITY$dir"
     //create comments dir
     val commentsPath = "$articlePath$separator$COMMENTS"
+
+    val fs = vertx.fileSystem()
+    if (!fs.existsAwait(articlePath)){
+      return json.put(PUBLICATION,false).put(INFO,"no such dir: $dir")
+    }
 
     if (!fs.existsAwait(commentsPath)){
       //if comments dir dose not exists create one
@@ -300,11 +305,11 @@ class PublicationVerticle : CoroutineVerticle() {
     fs.createFileAwait(commentFilePath)
     //-----------------------------------------------------------
     //commented user(被回复的用户id)
-    val commentedUserId = fs.readFileAwait(articlePath).toJsonObject().getString(COMMENTED_USER_ID)
+    val commentedUserId = fs.readFileAwait("$articlePath$separator${PUBLICATION}.json").toJsonObject().getString(ID)
     json.put(COMMENTED_USER_ID,commentedUserId)
     //remove the unnecessary password field
     json.remove(PASSWORD)
-    json.put(DIR,newCommentPath)
+    json.put(DIR,"$dir$separator$COMMENTS$separator$uuid")
     //fill in date and time
     val date = Date()
     val today = SimpleDateFormat("yyyy-MM-dd").format(date)

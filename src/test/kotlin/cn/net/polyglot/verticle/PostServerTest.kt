@@ -144,6 +144,60 @@ class PostServerTest {
   }
 
   @Test
+  fun `test related function_comment`(context: TestContext){
+    val async = context.async()
+    GlobalScope.launch(vertx.dispatcher()) {
+      val json = jsonObjectOf().put(ID, "zxj001")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION)
+        .put(SUBTYPE, HISTORY)
+      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val body = response.bodyAsJsonObject()
+      context.assertTrue(body.getBoolean(PUBLICATION))
+      context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
+      //get one article : prepare for comment
+      //--- comment an article
+      val oneArticle = body.getJsonArray(HISTORY).getJsonObject(0)
+      val dir = oneArticle.getString(DIR)
+      json.put(SUBTYPE, COMMENT)
+        .put(DIR, dir)
+        .put(CONTENT, "this is a comment: this article is very good and useful for me!")
+      val comment1Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val comment1Respbody = comment1Response.bodyAsJsonObject()
+      println(comment1Respbody)
+      context.assertTrue(comment1Respbody.getBoolean(PUBLICATION))
+
+      //---comment list
+      json.put(SUBTYPE, COMMENT_LIST)
+        .remove(CONTENT)
+      val commentListResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val commentListRespBody = commentListResponse.bodyAsJsonObject()
+      println(commentListRespBody)
+      context.assertTrue(commentListRespBody.getBoolean(PUBLICATION))
+      context.assertTrue(commentListRespBody.getJsonArray(INFO).size() > 0)
+
+      //--- comment a comment
+      val aComment = commentListRespBody.getJsonArray(INFO).getJsonObject(0)
+      val commentDir = aComment.getString(DIR)
+      json.put(SUBTYPE, COMMENT).put(DIR,commentDir).put(CONTENT,"this is a comment of a comment")
+      val comment2Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val comment2RespBody = comment2Response.bodyAsJsonObject()
+      context.assertTrue(comment2RespBody.getBoolean(PUBLICATION))
+
+      //get the comment list of the comment
+      json.remove(CONTENT)
+      json.put(SUBTYPE, COMMENT_LIST).put(DIR,commentDir)
+      val commentList2Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val commentList2RespBoody = commentList2Response.bodyAsJsonObject()
+      println("comments of a comment: $commentList2RespBoody")
+      context.assertTrue(commentList2RespBoody.getBoolean(PUBLICATION))
+      context.assertTrue(commentList2RespBoody.getJsonArray(INFO).size()>0)
+      //----------------------------------
+      async.complete()
+    }
+  }
+
+  @Test
   fun `test related function_like_dislike_collect`(context: TestContext){
     val async = context.async()
     val json = jsonObjectOf().put(ID, "zxj001")
@@ -198,7 +252,7 @@ class PostServerTest {
       val collectListRespBody = collectListResponse.bodyAsJsonObject()
       context.assertTrue(collectListRespBody.getBoolean(PUBLICATION))
       context.assertTrue(collectListRespBody.getJsonArray(INFO).size() > 0)
-      async.complete()
+
 
       //----------undo the like/dislike/collect-----------------------------------------
       //cancle like an article
@@ -229,6 +283,9 @@ class PostServerTest {
       context.assertTrue(retrieveRespBody2.getInteger(LIKE)==0)
       context.assertTrue(retrieveRespBody2.getInteger(DISLIKE)==0)
       context.assertTrue(retrieveRespBody2.getInteger(COLLECT)==0)
+
+      //--------------
+      async.complete()
     }
 
   }
