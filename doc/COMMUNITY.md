@@ -178,6 +178,8 @@ URI: /
 }
 ```
 
+注：**当对某一评论进行评论时 需要传`atted_user_id`属性**
+
 ## 获取文章评论列表(包含coments of comment)：
 
 参数：
@@ -234,4 +236,26 @@ URI: /
   }
 }
 ```
+
+#### 注：comment实体结构如下：
+
+```
+{
+  "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd",
+  "content":"",
+  "id":"xxx", //评论者
+  "commented_user_id":"xxx2", //被评论者
+  "atted_user_id":"xxx3"//用户展示comments of a comment时 被评论者的id
+}
+```
+
+`commented_user_id`为该条评论上一层的评论/文章的作者id
+
+`atted_user_id`为与该条评论同层的评论的作者id(只用于评论的评论 即comments of a comment)
+
+##### 评论的展示方式
+
++ 对于文章的评论，通过文章的dir属性访问`comments`接口,获取文章评论的列表。
+
++ 对于评论的评论，在上一步中 文章的评论实体中，也通过`dir`属性访问`comments`接口，此时返回的comments实体中存在`atted_user_id`属性，用来记录此条评论的回复对象。
 

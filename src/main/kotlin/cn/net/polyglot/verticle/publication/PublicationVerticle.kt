@@ -274,6 +274,15 @@ class PublicationVerticle : CoroutineVerticle() {
      #         |--uuid2(dir)
      #              |--comments
      #              |--publication.json
+     # # # # # # # # # #
+     # comment 实体：
+     # {
+     #   "dir":"/2019/06/29/15/387a71fc-f440-47ab-9d4a-bdbc7cbff5dd"
+     #   "content":""
+     #   "id":"xxx" //评论者
+     #   "commented_user_id":"xxx2"//被评论者
+     #   "atted_user_id":"xxx3"//用户展示comments of a comment时 被评论者的id
+     # }
      *************************************************************************************************
     */
     //--------------------------------------------------
