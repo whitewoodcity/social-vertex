@@ -8,12 +8,12 @@ import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
-import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.awaitility.Awaitility
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -46,10 +46,22 @@ class PostServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = deploymentOptionsOf(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.publication.PublicationVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
+      val fut0 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option)
+      val fut1 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.publication.PublicationVerticle", option)
+      val fut2 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option)
+      val fut3 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option)
+
+      Awaitility.await().until{
+        fut0.isComplete &&
+          fut1.isComplete &&
+          fut2.isComplete &&
+          fut3.isComplete
+      }
+
+      context.assertTrue(fut0.succeeded())
+      context.assertTrue(fut1.succeeded())
+      context.assertTrue(fut2.succeeded())
+      context.assertTrue(fut3.succeeded())
     }
 
     @AfterClass

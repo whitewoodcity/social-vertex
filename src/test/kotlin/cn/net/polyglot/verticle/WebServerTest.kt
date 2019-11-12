@@ -3,13 +3,12 @@ package cn.net.polyglot.verticle
 import cn.net.polyglot.config.*
 import io.vertx.core.Vertx
 import io.vertx.core.http.HttpHeaders
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
-import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
+import org.awaitility.Awaitility.await
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -38,8 +37,13 @@ class WebServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = deploymentOptionsOf(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.LoginVerticle", option, context.asyncAssertSuccess())
+      val fut0 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option)
+      val fut1 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.LoginVerticle", option)
+      await().until{
+        fut0.isComplete && fut1.isComplete
+      }
+      context.assertTrue(fut0.succeeded())
+      context.assertTrue(fut1.succeeded())
     }
 
     @AfterClass

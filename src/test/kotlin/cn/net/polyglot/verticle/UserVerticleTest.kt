@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.kotlin.core.deploymentOptionsOf
+import org.awaitility.Awaitility.await
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.junit.FixMethodOrder
@@ -36,8 +37,14 @@ class UserVerticleTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = deploymentOptionsOf(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option, context.asyncAssertSuccess())
+      val fut0 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option)
+      val fut1 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option)
+
+      await().until{
+        fut0.isComplete && fut1.isComplete
+      }
+      context.assertTrue(fut0.succeeded())
+      context.assertTrue(fut1.succeeded())
     }
 
     @AfterClass

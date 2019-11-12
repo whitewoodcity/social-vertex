@@ -26,8 +26,6 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.inNextYear
-import cn.net.polyglot.module.tomorrow
-import cn.net.polyglot.module.yesterday
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -37,7 +35,6 @@ import io.vertx.kotlin.core.deploymentOptionsOf
 import io.vertx.kotlin.core.file.createFileAwait
 import io.vertx.kotlin.core.file.mkdirsAwait
 import io.vertx.kotlin.core.file.writeFileAwait
-import io.vertx.kotlin.coroutines.awaitEvent
 import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
 import kotlinx.coroutines.GlobalScope
@@ -74,13 +71,31 @@ class IMServerTest {
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
       val option = deploymentOptionsOf(config = config)
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.message.MessageVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.friend.FriendVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option, context.asyncAssertSuccess())
-      vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option, context.asyncAssertSuccess())
+      val fut0 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.message.MessageVerticle", option)
+      val fut1 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.friend.FriendVerticle", option)
+      val fut2 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option)
+      val fut3 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option)
+      val fut4 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option)
+      val fut5 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option)
+      val fut6 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option)
+      
+      await().until{
+        fut0.isComplete &&
+        fut1.isComplete &&
+        fut2.isComplete &&
+        fut3.isComplete &&
+        fut4.isComplete &&
+        fut5.isComplete &&
+        fut6.isComplete
+      }
+
+      context.assertTrue(fut0.succeeded())
+      context.assertTrue(fut1.succeeded())
+      context.assertTrue(fut2.succeeded())
+      context.assertTrue(fut3.succeeded())
+      context.assertTrue(fut4.succeeded())
+      context.assertTrue(fut5.succeeded())
+      context.assertTrue(fut6.succeeded())
     }
 
     @AfterClass
