@@ -21,15 +21,9 @@ abstract class ServletVerticle : CoroutineVerticle() {
       launch {
         val request = HttpServletRequest(reqJson, session)
         when (reqJson.getString(HTTP_METHOD)) {
-          POST -> {
-            it.reply(doPost(request).toJson())
-          }
-          GET -> {
-            it.reply(doGet(request).toJson())
-          }
-          PUT -> {
-            it.reply(doPut(request).toJson())
-          }
+          POST -> it.reply(doPost(request).toJson())
+          GET -> it.reply(doGet(request).toJson())
+          PUT -> it.reply(doPut(request).toJson())
           else -> it.reply(JsonObject().put(JSON_BODY, "Http Method is not specified"))
         }
       }
@@ -64,7 +58,7 @@ abstract class ServletVerticle : CoroutineVerticle() {
   }
 
   inner class HttpServletResponse(val type: HttpServletResponseType, val path: String = "index.htm", private val values: JsonObject = JsonObject()) {
-    constructor(json: JsonObject = JsonObject()) : this(HttpServletResponseType.JSON, "index.htm", json)
+    constructor(json: JsonObject = JsonObject()) : this(HttpServletResponseType.JSON, values = json)
     constructor() : this(HttpServletResponseType.EMPTY_RESPONSE)
     constructor(filePath: String) : this(HttpServletResponseType.FILE, filePath)
     constructor(templatePath: String, values: JsonObject) : this(HttpServletResponseType.TEMPLATE, templatePath, values)

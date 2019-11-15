@@ -67,7 +67,7 @@ class PublicationVerticle : CoroutineVerticle() {
 
     //create a .collect/ dir at the root dir for the user and create empty file to index the article
     val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
-    val userCollectDir = "$userDir$separator$_COLLECT"
+    val userCollectDir = "$userDir$separator$DOT_COLLECT"
     if (!fs.existsAwait(userCollectDir)) {
       fs.mkdirAwait(userCollectDir)
     }
@@ -114,7 +114,7 @@ class PublicationVerticle : CoroutineVerticle() {
     val fs = vertx.fileSystem()
     //current userId
     val id = json.getString(ID)
-    val collectPath = "${config.getString(DIR)}$separator$id$separator$_COLLECT"
+    val collectPath = "${config.getString(DIR)}$separator$id$separator$DOT_COLLECT"
     val collectedArticles = fs.readDirAwait(collectPath)
     val articles = collectedArticles
       .map {
