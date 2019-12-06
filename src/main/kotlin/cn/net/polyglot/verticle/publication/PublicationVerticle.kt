@@ -402,7 +402,7 @@ class PublicationVerticle : CoroutineVerticle() {
       //--- fill in like/dislike/collect info ---
       val file = vertx.fileSystem().readFileAwait(path).toJsonObject()
       file.put(DIR,json.getString(DIR))
-      handleRelatedInfo(file)
+      handleRelatedInfo(file,json.getString(ID))
       file.put(PUBLICATION, true)
     } catch (e: Throwable) {
       e.printStackTrace()
@@ -534,7 +534,7 @@ class PublicationVerticle : CoroutineVerticle() {
               }.put(DIR, publicationFilePath.substringAfterLast(COMMUNITY).substringBeforeLast(separator))
 
               //--- fill in like/dislike/collect info ---
-              handleRelatedInfo(file)
+              handleRelatedInfo(file,json.getString(ID))
               //------------------------------------------------
               history.add(file)
             }
@@ -549,32 +549,51 @@ class PublicationVerticle : CoroutineVerticle() {
   }
 
   /**
-   * this method handles likes/dislikes/collect number for an article
+   * this method handles likes/dislikes/collect info for an article.
+   * detail: it set nums of users that like/dislike/collect this article,
+   *  meanwhile , it also sets liked/disliked/collected fields(bool type value),aiming to infer whether
+   *  the current user has liked/disliked/collected this article.
    */
-  private suspend fun handleRelatedInfo(file: JsonObject) {
+  private suspend fun handleRelatedInfo(file: JsonObject,loggedInUserId: String) {
     val basePath = "${config.getString(DIR)}$separator$COMMUNITY$separator${file.getString(DIR)}"
     if (!vertx.fileSystem().existsAwait("$basePath$separator${LIKE}.json")) {
       //No like.json case means no one has liked before
       vertx.fileSystem().createFileAwait("$basePath$separator${LIKE}.json")
       vertx.fileSystem().writeFileAwait("$basePath$separator${LIKE}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer())
       file.put(LIKE, 0)
+      //if no one has liked before, that means the current logged in user has not liked this article yet
+      file.put(LIKED,false)
     } else {
       val like = vertx.fileSystem().readFileAwait("$basePath$separator${LIKE}.json").toJsonObject()
       file.put(LIKE, like.getInteger(COUNT))
+      // the users that has already liked this article
+      val likedIds = like.getJsonArray(IDS)
+      // if current logged in user has collected this article then set 'liked' field `true` value
+      file.put(LIKED,likedIds.contains(loggedInUserId))
     }
+
+    //------ similar as like&liked field, this segment of code handles the dislike info
     if (!vertx.fileSystem().existsAwait("$basePath$separator${DISLIKE}.json")) {
       vertx.fileSystem().writeFileAwait("$basePath$separator${DISLIKE}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer())
       file.put(DISLIKE, 0)
+      file.put(DISLIKED,false)
     } else {
       val dislike = vertx.fileSystem().readFileAwait("$basePath$separator${DISLIKE}.json").toJsonObject()
       file.put(DISLIKE, dislike.getInteger(COUNT))
+      val dislikedIds = dislike.getJsonArray(IDS)
+      file.put(DISLIKED,dislikedIds.contains(loggedInUserId))
     }
+
+    //------ similar as like&liked field, this segment of code handles the collect info
     if (!vertx.fileSystem().existsAwait("$basePath$separator${COLLECT}.json")) {
       vertx.fileSystem().writeFileAwait("$basePath$separator${COLLECT}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer())
       file.put(COLLECT, 0)
+      file.put(COLLECTED,false)
     } else {
-      val dislike = vertx.fileSystem().readFileAwait("$basePath$separator${COLLECT}.json").toJsonObject()
-      file.put(COLLECT, dislike.getInteger(COUNT))
+      val collect = vertx.fileSystem().readFileAwait("$basePath$separator${COLLECT}.json").toJsonObject()
+      file.put(COLLECT, collect.getInteger(COUNT))
+      val collectedIds = collect.getJsonArray(IDS)
+      file.put(COLLECTED,collectedIds.contains(loggedInUserId))
     }
   }
 }
