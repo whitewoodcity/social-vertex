@@ -227,6 +227,9 @@ class PostServerTest {
       context.assertTrue(oneArticle.getInteger(LIKE)==0)
       context.assertTrue(oneArticle.getInteger(DISLIKE)==0)
       context.assertTrue(oneArticle.getInteger(COLLECT)==0)
+      context.assertFalse(oneArticle.getBoolean(LIKED))
+      context.assertFalse(oneArticle.getBoolean(DISLIKED))
+      context.assertFalse(oneArticle.getBoolean(COLLECTED))
 
       //like an article
       json.put(SUBTYPE,LIKE)
@@ -256,6 +259,9 @@ class PostServerTest {
       context.assertTrue(retrieveRespBody.getInteger(LIKE)==1)
       context.assertTrue(retrieveRespBody.getInteger(DISLIKE)==1)
       context.assertTrue(retrieveRespBody.getInteger(COLLECT)==1)
+      context.assertTrue(retrieveRespBody.getBoolean(LIKED))
+      context.assertTrue(retrieveRespBody.getBoolean(DISLIKED))
+      context.assertTrue(retrieveRespBody.getBoolean(COLLECTED))
 
       //--collect list
       json.put(SUBTYPE, COLLECT_LIST)
@@ -295,7 +301,9 @@ class PostServerTest {
       context.assertTrue(retrieveRespBody2.getInteger(LIKE)==0)
       context.assertTrue(retrieveRespBody2.getInteger(DISLIKE)==0)
       context.assertTrue(retrieveRespBody2.getInteger(COLLECT)==0)
-
+      context.assertFalse(oneArticle.getBoolean(LIKED))
+      context.assertFalse(oneArticle.getBoolean(DISLIKED))
+      context.assertFalse(oneArticle.getBoolean(COLLECTED))
       //--------------
       async.complete()
     }
