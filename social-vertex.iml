@@ -12,7 +12,7 @@
   </component>
   <component name="FacetManager">
     <facet type="kotlin-language" name="Kotlin">
-      <configuration version="3" platform="JVM 1.8" useProjectSettings="false">
+      <configuration version="3" platform="JVM 1.8" allPlatforms="JVM [1.8]" useProjectSettings="false">
         <compilerSettings />
         <compilerArguments>
           <option name="jvmTarget" value="1.8" />
@@ -44,49 +44,9 @@
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="13" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-core:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-transport:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-handler:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-handler-proxy:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec-socks:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec-http:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec-http2:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-resolver:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-resolver-dns:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: io.netty:netty-codec-dns:4.1.39.Final" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.9" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web-common:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-auth-common:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-bridge-common:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-config:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-groovy:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy:3.0.0-beta-3" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-console:3.0.0-beta-3" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-templates:3.0.0-beta-3" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-xml:3.0.0-beta-3" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-swing:3.0.0-beta-3" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.groovy:groovy-json:3.0.0-beta-3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-kotlin:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.30" level="project" />
-    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib:1.3.30" level="project" />
-    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.3.30" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-lang-kotlin-coroutines:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: org.jetbrains.kotlinx:kotlinx-coroutines-core:1.2.1" level="project" />
-    <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-common:1.3.30" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web-client:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: io.vertx:vertx-web-templ-thymeleaf:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" name="Maven: org.thymeleaf:thymeleaf:3.0.11.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.attoparser:attoparser:2.0.5.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.unbescape:unbescape:1.1.6.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.26" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: io.vertx:vertx-unit:4.0.0-milestone3" level="project" />
-    <orderEntry type="library" scope="TEST" name="Maven: org.awaitility:awaitility:3.1.6" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-nop:1.7.26" level="project" />
     <orderEntry type="library" name="Maven: io.vertx:vertx-core:4.0.0-milestone3" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.39.Final" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.39.Final" level="project" />
@@ -128,6 +88,8 @@
     <orderEntry type="library" name="Maven: org.attoparser:attoparser:2.0.5.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.unbescape:unbescape:1.1.6.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.javassist:javassist:3.21.0-GA" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.9.10.1" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.9" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:guava:27.1-jre" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:failureaccess:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava" level="project" />
