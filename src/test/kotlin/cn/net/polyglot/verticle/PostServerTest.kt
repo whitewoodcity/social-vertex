@@ -87,6 +87,17 @@ class PostServerTest {
           .put(PASSWORD2, "431fe828b9b8e8094235dee515562247")
           .put(VERSION, 0.1)
         )
+      // create another user
+      webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
+        .sendJsonObjectAwait(JsonObject()
+          .put(TYPE, USER)
+          .put(SUBTYPE, REGISTER)
+          .put(ID, "zxj002")
+          .put(NICKNAME, "第二个哲学家")
+          .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+          .put(PASSWORD2, "431fe828b9b8e8094235dee515562247")
+          .put(VERSION, 0.1)
+        )
       async.complete()
     }
   }
@@ -263,6 +274,21 @@ class PostServerTest {
       context.assertTrue(retrieveRespBody.getBoolean(DISLIKED))
       context.assertTrue(retrieveRespBody.getBoolean(COLLECTED))
 
+      //------another user just check boolean values(liked disliked collected)--------
+      val json2 = jsonObjectOf().put(ID, "zxj002")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION)
+        .put(SUBTYPE, RETRIEVE)
+        .put(DIR,dir)
+      val response2 = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json2)
+      val body2 = response2.bodyAsJsonObject()
+      context.assertTrue(body2.getInteger(LIKE)==1)
+      context.assertTrue(body2.getInteger(DISLIKE)==1)
+      context.assertTrue(body2.getInteger(COLLECT)==1)
+      context.assertFalse(body2.getBoolean(LIKED))
+      context.assertFalse(body2.getBoolean(DISLIKED))
+      context.assertFalse(body2.getBoolean(COLLECTED))
+
       //--collect list
       json.put(SUBTYPE, COLLECT_LIST)
       json.remove(DIR)
@@ -304,7 +330,7 @@ class PostServerTest {
       context.assertFalse(oneArticle.getBoolean(LIKED))
       context.assertFalse(oneArticle.getBoolean(DISLIKED))
       context.assertFalse(oneArticle.getBoolean(COLLECTED))
-      //--------------
+
       async.complete()
     }
 
