@@ -213,8 +213,13 @@ abstract class DispatchVerticle : CoroutineVerticle() {
 
         when {
           responseJson.containsKey(TEMPLATE_PATH) -> {
-            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES)
-              ?: JsonObject(), "webroot/" + responseJson.getString(TEMPLATE_PATH))//?:JsonObject()
+            val templatePath = responseJson.getString(TEMPLATE_PATH)
+            val templateFileName = "webroot" + if(templatePath.startsWith("/"))
+              templatePath
+            else
+              path.substringBeforeLast("/","") + "/" + templatePath
+//            val templateFileName = "webroot${if(templatePath.startsWith("/")) templatePath else "/$templatePath"}"
+            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES) ?: JsonObject(), templateFileName )//?:JsonObject()
             routingContext.response().end(buffer)
           }
           responseJson.containsKey(FILE_PATH) -> {
