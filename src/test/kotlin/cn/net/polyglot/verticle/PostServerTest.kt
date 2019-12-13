@@ -199,13 +199,40 @@ class PostServerTest {
       context.assertTrue(commentListRespBody.getBoolean(PUBLICATION))
       context.assertTrue(commentListRespBody.getJsonArray(INFO).size() > 0)
 
-      //--- comment a comment
       val aComment = commentListRespBody.getJsonArray(INFO).getJsonObject(0)
       val commentDir = aComment.getString(DIR)
       json.put(SUBTYPE, COMMENT).put(DIR,commentDir).put(CONTENT,"this is a comment of a comment")
+      //--- comment a comment
       val comment2Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
       val comment2RespBody = comment2Response.bodyAsJsonObject()
       context.assertTrue(comment2RespBody.getBoolean(PUBLICATION))
+
+      //--- like the comment
+      json.put(SUBTYPE, LIKE).put(DIR,commentDir)
+      val likeCommentResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val likeCommentBody = likeCommentResponse.bodyAsJsonObject()
+      context.assertTrue(likeCommentBody.getBoolean(PUBLICATION))
+
+      //--- dislike the comment
+      json.put(SUBTYPE, DISLIKE).put(DIR,commentDir)
+      val dislikeCommentResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val dislikeCommentBody = dislikeCommentResponse.bodyAsJsonObject()
+      context.assertTrue(dislikeCommentBody.getBoolean(PUBLICATION))
+
+      //-- check like or dislike works
+      json.put(SUBTYPE, COMMENT_LIST).put(DIR,dir)
+        .remove(CONTENT)
+      val checkCLResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val checkCLbody = checkCLResponse.bodyAsJsonObject()
+      context.assertTrue(checkCLbody.getBoolean(PUBLICATION))
+      val checkComments = checkCLbody.getJsonArray(INFO)
+      context.assertTrue(checkComments.size() > 0)
+      val cComment = checkComments.getJsonObject(0)
+      context.assertTrue(cComment.getInteger(LIKE) > 0)
+      context.assertTrue(cComment.getInteger(DISLIKE) > 0)
+      context.assertTrue(cComment.getBoolean(LIKED))
+      context.assertTrue(cComment.getBoolean(DISLIKED))
+
 
       //get the comment list of the comment
       json.remove(CONTENT)
@@ -216,6 +243,40 @@ class PostServerTest {
       context.assertTrue(commentList2RespBoody.getBoolean(PUBLICATION))
       context.assertTrue(commentList2RespBoody.getJsonArray(INFO).size()>0)
       //----------------------------------
+      val commentOfComent = commentList2RespBoody.getJsonArray(INFO).getJsonObject(0)
+
+      //like the comment of comment
+      val cocDir = commentOfComent.getString(DIR)
+      json.put(SUBTYPE, LIKE).put(DIR,cocDir)
+      val cocResposne = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val cocBody = cocResposne.bodyAsJsonObject()
+      context.assertTrue(cocBody.getBoolean(PUBLICATION))
+
+      //dislike the comment of comment
+      json.put(SUBTYPE, DISLIKE).put(DIR,cocDir)
+      val dislikeCocResposne = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val dislikeCocBody = dislikeCocResposne.bodyAsJsonObject()
+      context.assertTrue(dislikeCocBody.getBoolean(PUBLICATION))
+
+      async.complete()
+    }
+  }
+
+  @Test
+  fun `test related function_comment num`(context: TestContext){
+    val async = context.async()
+    GlobalScope.launch(vertx.dispatcher()) {
+      val json = jsonObjectOf().put(ID, "zxj001")
+        .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+        .put(TYPE, PUBLICATION)
+        .put(SUBTYPE, HISTORY)
+      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val body = response.bodyAsJsonObject()
+      context.assertTrue(body.getBoolean(PUBLICATION))
+      context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
+      val oneArticle = body.getJsonArray(HISTORY).getJsonObject(0)
+      val commentedNum = oneArticle.getInteger(COMMENTED_NUM)
+      context.assertTrue(commentedNum > 0)
       async.complete()
     }
   }
@@ -314,11 +375,11 @@ class PostServerTest {
       context.assertTrue(undisLikeRespBody.getBoolean(PUBLICATION))
 
       //cancle collect an article
-      json.put(SUBTYPE, COLLECT)
-      json.put(DIR,dir)
-      val uncollectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
-      val uncollectRespBody = uncollectResponse.bodyAsJsonObject()
-      context.assertTrue(uncollectRespBody.getBoolean(PUBLICATION))
+//      json.put(SUBTYPE, COLLECT)
+//      json.put(DIR,dir)
+//      val uncollectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+//      val uncollectRespBody = uncollectResponse.bodyAsJsonObject()
+//      context.assertTrue(uncollectRespBody.getBoolean(PUBLICATION))
 
       json.put(SUBTYPE, RETRIEVE)
       json.put(DIR,dir)
@@ -326,10 +387,10 @@ class PostServerTest {
       val retrieveRespBody2 = retrieveResponse2.bodyAsJsonObject()
       context.assertTrue(retrieveRespBody2.getInteger(LIKE)==0)
       context.assertTrue(retrieveRespBody2.getInteger(DISLIKE)==0)
-      context.assertTrue(retrieveRespBody2.getInteger(COLLECT)==0)
+//      context.assertTrue(retrieveRespBody2.getInteger(COLLECT)==0)
       context.assertFalse(oneArticle.getBoolean(LIKED))
       context.assertFalse(oneArticle.getBoolean(DISLIKED))
-      context.assertFalse(oneArticle.getBoolean(COLLECTED))
+//      context.assertFalse(oneArticle.getBoolean(COLLECTED))
 
       async.complete()
     }
