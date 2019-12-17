@@ -42,11 +42,25 @@ class PublicationVerticle : CoroutineVerticle() {
         DISLIKE -> dislike(json)
         COLLECT -> collect(json)
         COLLECT_LIST -> collectList(json)
+        USER_BRIEF -> userBrief(json)
         else -> json.put(PUBLICATION, false)
       }
     } catch (e: Exception) {
       e.printStackTrace()
       json.put(PUBLICATION, false).put(INFO, e.message)
+    }
+  }
+
+  private suspend fun userBrief(json: JsonObject): JsonObject {
+    val uid = json.getString(UID) ?: return jsonObjectOf().put(PUBLICATION,false).put(INFO,"uid is required")
+    val userDir = "${config.getString(DIR)}$separator$uid$separator${USER}.json"
+    val fs = vertx.fileSystem()
+    return if (fs.existsAwait(userDir)) {
+      val userBrief = fs.readFileAwait(userDir).toJsonObject()
+      val responseBody = jsonObjectOf().put(ID,userBrief.getString(ID)).put(NICKNAME,userBrief.getString(NICKNAME)).put(AVATAR,userBrief.getString(AVATAR))
+      jsonObjectOf().put(PUBLICATION,true).put(INFO,responseBody)
+    }else {
+      jsonObjectOf().put(PUBLICATION,false).put(INFO, "no such user: $uid")
     }
   }
 
