@@ -129,6 +129,32 @@ class PostServerTest {
   }
 
   @Test
+  fun `test getting user brief`(context: TestContext){
+    val async = context.async()
+    val json = JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
+      .put(TYPE, PUBLICATION).put(SUBTYPE, USER_BRIEF)
+
+    GlobalScope.launch(vertx.dispatcher()) {
+      val failedResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      context.assertFalse(failedResponse.bodyAsJsonObject().getBoolean(PUBLICATION))
+
+      json.put(UID,"zxj001")
+      val resp1 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      context.assertTrue(resp1.bodyAsJsonObject().getBoolean(PUBLICATION))
+      context.assertNotNull(resp1.bodyAsJsonObject().getJsonObject(INFO))
+      println(resp1.bodyAsJsonObject().getJsonObject(INFO))
+
+      json.put(UID,"zxj002")
+      val resp2 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      context.assertTrue(resp2.bodyAsJsonObject().getBoolean(PUBLICATION))
+      context.assertNotNull(resp2.bodyAsJsonObject().getJsonObject(INFO))
+      println(resp2.bodyAsJsonObject().getJsonObject(INFO))
+
+      async.complete()
+    }
+  }
+
+  @Test
   fun `test history posted by zxj001 and retrieve the post published by zxj001`(context: TestContext){
     val async = context.async()
     val json =
