@@ -297,7 +297,6 @@ class PublicationVerticle : CoroutineVerticle() {
      #   "content":""
      #   "id":"xxx" //评论者
      #   "commented_user_id":"xxx2"//被评论者
-     #   "atted_user_id":"xxx3"//用户展示comments of a comment时 被评论者的id
      # }
      *************************************************************************************************
    */
