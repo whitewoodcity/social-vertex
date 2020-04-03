@@ -26,6 +26,7 @@ package cn.net.polyglot.verticle
 
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.inNextYear
+//import io.reactiverse.es4x.impl.VertxFileSystem
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
@@ -66,7 +67,7 @@ class IMServerTest {
 
     @BeforeClass
     @JvmStatic
-    fun beforeClass(context: TestContext) {
+    fun `before class`(context: TestContext) {
       if (vertx.fileSystem().existsBlocking(config.getString(DIR)))
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 
@@ -100,7 +101,7 @@ class IMServerTest {
 
     @AfterClass
     @JvmStatic
-    fun afterClass(context: TestContext) {
+    fun `after class`(context: TestContext) {
       vertx.close(context.asyncAssertSuccess())
     }
   }
