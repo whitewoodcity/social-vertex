@@ -31,13 +31,18 @@ import io.vertx.core.DeploymentOptions
 import io.vertx.core.Launcher
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
+import java.nio.file.Paths
 
 Vertx vertx = vertx
 
-def currentPath = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent()
+//def currentPath = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent()
+
+def currentPath = Paths.get("").toAbsolutePath().toString()
+
+println 'current path' + currentPath
 
 JsonObject config = new JsonObject()
-  .put("version",0.1d)
+  .put("version",0.6)
   .put("dir", currentPath + File.separator + "social-vertex")
   .put("jar-dir", currentPath)
   .put("host", "localhost")
