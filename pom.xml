@@ -6,18 +6,19 @@
 
   <groupId>cn.net.polyglot</groupId>
   <artifactId>social-vertex</artifactId>
-  <version>0.5</version>
+  <version>0.6</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>13</maven.compiler.source>
-    <maven.compiler.target>13</maven.compiler.target>
+    <maven.compiler.source>14</maven.compiler.source>
+    <maven.compiler.target>14</maven.compiler.target>
 
     <kotlin.version>1.3.30</kotlin.version>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
-    <vertx.version>4.0.0-milestone3</vertx.version>
+    <vertx.version>4.0.0-milestone4</vertx.version>
     <vertx.verticle>cn/net/polyglot/main_verticle.groovy</vertx.verticle>
+<!--    <vertx.verticle>cn/net/polyglot/main-verticle.js</vertx.verticle>-->
   </properties>
 
   <dependencies>
@@ -53,6 +54,11 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-web-templ-thymeleaf</artifactId>
     </dependency>
+<!--    <dependency>-->
+<!--      <groupId>io.reactiverse</groupId>-->
+<!--      <artifactId>es4x-vertx-stack</artifactId>-->
+<!--      <version>0.11.0</version>-->
+<!--    </dependency>-->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
@@ -62,17 +68,17 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>27.1-jre</version>
+      <version>28.2-jre</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.26</version>
+      <version>1.7.30</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
-      <version>1.7.26</version>
+      <version>1.7.30</version>
     </dependency>
     <!--test dependencies-->
     <dependency>
@@ -89,7 +95,7 @@
     <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
-      <version>3.1.6</version>
+      <version>4.0.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

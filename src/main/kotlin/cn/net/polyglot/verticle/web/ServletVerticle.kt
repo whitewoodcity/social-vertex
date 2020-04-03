@@ -58,7 +58,7 @@ abstract class ServletVerticle : CoroutineVerticle() {
   }
 
   inner class HttpServletResponse(val type: HttpServletResponseType, val path: String = "index.htm", private val values: JsonObject = JsonObject()) {
-    constructor(json: JsonObject = JsonObject()) : this(HttpServletResponseType.JSON, values = json)
+    constructor(json: JsonObject) : this(HttpServletResponseType.JSON, values = json)
     constructor() : this(HttpServletResponseType.EMPTY_RESPONSE)
     constructor(filePath: String) : this(HttpServletResponseType.FILE, filePath)
     constructor(templatePath: String, values: JsonObject) : this(HttpServletResponseType.TEMPLATE, templatePath, values)
@@ -74,6 +74,19 @@ abstract class ServletVerticle : CoroutineVerticle() {
   }
 
   inner class HttpServletRequest(val json:JsonObject, val session: HttpSession){
+    fun getResponse():HttpServletResponse{
+      return HttpServletResponse(HttpServletResponseType.EMPTY_RESPONSE)
+    }
+    fun getResponse(json: JsonObject):HttpServletResponse{
+      return HttpServletResponse(HttpServletResponseType.JSON, values = json)
+    }
+    fun getResponse(filePath: String):HttpServletResponse{
+      return HttpServletResponse(HttpServletResponseType.FILE, filePath)
+    }
+    fun getResponse(templatePath: String, values: JsonObject):HttpServletResponse{
+      return HttpServletResponse(HttpServletResponseType.TEMPLATE, templatePath, values)
+    }
+
     fun getPath():String{
       return json.getString(PATH)
     }
@@ -116,14 +129,14 @@ abstract class ServletVerticle : CoroutineVerticle() {
   }
 
   open suspend fun doGet(request:HttpServletRequest): HttpServletResponse {
-    return HttpServletResponse()
+    return request.getResponse()
   }
 
   open suspend fun doPost(request:HttpServletRequest): HttpServletResponse {
-    return HttpServletResponse()
+    return request.getResponse()
   }
 
   open suspend fun doPut(request:HttpServletRequest): HttpServletResponse {
-    return HttpServletResponse()
+    return request.getResponse()
   }
 }
