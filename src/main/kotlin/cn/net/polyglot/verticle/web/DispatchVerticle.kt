@@ -232,7 +232,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
           }
           responseJson.containsKey(RESPONSE_JSON) -> {
             routingContext.response().headers()["Content-Type"] = "application/json"
-            routingContext.response().end(responseJson.getJsonObject(RESPONSE_JSON).toString())
+            routingContext.response().end(responseJson.getString(RESPONSE_JSON))
           }
           responseJson.containsKey(EMPTY_RESPONSE) -> routingContext.response().end()
           else -> routingContext.reroute(HttpMethod.GET, "/error.htm")

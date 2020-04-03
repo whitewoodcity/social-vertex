@@ -1,6 +1,7 @@
 package cn.net.polyglot.verticle.web
 
 import cn.net.polyglot.config.*
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.kotlin.core.eventbus.requestAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -57,17 +58,19 @@ abstract class ServletVerticle : CoroutineVerticle() {
     EMPTY_RESPONSE, TEMPLATE, FILE, JSON
   }
 
-  inner class HttpServletResponse(val type: HttpServletResponseType, val path: String = "index.htm", private val values: JsonObject = JsonObject()) {
-    constructor(json: JsonObject) : this(HttpServletResponseType.JSON, values = json)
+  inner class HttpServletResponse(val type: HttpServletResponseType, val path: String = "index.htm",
+                                  private val json: JsonObject = JsonObject(),private val jsonString: String = json.toString()) {
+    constructor(json: JsonObject) : this(HttpServletResponseType.JSON, json = json)
+    constructor(json: JsonArray) : this(HttpServletResponseType.JSON, jsonString = json.toString())
     constructor() : this(HttpServletResponseType.EMPTY_RESPONSE)
     constructor(filePath: String) : this(HttpServletResponseType.FILE, filePath)
-    constructor(templatePath: String, values: JsonObject) : this(HttpServletResponseType.TEMPLATE, templatePath, values)
+    constructor(templatePath: String, json: JsonObject) : this(HttpServletResponseType.TEMPLATE, templatePath, json)
 
     fun toJson(): JsonObject {
       return when (type) {
-        HttpServletResponseType.TEMPLATE -> JsonObject().put(TEMPLATE_PATH, path).put(VALUES, values)
+        HttpServletResponseType.TEMPLATE -> JsonObject().put(TEMPLATE_PATH, path).put(VALUES, json)
         HttpServletResponseType.FILE -> JsonObject().put(FILE_PATH, path)
-        HttpServletResponseType.JSON -> JsonObject().put(RESPONSE_JSON, values)
+        HttpServletResponseType.JSON -> JsonObject().put(RESPONSE_JSON, jsonString)
         else -> JsonObject().put(EMPTY_RESPONSE, true)
       }
     }
@@ -75,16 +78,19 @@ abstract class ServletVerticle : CoroutineVerticle() {
 
   inner class HttpServletRequest(val json:JsonObject, val session: HttpSession){
     fun getResponse():HttpServletResponse{
-      return HttpServletResponse(HttpServletResponseType.EMPTY_RESPONSE)
+      return HttpServletResponse()
     }
     fun getResponse(json: JsonObject):HttpServletResponse{
-      return HttpServletResponse(HttpServletResponseType.JSON, values = json)
+      return HttpServletResponse(json)
+    }
+    fun getResponse(json: JsonArray):HttpServletResponse{
+      return HttpServletResponse(json)
     }
     fun getResponse(filePath: String):HttpServletResponse{
-      return HttpServletResponse(HttpServletResponseType.FILE, filePath)
+      return HttpServletResponse(filePath)
     }
     fun getResponse(templatePath: String, values: JsonObject):HttpServletResponse{
-      return HttpServletResponse(HttpServletResponseType.TEMPLATE, templatePath, values)
+      return HttpServletResponse(templatePath, values)
     }
 
     fun getPath():String{
