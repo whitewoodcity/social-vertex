@@ -42,11 +42,25 @@ class PublicationVerticle : CoroutineVerticle() {
         DISLIKE -> dislike(json)
         COLLECT -> collect(json)
         COLLECT_LIST -> collectList(json)
+        USER_BRIEF -> userBrief(json)
         else -> json.put(PUBLICATION, false)
       }
     } catch (e: Exception) {
       e.printStackTrace()
       json.put(PUBLICATION, false).put(INFO, e.message)
+    }
+  }
+
+  private suspend fun userBrief(json: JsonObject): JsonObject {
+    val uid = json.getString(UID) ?: return jsonObjectOf().put(PUBLICATION,false).put(INFO,"uid is required")
+    val userDir = "${config.getString(DIR)}$separator$uid$separator${USER}.json"
+    val fs = vertx.fileSystem()
+    return if (fs.existsAwait(userDir)) {
+      val userBrief = fs.readFileAwait(userDir).toJsonObject()
+      val responseBody = jsonObjectOf().put(ID,userBrief.getString(ID)).put(NICKNAME,userBrief.getString(NICKNAME)).put(AVATAR,userBrief.getString(AVATAR))
+      jsonObjectOf().put(PUBLICATION,true).put(INFO,responseBody)
+    }else {
+      jsonObjectOf().put(PUBLICATION,false).put(INFO, "no such user: $uid")
     }
   }
 
@@ -109,7 +123,7 @@ class PublicationVerticle : CoroutineVerticle() {
   }
 
 
-  //get a list of a user's collected articles. todo UT
+  //get a list of a user's collected articles.
   private suspend fun collectList(json: JsonObject): JsonObject {
     val fs = vertx.fileSystem()
     //current userId
@@ -246,14 +260,16 @@ class PublicationVerticle : CoroutineVerticle() {
       return json.put(PUBLICATION,true).put(INFO, JsonArray())
     }
     val comments = fs.readDirAwait(commentsPath)
-    val commentsList = comments.map { fs.readFileAwait("$it$separator${PUBLICATION}.json").toJsonObject() }
-      .sortedBy { "${it.getString(DATE)}${it.getString(TIME)}" }
+    val commentsList = comments.map {
+      val aComment = fs.readFileAwait("$it$separator${PUBLICATION}.json").toJsonObject()
+      handleRelatedInfo(aComment,json.getString(ID))
+      aComment
+    }.sortedBy { "${it.getString(DATE)}-${it.getString(TIME)}" }
     return json.put(INFO,commentsList).put(PUBLICATION,true)
   }
 
-  //评论
-  private suspend fun comment(json: JsonObject): JsonObject {
-    /* ********************************************************************************************
+  /** ********************************************************************************************
+   * 评论
      #  interface args structure:
      #{
      #  "type":"publication",
@@ -281,10 +297,11 @@ class PublicationVerticle : CoroutineVerticle() {
      #   "content":""
      #   "id":"xxx" //评论者
      #   "commented_user_id":"xxx2"//被评论者
-     #   "atted_user_id":"xxx3"//用户展示comments of a comment时 被评论者的id
      # }
      *************************************************************************************************
-    */
+   */
+  private suspend fun comment(json: JsonObject): JsonObject {
+
     //--------------------------------------------------
     //check the dir and comment
     val commentContent = json.getString(CONTENT)
@@ -313,9 +330,17 @@ class PublicationVerticle : CoroutineVerticle() {
     val commentFilePath = "$newCommentPath$separator${PUBLICATION}.json"
     fs.createFileAwait(commentFilePath)
     //-----------------------------------------------------------
-    //commented user(被回复的用户id)
-    val commentedUserId = fs.readFileAwait("$articlePath$separator${PUBLICATION}.json").toJsonObject().getString(ID)
-    json.put(COMMENTED_USER_ID,commentedUserId)
+    //commented user(被回复的用户id nickname)
+    val figuredUid = json.getString(COMMENTED_USER_ID)
+    if (figuredUid != null){
+      //如果明确了回复的人，则直接设置
+      json.put(COMMENTED_USER_ID,figuredUid)
+    }else {
+      //如果没有指定回复的人 则默认是回复articlePath的作者
+      val commentedUserId = fs.readFileAwait("$articlePath$separator${PUBLICATION}.json").toJsonObject().getString(ID)
+      json.put(COMMENTED_USER_ID,commentedUserId)
+    }
+
     //remove the unnecessary password field
     json.remove(PASSWORD)
     json.put(DIR,"$dir$separator$COMMENTS$separator$uuid")
@@ -595,5 +620,14 @@ class PublicationVerticle : CoroutineVerticle() {
       val collectedIds = collect.getJsonArray(IDS)
       file.put(COLLECTED,collectedIds.contains(loggedInUserId))
     }
+
+    //------ handle comment info(primaryly nums of comment) of this article
+    if (!vertx.fileSystem().existsAwait("$basePath$separator$COMMENTS")){
+      file.put(COMMENTED_NUM,0)
+    }else{
+      val dirs = vertx.fileSystem().readDirAwait("$basePath$separator$COMMENTS")
+      file.put(COMMENTED_NUM,dirs.size)
+    }
+
   }
 }

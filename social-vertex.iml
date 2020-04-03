@@ -46,7 +46,6 @@
     </content>
     <orderEntry type="jdk" jdkName="13" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.slf4j:slf4j-nop:1.7.26" level="project" />
     <orderEntry type="library" name="Maven: io.vertx:vertx-core:4.0.0-milestone3" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-common:4.1.39.Final" level="project" />
     <orderEntry type="library" name="Maven: io.netty:netty-buffer:4.1.39.Final" level="project" />
