@@ -33,6 +33,7 @@ class WebServerTest {
     @BeforeClass
     @JvmStatic
     fun beforeClass(context: TestContext) {
+
       if (vertx.fileSystem().existsBlocking(config.getString(DIR)))
         vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
 

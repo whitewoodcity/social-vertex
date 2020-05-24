@@ -39,7 +39,7 @@ public class MainVerticle extends AbstractVerticle {
       try {
 
         if (ar.succeeded()) {
-          config.mergeIn(JsonObject.mapFrom(ar.result()));
+          config.mergeIn(ar.result());
         } else {
           System.out.println("The configuration file: config.json does not exist or in wrong format, use default config.");
         }
