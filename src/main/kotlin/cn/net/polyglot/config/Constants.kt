@@ -108,6 +108,21 @@ const val CONTENT = "content"
 const val PARAMETERS = "parameters"
 const val ARTICLES = "articles"
 
+//add lines for admin verticle
+const val ADMIN="admin"
+const val DOT_ADMIN=".admin"
+const val SUPERADMIN="superadmin"
+const val AUTHORITY="authority"
+const val AUTHOR_SUPER="super"
+const val AUTHOR_WRITEANDREAD="writeandread"
+const val AUTHOR_READONLY="readonly"
+const val REGISTADMIN="registadmin"
+const val UPDATEADMIN="updateadmin"
+const val LOGINADMIN="loginadmin"
+const val LOGOUTADMIN="logoutadmin"
+const val UNREGISTADMIN="unregistadmin"
+const val LOGINSTATE="loginstate"
+
 //内部使用的字符串
 const val HTTP_METHOD = "HTTP_METHOD"
 const val POST = "POST"
@@ -134,3 +149,5 @@ const val UPLOAD_FILES = "UPLOAD_FILES"
 const val UPLOAD_FILE_NAMES = "UPLOAD_FILE_NAMES"
 
 const val SENSITIVE_WORDS = "fuck shit caonima ganniniang qunima tmd falun qnm"
+
+

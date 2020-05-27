@@ -55,6 +55,8 @@ public class MainVerticle extends AbstractVerticle {
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.friend.FriendVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.search.SearchVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.user.UserVerticle", option);
+        //添加的管理员verticle
+        vertx.deployVerticle("kt:cn.net.polyglot.verticle.admin.AdminVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.publication.PublicationVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option);
