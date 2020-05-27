@@ -1,0 +1,19 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Successful login</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../index.css">
+</head>
+<body>
+<div class="container">
+    <form action="/modifyArticle" method="post">
+        文章标题<br/>
+        <input name="title" id="title" th:value="${title}" required/><br/>
+        <input name="path" id="path" type="hidden" th:value="${path}">
+        请补充您所了解到的信息和情况<br/>
+        <textarea name="body" id="body" th:text="${body}"></textarea><br/>
+        <button type="submit">提交</button>
+    </form>
+</div>
+</body>
+</html>

@@ -27,7 +27,7 @@ class LoginVerticle : ServletVerticle() {
 
         val result = vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, requestJson).body()
         if (!result.containsKey(REGISTER) || !result.getBoolean(REGISTER)) {
-          return HttpServletResponse(HttpServletResponseType.TEMPLATE, "register.html")
+          return HttpServletResponse(HttpServletResponseType.TEMPLATE, "register.htm")
         }
 
         JsonObject().put(ID, requestJson.getString(ID))
@@ -37,7 +37,7 @@ class LoginVerticle : ServletVerticle() {
       }
       "/update" -> {
         if (request.session.get(ID) == null) {
-          return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
+          return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.html")
         }
 
         val requestJson =
@@ -86,7 +86,7 @@ class LoginVerticle : ServletVerticle() {
     val session = request.session
 
     if (session.get(ID) == null) {
-      return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
+      return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.html")
     }
 
     val id = session.get(ID)
@@ -97,7 +97,7 @@ class LoginVerticle : ServletVerticle() {
         profile(JsonObject().put(ID, id)
           .put(PASSWORD, password)
           .put(TYPE, USER)
-          .put(SUBTYPE, PROFILE), session, "update.html")
+          .put(SUBTYPE, PROFILE), session, "update.htm")
       }
       "/portrait" -> {
         val dir = config.getString(DIR)
@@ -124,11 +124,11 @@ class LoginVerticle : ServletVerticle() {
 
         HttpServletResponse(defaultTemplatePath, asyncResult.getJsonObject(JSON_BODY))
       } else {
-        HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
+        HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.html")
       }
     } catch (e: Throwable) {
       e.printStackTrace()
-      HttpServletResponse(HttpServletResponseType.TEMPLATE, "error.htm")
+      HttpServletResponse(HttpServletResponseType.TEMPLATE, "error.html")
     }
   }
 }

@@ -56,12 +56,12 @@ abstract class DispatchVerticle : CoroutineVerticle() {
   }
 
   val staticFileSuffix = HashSet<String>()
-  var indexPage = "/index.htm"
+  var indexPage = "/index.html"
 
   abstract suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String
 
   open fun initDispatchVerticle() {
-    staticFileSuffix.add("htm")
+    staticFileSuffix.add("html")
   }
 
   override suspend fun start() {
@@ -110,7 +110,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
       routePattern.append("\\.${suffixes.next()}")
       routePattern.append(if (suffixes.hasNext()) "|" else ")")
     }
-    router.routeWithRegex(routePattern.toString())   //.routeWithRegex("/.*(\\.htm|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
+    router.routeWithRegex(routePattern.toString())   //.routeWithRegex("/.*(\\.html|\\.ico|\\.css|\\.js|\\.text|\\.png|\\.jpg|\\.gif|\\.jpeg|\\.mp3|\\.avi)")
       .handler(StaticHandler.create()) //StaticHandler.create("./")如果是静态文件，直接交由static handler处理，注意只接受http方法为get的请求
       .handler { it.response().end("no matched file") }//对于没有匹配到的文件，static handler会执行routingContext.netx()，挡住
 
@@ -235,7 +235,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
             routingContext.response().end(responseJson.getString(RESPONSE_JSON))
           }
           responseJson.containsKey(EMPTY_RESPONSE) -> routingContext.response().end()
-          else -> routingContext.reroute(HttpMethod.GET, "/error.htm")
+          else -> routingContext.reroute(HttpMethod.GET, "/error.html")
         }
       }
 

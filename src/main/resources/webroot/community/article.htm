@@ -1,0 +1,17 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Successful login</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../index.css">
+</head>
+<body>
+<div class="container">
+    [[${title}]]<br/>
+    [[${body}]]<br/>
+    <div th:if=" ${displayModificationPanel}">
+        <a th:href="@{prepareModifyArticle?path=}+${path}" href="">修改</a>
+        <a th:href="@{deleteArticle?path=}+${path}" href="">删除</a>
+    </div>
+</div>
+</body>
+</html>

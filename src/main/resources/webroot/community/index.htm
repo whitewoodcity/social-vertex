@@ -1,0 +1,21 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Successful login</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../index.css">
+</head>
+<body>
+<div class="container">
+    <a href="profile">个人档案</a><br/>
+    <a href="prepareArticle">发表文章</a><br/>
+    <a href="prepareSearchArticle">搜索文章</a><br/>
+    以下是文章列表：
+    <div th:each="article : ${articles}">
+        <a th:href="@{article?path=}+${article.getString('parameters')}">
+            <span th:text="${article.getString('title')}">文章标题</span>
+        </a>
+        <br/>
+    </div>
+</div>
+</body>
+</html>

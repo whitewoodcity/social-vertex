@@ -25,7 +25,7 @@ class CommunityVerticle : ServletVerticle() {
   private suspend fun doGetAndPost(request:HttpServletRequest): HttpServletResponse {
     return try {
       if (request.session.get(ID) == null) {
-        return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
+        return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.html")
       }
 
       val dir = config.getString(DIR)
@@ -47,7 +47,7 @@ class CommunityVerticle : ServletVerticle() {
               .put(ID, request.session.get(ID))
               .put(NICKNAME, request.session.get(NICKNAME)).toBuffer())
 
-          HttpServletResponse("community/index.html", JsonObject().put(ARTICLES, getRecentArticles()))
+          HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
         "/modifyArticle" -> {
           val fullPath = dir + File.separator + COMMUNITY + File.separator + request.getFormAttributes().getString("path") + ".json"
@@ -58,38 +58,38 @@ class CommunityVerticle : ServletVerticle() {
               .put(ID, request.session.get(ID))
               .put(NICKNAME, request.session.get(NICKNAME)).toBuffer())
 
-          HttpServletResponse("community/index.html", JsonObject().put(ARTICLES, getRecentArticles()))
+          HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
         "/deleteArticle" -> {
           val path = dir + File.separator + COMMUNITY + File.separator + request.getParams().getString("path") + ".json"
 
           if (vertx.fileSystem().existsAwait(path)) {
             if (request.session.get(ID) != vertx.fileSystem().readFileAwait(path).toJsonObject().getString(ID))
-              return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.htm")
+              return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.html")
 
             vertx.fileSystem().deleteAwait(path)
           }
 
-          HttpServletResponse("community/index.html", JsonObject().put(ARTICLES, getRecentArticles()))
+          HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
         "/community" -> {
-          HttpServletResponse("community/index.html", JsonObject().put(ARTICLES, getRecentArticles()))
+          HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
         "/article" -> {
           val path = dir + File.separator + COMMUNITY + File.separator + request.getParams().getString("path") + ".json"
           val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
           articleJson.put("displayModificationPanel", request.session.get(ID) == articleJson.getString(ID))
           articleJson.put("path", request.getParams().getString("path"))
-          HttpServletResponse("community/article.html", articleJson)
+          HttpServletResponse("community/article.htm", articleJson)
         }
         "/prepareModifyArticle" -> {
           val path = dir + File.separator + COMMUNITY + File.separator + request.getParams().getString("path") + ".json"
           val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
           articleJson.mergeIn(request.getParams())
-          HttpServletResponse("community/modifyPost.html", articleJson)
+          HttpServletResponse("community/modifyPost.htm", articleJson)
         }
         "/prepareSearchArticle" -> {
-          HttpServletResponse(HttpServletResponseType.TEMPLATE, "community/search.html")
+          HttpServletResponse(HttpServletResponseType.TEMPLATE, "community/search.htm")
         }
         "/searchArticle" -> {
           //考虑放到worker verticle中去执行，如果文件非常多，这里可能会有比较长的执行时间
@@ -131,7 +131,7 @@ class CommunityVerticle : ServletVerticle() {
             d1 = d1.minusDays(1)
           }
 
-          HttpServletResponse("community/index.html", JsonObject().put(ARTICLES, articles))
+          HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, articles))
         }
         "/uploadPortrait" -> {
 
@@ -143,17 +143,17 @@ class CommunityVerticle : ServletVerticle() {
 
           vertx.fileSystem().moveAwait(jarDir + File.separator + request.getUploadFiles().getString("profile"), dir + File.separator + request.session.get(ID) + File.separator + "portrait")
 
-          HttpServletResponse("community/index.html", JsonObject().put(ARTICLES, getRecentArticles()))
+          HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
 //        "/portrait" -> HttpServletResponse(dir + File.separator + session.get(ID) + File.separator + "portrait")
         else -> {//"/prepareArticle"
-          HttpServletResponse(HttpServletResponseType.TEMPLATE, "community/post.html")
+          HttpServletResponse(HttpServletResponseType.TEMPLATE, "community/post.htm")
         }
       }
 
     } catch (throwable: Throwable) {
       throwable.printStackTrace()
-      HttpServletResponse(HttpServletResponseType.TEMPLATE, "error.htm")
+      HttpServletResponse(HttpServletResponseType.TEMPLATE, "error.html")
     }
   }
 
