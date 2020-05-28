@@ -121,9 +121,9 @@
       <resource>
         <directory>src/main/javascript</directory>
       </resource>
-      <resource>
-        <directory>src/main/groovy</directory>
-      </resource>
+<!--      <resource>-->
+<!--        <directory>src/main/groovy</directory>-->
+<!--      </resource>-->
     </resources>
 
     <plugins>
