@@ -19,8 +19,9 @@ class LoginVerticle : ServletVerticle() {
           request.getFormAttributes()
             .put(SUBTYPE, REGISTER)
 
-        val password = md5(requestJson.getString(PASSWORD))
-        val password2 = md5(requestJson.getString(PASSWORD2))
+        val id = requestJson.getString(ID)
+        val password = md5(id + requestJson.getString(PASSWORD))
+        val password2 = md5(id + requestJson.getString(PASSWORD2))
 
         requestJson.put(PASSWORD, password)
         requestJson.put(PASSWORD2, password2)
@@ -30,7 +31,7 @@ class LoginVerticle : ServletVerticle() {
           return HttpServletResponse(HttpServletResponseType.TEMPLATE, "register.htm")
         }
 
-        JsonObject().put(ID, requestJson.getString(ID))
+        JsonObject().put(ID, id)
           .put(PASSWORD, password)
           .put(TYPE, USER)
           .put(SUBTYPE, PROFILE)
@@ -69,7 +70,7 @@ class LoginVerticle : ServletVerticle() {
       }
       else -> {//default is login
         val id = request.getFormAttributes().getString(ID)
-        val password = md5(request.getFormAttributes().getString(PASSWORD))
+        val password = md5(id + request.getFormAttributes().getString(PASSWORD))
 
         JsonObject().put(ID, id)
           .put(PASSWORD, password)
