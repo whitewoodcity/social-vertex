@@ -409,12 +409,12 @@
     color: #3c3c3c;
   }
   .box3 .box-box div {
-    height: 75px;
   }
   .box3 .box-box div p {
     font-size: 16px;
     color: #727272;
     line-height: 32px;
+    padding: 10px 40px;
   }
   .box3 .box-box .img-box {
     display: table;
@@ -857,13 +857,12 @@
     color: #3c3c3c;
   }
   .box3 .box-box div {
-    height: 50px;
   }
   .box3 .box-box div p {
     font-size: 16px;
     color: #727272;
     line-height: 32px;
-    padding: 0 40px;
+    padding: 10px 40px;
   }
   .box3 .box-box .img-box {
     display: table;
@@ -1309,13 +1308,12 @@
     color: #3c3c3c;
   }
   .box3 .box-box div {
-    height: 50px;
   }
   .box3 .box-box div p {
     font-size: .16rem;
     color: #727272;
-    line-height: .5rem;
-    padding: 0 .4rem;
+    line-height: .4rem;
+    padding: .2rem .4rem;
   }
   .box3 .box-box .img-box img {
     display: block;
