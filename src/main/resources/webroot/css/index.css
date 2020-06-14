@@ -408,6 +408,9 @@
     font-weight: bold;
     color: #3c3c3c;
   }
+  .box3 .box-box div {
+      line-height: 50px;
+  }
   .box3 .box-box div p {
     font-size: 16px;
     color: #727272;
@@ -852,6 +855,9 @@
     font-size: 32px;
     font-weight: bold;
     color: #3c3c3c;
+  }
+  .box3 .box-box div {
+    line-height: 50px;
   }
   .box3 .box-box div p {
     font-size: 16px;
@@ -1301,6 +1307,9 @@
     font-size: .32rem;
     font-weight: bold;
     color: #3c3c3c;
+  }
+  .box3 .box-box div {
+    line-height: 50px;
   }
   .box3 .box-box div p {
     font-size: .16rem;

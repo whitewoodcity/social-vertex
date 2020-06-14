@@ -216,7 +216,7 @@ public <span class="hljs-class"><span class="hljs-keyword">class</span> <span cl
     <div class="box-box" id="news">
         <h1>社区动态</h1>
         <div th:each="article : ${articles}">
-            <p th:text="${article.getString('title')}">文章标题</p><br/>
+            <p th:text="${article.getString('title')}">文章标题</p>
         </div>
     </div>
 </div>
