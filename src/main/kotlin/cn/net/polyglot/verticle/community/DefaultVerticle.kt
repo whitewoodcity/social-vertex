@@ -21,7 +21,7 @@ class DefaultVerticle : ServletVerticle() {
 
     val dir = config.getString(DIR)
 
-    if (vertx.fileSystem().readDirAwait("$dir$separator$COMMUNITY").isNotEmpty()) {
+    if (vertx.fileSystem().existsAwait("$dir$separator$COMMUNITY") && vertx.fileSystem().readDirAwait("$dir$separator$COMMUNITY").isNotEmpty()) {
       val years = vertx.fileSystem().readDirAwait("$dir$separator$COMMUNITY").sortedDescending()
       loop@ for (year in years) {
         if (vertx.fileSystem().readDirAwait(year).isNotEmpty()) {
