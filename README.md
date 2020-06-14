@@ -1,4 +1,6 @@
 
+请注意：本项目将会使用ES4X，并使用GraalVM作为运行环境，仅是VERT.X和JDK将不足以运行该项目
+
 [系统设计说明](doc/SYSTEM.md)  
 [公共社区接口说明](doc/COMMUNITY.md)    
 [即时消息接口说明](doc/MESSENGER.md)    

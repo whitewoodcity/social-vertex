@@ -1,6 +1,7 @@
 package cn.net.polyglot.verticle
 
 import cn.net.polyglot.verticle.community.CommunityVerticle
+import cn.net.polyglot.verticle.community.DefaultVerticle
 import cn.net.polyglot.verticle.community.LoginVerticle
 import cn.net.polyglot.verticle.im.IMServletVerticle
 import cn.net.polyglot.verticle.web.DispatchVerticle
@@ -11,7 +12,7 @@ class WebServerVerticle : DispatchVerticle() {
   //设置静态文件后缀，path若是这些后缀，则自动读取对应路径文件予以返回
   override fun initDispatchVerticle() {
     super.initDispatchVerticle()//.html
-    indexPage = "/default.html"
+    indexPage = "/default"
     staticFileSuffix.addAll(setOf("ico", "css", "js", "text", "png", "jpg", "gif", "jpeg", "mp3", "avi", "mp4", "svg", "ttf", "woff", "woff2", "eot"))
   }
 
@@ -26,6 +27,7 @@ class WebServerVerticle : DispatchVerticle() {
   override suspend fun getVerticleAddressByPath(httpMethod: HttpMethod, path: String): String {
     return when (httpMethod) {
       HttpMethod.GET, HttpMethod.POST -> when (path) {
+        "/default" -> DefaultVerticle::class.java.name
         "/login", "/profile", "/register", "/update", "/portrait" -> LoginVerticle::class.java.name
         "/prepareArticle", "/submitArticle", "/prepareModifyArticle", "/modifyArticle", "/deleteArticle", "/prepareSearchArticle", "/searchArticle", "/article", "/community", "/uploadPortrait" -> CommunityVerticle::class.java.name
         else -> ""

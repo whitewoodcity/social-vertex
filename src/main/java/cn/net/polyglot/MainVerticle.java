@@ -59,6 +59,7 @@ public class MainVerticle extends AbstractVerticle {
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.im.IMServletVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option);
+        vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.DefaultVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.LoginVerticle", option);
         vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.CommunityVerticle", option);
 

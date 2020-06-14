@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/" xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+    <ShortName>socialvertx</ShortName>
+    <Description>
+        socialvertx
+    </Description>
+    <InputEncoding>UTF-8</InputEncoding>
+    <Image width="16" height="16" type="image/x-icon">https://whitewoodcity.github.io/social-vertex-website/favicon-16x16.png</Image>
+    <Url type="text/html" method="get" template="https://whitewoodcity.github.io/social-vertex-website/#/document?query={searchTerms}"/>
+</OpenSearchDescription>
