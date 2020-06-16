@@ -39,7 +39,7 @@ class DefaultVerticle : ServletVerticle() {
                         if (vertx.fileSystem().existsAwait("$directory${separator}publication.json")) {
                           val json = vertx.fileSystem().readFileAwait("$directory${separator}publication.json").toJsonObject()
                           articles.add(json)
-                          if (articles.size() > 10) break@loop
+                          if (articles.size() >= 10) break@loop
                         }
                       }
                     }
