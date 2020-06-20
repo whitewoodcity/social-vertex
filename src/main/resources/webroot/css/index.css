@@ -1,0 +1,360 @@
+@media screen and (min-width: 1200px) {
+  .head {
+    height: 643px;
+  }
+  .head .head-box {
+    width: 1180px;
+    margin: 0 auto;
+    padding-top: 44px;
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+    margin-bottom: 72px;
+  }
+  .head .head-box .logo {
+    width: 200px;
+    height: 30px;
+    background-image: url(../img/polyglot.net.cn.svg);
+    background-size: 100% 100%;
+    float: left;
+  }
+  .head .head-box .change-box {
+    float: right;
+  }
+  .head .head-box .change-box .change-list .a1 {
+    display: block;
+    color: #3c3c3c;
+    font-size: 18px;
+    float: left;
+    line-height: 40px;
+    margin-right: 60px;
+  }
+  .head .head-box .change-box .change-list .a1:hover {
+    color: #782b90;
+  }
+  .head .head-box .change-box .change-list .a-box {
+    float: left;
+    padding-top: 8px;
+  }
+  .head .head-box .change-box .change-list .a-box .a2 {
+    width: 62px;
+    height: 24px;
+    display: block;
+    float: left;
+    border-radius: 12px;
+    line-height: 24px;
+    font-size: 15px;
+    color: #333;
+    text-align: center;
+    margin-right: 10px;
+  }
+  .head .head-box .change-box .change-list .a-box .a2:hover {
+    color: #782b90;
+  }
+  .head .head-box .change-box .change-list .a-box .a2.act {
+  }
+  .head .head-box .change-box .change-list .a-box .a3 {
+    display: block;
+    width: 17px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt1.svg);
+    margin-left: 20px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a3:hover {
+    background-image: url(../img/head-right1-2.svg);
+  }
+  .head .head-box .change-box .change-list .a-box .a4 {
+    display: block;
+    width: 19px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt2.svg);
+    margin-left: 20px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a4:hover {
+    background-image: url(../img/head-right2-2.svg);
+  }
+  .head .head-box .change-box .change-list .a-box .a5 {
+    display: block;
+    width: 17px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt3.svg);
+    margin-left: 20px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a5:hover {
+    background-image: url(../img/head-right3-2.svg);
+  }
+  .head .head-box .change-box .change-btn {
+    display: none;
+    width: 33px;
+    height: 27px;
+  }
+  .head .head-box .change-box .change-btn span {
+    display: block;
+    width: 33px;
+    height: 4px;
+    background-color: #000;
+    margin-bottom: 5px;
+  }
+  .head .head-box .change-box .change-btn span:nth-last-child(1) {
+    margin-bottom: 0;
+  }
+  .head .head-box .change-box .change-btn:active span {
+    color: #666;
+  }
+}
+@media screen and (max-width: 1200px) {
+  .head {
+    padding-bottom: 1.2rem;
+    background-repeat: no-repeat;
+    background-size: auto 100%;
+  }
+  .head .head-box {
+    width: 90%;
+    padding: 30px 0;
+    margin: 0 auto;
+    position: relative;
+  }
+  .head .head-box .logo {
+    width: 200px;
+    height: 30px;
+    background-image: url(../img/polyglot.net.cn.svg);
+    background-size: 100% 100%;
+    float: left;
+  }
+  .head .head-box .change-box {
+    float: right;
+  }
+  .head .head-box .change-box .change-list {
+    display: none;
+    position: absolute;
+    top: 84px;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: #F8F9FA;
+    box-shadow: 0px 0px 10px 1px #D6D6D6;
+  }
+  .head .head-box .change-box .change-list .a1 {
+    display: block;
+    color: #3c3c3c;
+    font-size: .24rem;
+    padding-left: .6rem;
+    line-height: .7rem;
+  }
+  .head .head-box .change-box .change-list .a1:hover {
+    color: #782b90;
+  }
+  .head .head-box .change-box .change-list .a-box {
+    padding-top: .15rem;
+    padding-bottom: .2rem;
+    padding-left: 3.4rem;
+  }
+  .head .head-box .change-box .change-list .a-box .a2 {
+    width: 62px;
+    height: 24px;
+    display: block;
+    float: left;
+    border-radius: 12px;
+    line-height: 24px;
+    font-size: 15px;
+    color: #333;
+    text-align: center;
+    margin-right: 10px;
+  }
+  .head .head-box .change-box .change-list .a-box .a2:hover {
+    color: #782b90;
+  }
+  .head .head-box .change-box .change-list .a-box .a2.act {
+  }
+  .head .head-box .change-box .change-list .a-box .a3 {
+    display: block;
+    width: 17px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt1.svg);
+    margin-left: 20px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a3:hover {
+    background-image: url(../img/head-right1-2.svg);
+  }
+  .head .head-box .change-box .change-list .a-box .a4 {
+    display: block;
+    width: 19px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt2.svg);
+    margin-left: 20px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a4:hover {
+    background-image: url(../img/head-right2-2.svg);
+  }
+  .head .head-box .change-box .change-list .a-box .a5 {
+    display: block;
+    width: 17px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt3.svg);
+    margin-left: 20px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a5:hover {
+    background-image: url(../img/head-right3-2.svg);
+  }
+  .head .head-box .change-box .change-btn {
+    width: 33px;
+    height: 27px;
+  }
+  .head .head-box .change-box .change-btn span {
+    display: block;
+    width: 33px;
+    height: 4px;
+    background-color: #000;
+    margin-bottom: 5px;
+  }
+  .head .head-box .change-box .change-btn span:nth-last-child(1) {
+    margin-bottom: 0;
+  }
+  .head .head-box .change-box .change-btn:active span {
+    color: #666;
+  }
+}
+@media screen and (max-width: 700px) {
+  .head {
+    padding-bottom: 1.2rem;
+    background-repeat: no-repeat;
+    background-size: auto 100%;
+  }
+  .head .head-box {
+    width: 90%;
+    padding: .3rem 0;
+    margin: 0 auto;
+    position: relative;
+  }
+  .head .head-box .logo {
+    width: 200px;
+    height: 30px;
+    background-image: url(../img/polyglot.net.cn.svg);
+    background-size: 100% 100%;
+    float: left;
+  }
+  .head .head-box .change-box {
+    float: right;
+  }
+  .head .head-box .change-box .change-list {
+    display: none;
+    position: absolute;
+    top: .9rem;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: #F8F9FA;
+    box-shadow: 0px 0px 10px 1px #D6D6D6;
+  }
+  .head .head-box .change-box .change-list .a1 {
+    display: block;
+    color: #3c3c3c;
+    font-size: .24rem;
+    padding-left: .6rem;
+    line-height: .6rem;
+    float: left;
+    width: 100%;
+  }
+  .head .head-box .change-box .change-list .a1:hover {
+    color: #782b90;
+  }
+  .head .head-box .change-box .change-list .a-box {
+    padding-top: .15rem;
+    padding-bottom: .2rem;
+    padding-left: 0;
+    display: table;
+    float: right;
+    margin-right: 0;
+    margin-right: .2rem;
+  }
+  .head .head-box .change-box .change-list .a-box .a2 {
+    width: 58px;
+    height: 22px;
+    display: block;
+    float: left;
+    border-radius: 12px;
+    line-height: 24px;
+    font-size: 15px;
+    color: #333;
+    text-align: center;
+    margin-right: 4px;
+  }
+  .head .head-box .change-box .change-list .a-box .a2:hover {
+    color: #782b90;
+  }
+  .head .head-box .change-box .change-list .a-box .a2.act {
+  }
+  .head .head-box .change-box .change-list .a-box .a3 {
+    display: block;
+    width: 17px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt1.svg);
+    margin-left: 10px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a3:hover {
+    background-image: url(../img/head-right1-2.svg);
+  }
+  .head .head-box .change-box .change-list .a-box .a4 {
+    display: block;
+    width: 19px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt2.svg);
+    margin-left: 10px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a4:hover {
+    background-image: url(../img/head-right2-2.svg);
+  }
+  .head .head-box .change-box .change-list .a-box .a5 {
+    display: block;
+    width: 17px;
+    height: 22px;
+    margin-top: 2px;
+    background-size: 100% 100%;
+    background-image: url(../img/head-righgt3.svg);
+    margin-left: 10px;
+    float: left;
+  }
+  .head .head-box .change-box .change-list .a-box .a5:hover {
+    background-image: url(../img/head-right3-2.svg);
+  }
+  .head .head-box .change-box .change-btn {
+    width: 33px;
+    height: 27px;
+  }
+  .head .head-box .change-box .change-btn span {
+    display: block;
+    width: 33px;
+    height: 4px;
+    background-color: #000;
+    margin-bottom: 5px;
+  }
+  .head .head-box .change-box .change-btn span:nth-last-child(1) {
+    margin-bottom: 0;
+  }
+  .head .head-box .change-box .change-btn:active span {
+    color: #666;
+  }
+}

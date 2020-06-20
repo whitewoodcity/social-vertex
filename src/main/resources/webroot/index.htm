@@ -21,28 +21,45 @@
     <link rel=mask-icon href=icon/safari-pinned-tab.svg color=#5bbad5>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" type="text/css" href="css/index.css"/>
+    <link rel="stylesheet" type="text/css" href="css/public.css"/>
 </head>
 <body>
 <div class="head">
-    <img class="menu-icon" src="img/menu-icon.png" alt=""/>
-    <div class="header-center">
-        <div class="nav">
-            <a href="index.html" class="act dow waves-effect waves-button waves-light">
-                <span>白木首页</span>
-            </a>
-            <a href="enroll" class="waves-effect waves-light">
-                <span>用户中心</span>
-            </a>
-            <a href="community" class="waves-effect waves-light">
-                <span>虚拟社区</span>
-            </a>
-            <a href="download.html" class="waves-effect waves-light">
-                <span>产品下载</span>
-            </a>
+    <div class="head-box clear">
+        <div class="logo"></div>
+        <div class="change-box">
+            <div class="change-list">
+                <a class="a1" href="/">网站首页</a>
+                <a class="a1" href="" target="_blank">用户中心</a>
+                <a class="a1" href="/index.html">用户社区</a>
+                <a class="a1" href="/#news">社区动态</a>
+                <div class="a-box clear">
+                    <a class="a2 act" href="">V1.0</a>
+                    <a class="a3" href="https://search.bilibili.com/all?keyword=vert.x" target="_blank"></a>
+                    <a class="a4" href="https://stackoverflow.com/questions/tagged/vert.x" target="_blank"></a>
+                    <a class="a5" href="https://gitter.im/eclipse-vertx/vertx-users" target="_blank"></a>
+                </div>
+            </div>
+            <div class="change-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </div>
     </div>
 </div>
 
 </body>
+<script src="js/jquery-3.5.1.min.js"></script>
+<script>
+		//导航栏点击
+		$(".change-btn").click(function(){
+			if($(".change-list").css("display")=="none"){
+				$(".change-list").slideDown()
+			}else{
+				$(".change-list").slideUp()
+			}
+		})
+</script>
 <script src="js/public.js"></script>
 </html>
