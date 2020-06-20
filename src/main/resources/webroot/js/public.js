@@ -1,8 +1,8 @@
 $(document).scroll(function(){
     var sctop=$(this).scrollTop();
     if(sctop > 35){
-        $(".header").addClass("sha");
+        $(".head").addClass("sha");
     }else{
-        $(".header").removeClass("sha");
+        $(".head").removeClass("sha");
     }
 });

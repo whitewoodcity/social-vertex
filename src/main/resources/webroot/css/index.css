@@ -1,6 +1,11 @@
 @media screen and (min-width: 1200px) {
   .head {
-    height: 643px;
+    background-color: white;
+    height: 84px;
+  }
+  .head.sha {
+    position: fixed;
+    width: 100%;
   }
   .head .head-box {
     width: 1180px;
@@ -109,12 +114,53 @@
   .head .head-box .change-box .change-btn:active span {
     color: #666;
   }
+  .footer {
+    background-color: #F8F9FA;
+  }
+  .footer .box-box {
+    width: 1200px;
+    margin: 0 auto;
+    padding-top: 24px;
+    padding-bottom: 1px;
+  }
+  .footer .box-box div {
+    display: table;
+    margin: 0 auto;
+    margin-bottom: 22px;
+  }
+  .footer .box-box div p {
+    font-size: 16px;
+    color: #727272;
+    background-repeat: no-repeat;
+    background-position: center left;
+    padding-left: 34px;
+    background-size: auto 28px;
+    float: left;
+  }
+  .footer .box-box div p img {
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .footer .box-box h2 {
+    font-size: 16px;
+    color: #727272;
+    line-height: 30px;
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .box1 {
+    height: 800px;
+  }
 }
 @media screen and (max-width: 1200px) {
   .head {
-    padding-bottom: 1.2rem;
     background-repeat: no-repeat;
     background-size: auto 100%;
+    background-color: white;
+  }
+  .head.sha {
+    position: fixed;
+    width: 100%;
   }
   .head .head-box {
     width: 90%;
@@ -230,12 +276,49 @@
   .head .head-box .change-box .change-btn:active span {
     color: #666;
   }
+  .footer {
+    background-color: #F8F9FA;
+  }
+  .footer .box-box {
+    margin: 0 auto;
+    padding: 0 .4rem;
+    padding-top: .2rem;
+    padding-bottom: 1px;
+  }
+  .footer .box-box div {
+    margin-bottom: .2rem;
+  }
+  .footer .box-box div p {
+    font-size: 16px;
+    color: #727272;
+    background-repeat: no-repeat;
+    background-position: center left;
+    background-size: auto 28px;
+    margin-bottom: 20px;
+  }
+  .footer .box-box div p img {
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .footer .box-box h2 {
+    font-size: 16px;
+    color: #727272;
+    line-height: 30px;
+    margin-bottom: .2rem;
+  }
+  .box1 {
+    height: 800px;
+  }
 }
 @media screen and (max-width: 700px) {
   .head {
-    padding-bottom: 1.2rem;
     background-repeat: no-repeat;
     background-size: auto 100%;
+    background-color: white;
+  }
+  .head.sha {
+    position: fixed;
+    width: 100%;
   }
   .head .head-box {
     width: 90%;
@@ -356,5 +439,37 @@
   }
   .head .head-box .change-box .change-btn:active span {
     color: #666;
+  }
+  .footer {
+    background-color: #F8F9FA;
+  }
+  .footer .box-box {
+    margin: 0 auto;
+    padding: 0 .4rem;
+    padding-top: .2rem;
+    padding-bottom: 1px;
+  }
+  .footer .box-box div {
+    margin-bottom: .2rem;
+  }
+  .footer .box-box div p {
+    font-size: .16rem;
+    color: #727272;
+    background-repeat: no-repeat;
+    background-position: top left;
+    background-size: auto .4rem;
+  }
+  .footer .box-box div p img {
+    display: inline-block;
+    margin-right: .1rem;
+  }
+  .footer .box-box h2 {
+    font-size: .16rem;
+    color: #727272;
+    line-height: .5rem;
+    margin-bottom: .2rem;
+  }
+  .box1 {
+    height: 800px;
   }
 }
