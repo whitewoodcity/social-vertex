@@ -57,7 +57,7 @@ class UtilTest{
       .lowerCaseValue("field")
       .lowerCaseValue("field0")
 
-    context.assertEquals(json.getInteger("field"), 111)
+    context.assertEquals(json.getString("field"), "111")
     context.assertEquals(json.getString("field0"), "zhaoce")
   }
 

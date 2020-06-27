@@ -40,11 +40,13 @@ class WebServerTest {
       val option = deploymentOptionsOf(config = config)
       val fut0 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.WebServerVerticle", option)
       val fut1 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.LoginVerticle", option)
+      val fut2 = vertx.deployVerticle("kt:cn.net.polyglot.verticle.community.DefaultVerticle", option)
       await().until{
-        fut0.isComplete && fut1.isComplete
+        fut0.isComplete && fut1.isComplete && fut2.isComplete
       }
       context.assertTrue(fut0.succeeded())
       context.assertTrue(fut1.succeeded())
+      context.assertTrue(fut2.succeeded())
     }
 
     @AfterClass
@@ -62,7 +64,7 @@ class WebServerTest {
     webClient.get(config.getInteger(HTTP_PORT), "localhost", "/")
       .send{
         response ->
-        context.assertTrue(response.result().body().toString().contains("Social Vertex"))
+        context.assertTrue(response.result().body().toString().contains("html"))
         println(response.result().headers().toList())
         context.assertTrue(response.result().headers().contains(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*", true))
         context.assertTrue(response.result().headers().contains(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "*", true))
