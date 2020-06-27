@@ -73,8 +73,8 @@
                     <div style="display:block;">
                         <pre class='hljs'><code><span class="hljs-keyword">import</span> io.vertx.core.<span class="hljs-type">AbstractVerticle</span>;
 
-public <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Server</span> <span class="hljs-keyword"><span class="hljs-keyword">extends</span></span> <span class="hljs-title">AbstractVerticle</span> {</span>
-  public void start() {
+<span class="hljs-keyword">public</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Server</span> <span class="hljs-keyword"><span class="hljs-keyword">extends</span></span> <span class="hljs-title">AbstractVerticle</span> {</span>
+  <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> start() {
     vertx.createHttpServer().requestHandler(req -&gt; {
       req.response()
         .putHeader(<span class="hljs-string">"content-type"</span>, <span class="hljs-string">"text/plain"</span>)
