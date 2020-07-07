@@ -18,7 +18,7 @@ public class MainVerticle extends AbstractVerticle {
     System.out.println("Current Path: "+currentPath);
 
     JsonObject config = new JsonObject()
-      .put("version",0.6)
+      .put("version",0.7)
       .put("dir", currentPath + File.separator + "social-vertex")
       .put("jar-dir", currentPath)
       .put("host", "localhost")
