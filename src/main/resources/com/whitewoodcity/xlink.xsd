@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema targetNamespace="http://www.w3.org/1999/xlink" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2001/XMLSchema">
+  <attribute name="type" default="simple">
+    <simpleType>
+      <restriction base="string">
+        <enumeration value="simple"/>
+        <enumeration value="extended"/>
+        <enumeration value="locator"/>
+        <enumeration value="arc"/>
+      </restriction>
+    </simpleType>
+  </attribute>
+  <attribute name="href" type="anyURI"/>
+  <attribute name="role" type="string"/>
+  <attribute name="arcrole" type="string"/>
+  <attribute name="title" type="string"/>
+  <attribute name="show" default="embed">
+    <simpleType>
+      <restriction base="string">
+        <enumeration value="new"/>
+        <enumeration value="replace"/>
+        <enumeration value="embed"/>
+        <enumeration value="other"/>
+        <enumeration value="none"/>
+      </restriction>
+    </simpleType>
+  </attribute>
+  <attribute name="actuate" default="onLoad">
+    <simpleType>
+      <restriction base="string">
+        <enumeration value="onLoad"/>
+        <enumeration value="onRequest"/>
+        <enumeration value="other"/>
+        <enumeration value="none"/>
+      </restriction>
+    </simpleType>
+  </attribute>
+  <attribute name="from" type="string"/>
+  <attribute name="to" type="string"/>
+</schema>
