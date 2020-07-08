@@ -221,6 +221,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
                 path.substringBeforeLast("/", "") + "/" + templatePath
 //            val templateFileName = "webroot${if(templatePath.startsWith("/")) templatePath else "/$templatePath"}"
             val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES) ?: JsonObject(), templateFileName)//?:JsonObject()
+            routingContext.response().headers()["Content-Type"] = "text/html"
             routingContext.response().end(buffer)
           }
           responseJson.containsKey(FILE_PATH) -> {
