@@ -102,6 +102,9 @@ class IMServerTest {
     @AfterClass
     @JvmStatic
     fun `after class`(context: TestContext) {
+      if (vertx.fileSystem().existsBlocking(config.getString(DIR)))
+        vertx.fileSystem().deleteRecursiveBlocking(config.getString(DIR), true)
+
       vertx.close(context.asyncAssertSuccess())
     }
   }
@@ -348,6 +351,9 @@ class IMServerTest {
       context.assertTrue(response.bodyAsJsonObject().getBoolean(MESSAGE))
     }
 
+    await().until{
+      async.isCompleted
+    }
   }
 
   @Test
