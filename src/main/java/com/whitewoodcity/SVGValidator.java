@@ -23,17 +23,22 @@ public class SVGValidator {
   private SVGValidator() {
   }
 
+  static{
+    try {
+      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      URL svgSchemaURL = SVGValidator.class.getResource("SVG.xsd");
+      Source schemaFile = new StreamSource(svgSchemaURL.openStream(), svgSchemaURL.toExternalForm());
+      Schema schema = factory.newSchema(schemaFile);
+      validator = schema.newValidator();
+    }catch (Exception e){
+      e.printStackTrace();
+    }
+  }
+
   public static boolean validateAgainstXSD(String svg)
   {
     try
     {
-      if(validator==null){
-        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        URL svgSchemaURL = SVGValidator.class.getResource("SVG.xsd");
-        Source schemaFile = new StreamSource(svgSchemaURL.openStream(), svgSchemaURL.toExternalForm());
-        Schema schema = factory.newSchema(schemaFile);
-        validator = schema.newValidator();
-      }
       validator.validate(new StreamSource(new ByteArrayInputStream(svg.getBytes())));
       return true;
     }
