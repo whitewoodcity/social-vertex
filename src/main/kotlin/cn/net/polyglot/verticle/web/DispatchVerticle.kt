@@ -24,6 +24,8 @@ SOFTWARE.
 
 package cn.net.polyglot.verticle.web
 
+//import io.vertx.ext.web.Cookie
+//import io.vertx.ext.web.handler.CookieHandler
 import cn.net.polyglot.config.*
 import cn.net.polyglot.module.getMimeTypeWithoutCharset
 import com.codahale.fastuuid.UUIDGenerator
@@ -33,11 +35,9 @@ import io.vertx.core.http.HttpMethod
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.core.json.JsonObject
 import io.vertx.core.net.PemKeyCertOptions
-//import io.vertx.ext.web.Cookie
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
-//import io.vertx.ext.web.handler.CookieHandler
 import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
@@ -228,6 +228,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
             try {
               routingContext.response().sendFileAwait(responseJson.getString(FILE_PATH))
             } catch (throwable: Throwable) {
+              routingContext.response().headers()["Content-Type"] = "image/jpg"
               routingContext.reroute(HttpMethod.GET, "/img/image_not_available.jpg")
             }
           }
@@ -236,7 +237,10 @@ abstract class DispatchVerticle : CoroutineVerticle() {
             routingContext.response().end(responseJson.getString(RESPONSE_JSON))
           }
           responseJson.containsKey(EMPTY_RESPONSE) -> routingContext.response().end()
-          else -> routingContext.reroute(HttpMethod.GET, "/error.html")
+          else -> {
+            routingContext.response().headers()["Content-Type"] = "text/html"
+            routingContext.reroute(HttpMethod.GET, "/error.html")
+          }
         }
       }
 
@@ -246,6 +250,13 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     router.get("/*").handler(routingHandler)
     router.post("/*").handler(routingHandler)
     router.put("/*").handler(routingHandler)
+
+    router.route().failureHandler {
+      it.failure().printStackTrace()
+      val response = it.response()
+      response.statusCode = 500
+      response.end(it.failure().localizedMessage)
+    }
     //web end
 
     val httpServer = vertx.createHttpServer()

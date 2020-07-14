@@ -11,7 +11,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 public class MainVerticle extends AbstractVerticle {
-  public void start() {
+  public void start(){
 
     var currentPath = Paths.get("").toAbsolutePath().toString();
 
