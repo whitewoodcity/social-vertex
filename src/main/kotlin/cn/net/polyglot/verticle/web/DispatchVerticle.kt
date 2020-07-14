@@ -39,6 +39,7 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.CorsHandler
+import io.vertx.ext.web.handler.ErrorHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
 import io.vertx.kotlin.core.eventbus.requestAwait
@@ -251,12 +252,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     router.post("/*").handler(routingHandler)
     router.put("/*").handler(routingHandler)
 
-    router.route().failureHandler {
-      it.failure().printStackTrace()
-      val response = it.response()
-      response.statusCode = 500
-      response.end(it.failure().localizedMessage)
-    }
+    router.route().failureHandler(ErrorHandler.create(true))
     //web end
 
     val httpServer = vertx.createHttpServer()
