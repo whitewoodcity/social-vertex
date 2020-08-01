@@ -65,13 +65,9 @@ import io.vertx.kotlin.core.file.createFileAwait
 import io.vertx.kotlin.core.file.mkdirsAwait
 import io.vertx.kotlin.core.file.writeFileAwait
 import kotlinx.coroutines.delay
-import org.awaitility.Awaitility.await
-import org.junit.AfterClass
+import org.junit.*
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
-import org.junit.BeforeClass
-import org.junit.FixMethodOrder
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import java.io.File.separator
@@ -189,13 +185,12 @@ class IMServerTest : AbstractIntegrationTest(vertx, config) {
         put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         put(TO, "yangkui")
       }
+
+      delay(100)
     }
 
-    await().until {
-      //check zxj2017/.send/yangkui.json & yangkui/.receive/zxj2017.json two files exist
-      vertx.fileSystem().existsBlocking(config.getString(DIR) + separator + "zxj2017" + separator + ".send" + separator + "yangkui.json")
-        && vertx.fileSystem().existsBlocking(config.getString(DIR) + separator + "yangkui" + separator + ".receive" + separator + "zxj2017.json")
-    }
+    assertTrue(vertx.fileSystem().existsBlocking(config.getString(DIR) + separator + "zxj2017" + separator + ".send" + separator + "yangkui.json"))
+    assertTrue(vertx.fileSystem().existsBlocking(config.getString(DIR) + separator + "yangkui" + separator + ".receive" + separator + "zxj2017.json"))
   }
 
   @Test
