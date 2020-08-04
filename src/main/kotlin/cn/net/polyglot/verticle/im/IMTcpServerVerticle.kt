@@ -58,7 +58,7 @@ class IMTcpServerVerticle : CoroutineVerticle() {
 
       socket.handler {
         RecordParser
-          .newDelimited(END) { buffer -> launch { processJsonString(buffer.toString(), socket) } }
+          .newDelimited(END) { launch { processJsonString(it.toString(), socket) } }
           .maxRecordSize(10240)//max is 10KB
           .exceptionHandler { socket.close() }
           .handle(it)
