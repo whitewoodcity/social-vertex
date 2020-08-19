@@ -5,7 +5,7 @@ import cn.net.polyglot.verticle.web.ServletVerticle
 import com.codahale.fastuuid.UUIDGenerator
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.file.*
+import io.vertx.kotlin.coroutines.await
 import java.io.File.separator
 import java.security.SecureRandom
 import java.time.LocalDateTime
@@ -34,40 +34,40 @@ class CommunityVerticle : ServletVerticle() {
 
       val datePath = dir + separator + COMMUNITY + separator + now.year + separator + now.monthValue + separator + now.dayOfMonth
 
-      if (!vertx.fileSystem().existsAwait(datePath)) {
-        vertx.fileSystem().mkdirsAwait(datePath)
+      if (!vertx.fileSystem().exists(datePath).await()) {
+        vertx.fileSystem().mkdirs(datePath).await()
       }
 
       when (request.getPath()) {
         "/submitArticle" -> {
           val fullPath = datePath + separator + generator.generate().toString() + ".json"
-          vertx.fileSystem().createFileAwait(fullPath)
-          vertx.fileSystem().writeFileAwait(fullPath,
+          vertx.fileSystem().createFile(fullPath).await()
+          vertx.fileSystem().writeFile(fullPath,
             request.getFormAttributes()
               .put(ID, request.session.get(ID))
-              .put(NICKNAME, request.session.get(NICKNAME)).toBuffer())
+              .put(NICKNAME, request.session.get(NICKNAME)).toBuffer()).await()
 
           HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
         "/modifyArticle" -> {
           val fullPath = dir + separator + COMMUNITY + separator + request.getFormAttributes().getString("path") + ".json"
-          vertx.fileSystem().deleteAwait(fullPath)
-          vertx.fileSystem().createFileAwait(fullPath)
-          vertx.fileSystem().writeFileAwait(fullPath,
+          vertx.fileSystem().delete(fullPath).await()
+          vertx.fileSystem().createFile(fullPath).await()
+          vertx.fileSystem().writeFile(fullPath,
             request.getFormAttributes()
               .put(ID, request.session.get(ID))
-              .put(NICKNAME, request.session.get(NICKNAME)).toBuffer())
+              .put(NICKNAME, request.session.get(NICKNAME)).toBuffer()).await()
 
           HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
         "/deleteArticle" -> {
           val path = dir + separator + COMMUNITY + separator + request.getParams().getString("path") + ".json"
 
-          if (vertx.fileSystem().existsAwait(path)) {
-            if (request.session.get(ID) != vertx.fileSystem().readFileAwait(path).toJsonObject().getString(ID))
+          if (vertx.fileSystem().exists(path).await()) {
+            if (request.session.get(ID) != vertx.fileSystem().readFile(path).await().toJsonObject().getString(ID))
               return HttpServletResponse(HttpServletResponseType.TEMPLATE, "index.html")
 
-            vertx.fileSystem().deleteAwait(path)
+            vertx.fileSystem().delete(path).await()
           }
 
           HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
@@ -77,14 +77,14 @@ class CommunityVerticle : ServletVerticle() {
         }
         "/article" -> {
           val path = dir + separator + COMMUNITY + separator + request.getParams().getString("path") + ".json"
-          val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
+          val articleJson = vertx.fileSystem().readFile(path).await().toJsonObject()
           articleJson.put("displayModificationPanel", request.session.get(ID) == articleJson.getString(ID))
           articleJson.put("path", request.getParams().getString("path"))
           HttpServletResponse("community/article.htm", articleJson)
         }
         "/prepareModifyArticle" -> {
           val path = dir + separator + COMMUNITY + separator + request.getParams().getString("path") + ".json"
-          val articleJson = vertx.fileSystem().readFileAwait(path).toJsonObject()
+          val articleJson = vertx.fileSystem().readFile(path).await().toJsonObject()
           articleJson.mergeIn(request.getParams())
           HttpServletResponse("community/modifyPost.htm", articleJson)
         }
@@ -107,13 +107,13 @@ class CommunityVerticle : ServletVerticle() {
 
             val uri = "${d1.year}${separator}${d1.monthValue}${separator}${d1.dayOfMonth}${separator}"
             val d1Path = dir + separator + COMMUNITY + separator + d1.year + separator + d1.monthValue + separator + d1.dayOfMonth
-            if (vertx.fileSystem().existsAwait(d1Path)) {
-              val list = vertx.fileSystem().readDirAwait(d1Path)
+            if (vertx.fileSystem().exists(d1Path).await()) {
+              val list = vertx.fileSystem().readDir(d1Path).await()
 
               for (path in list) {
                 if (path.endsWith("json")) {
                   try {
-                    val file = vertx.fileSystem().readFileAwait(path).toJsonObject()
+                    val file = vertx.fileSystem().readFile(path).await().toJsonObject()
 
                     if (file.getString(TITLE).contains(keyword)) {
                       articles.add(JsonObject()
@@ -137,11 +137,11 @@ class CommunityVerticle : ServletVerticle() {
 
           val jarDir = config.getString(JAR_DIR)
 
-          if (vertx.fileSystem().existsAwait(dir + separator + request.session.get(ID) + separator + "portrait")) {
-            vertx.fileSystem().deleteAwait(dir + separator + request.session.get(ID) + separator + "portrait")
+          if (vertx.fileSystem().exists(dir + separator + request.session.get(ID) + separator + "portrait").await()) {
+            vertx.fileSystem().delete(dir + separator + request.session.get(ID) + separator + "portrait").await()
           }
 
-          vertx.fileSystem().moveAwait(jarDir + separator + request.getUploadFiles().getString("profile"), dir + separator + request.session.get(ID) + separator + "portrait")
+          vertx.fileSystem().move(jarDir + separator + request.getUploadFiles().getString("profile"), dir + separator + request.session.get(ID) + separator + "portrait").await()
 
           HttpServletResponse("community/index.htm", JsonObject().put(ARTICLES, getRecentArticles()))
         }
@@ -165,17 +165,17 @@ class CommunityVerticle : ServletVerticle() {
 
     var date = LocalDateTime.now()
 
-    if (vertx.fileSystem().readDirAwait(dir + separator + COMMUNITY).isNotEmpty()) {
+    if (vertx.fileSystem().readDir(dir + separator + COMMUNITY).await().isNotEmpty()) {
       while (date.year > 2018 && articles.size() < 20) {
 
         val uri = "${date.year}${separator}${date.monthValue}${separator}${date.dayOfMonth}${separator}"
 
-        if (vertx.fileSystem().existsAwait(dir + separator + COMMUNITY + separator + date.year + separator + date.monthValue + separator + date.dayOfMonth)) {
-          val list = vertx.fileSystem().readDirAwait(dir + separator + COMMUNITY + separator + date.year + separator + date.monthValue + separator + date.dayOfMonth)
+        if (vertx.fileSystem().exists(dir + separator + COMMUNITY + separator + date.year + separator + date.monthValue + separator + date.dayOfMonth).await()) {
+          val list = vertx.fileSystem().readDir(dir + separator + COMMUNITY + separator + date.year + separator + date.monthValue + separator + date.dayOfMonth).await()
           for (path in list) {
             if (path.endsWith("json")) {
               try {
-                val file = vertx.fileSystem().readFileAwait(path).toJsonObject()
+                val file = vertx.fileSystem().readFile(path).await().toJsonObject()
 
                 val json =
                   JsonObject()

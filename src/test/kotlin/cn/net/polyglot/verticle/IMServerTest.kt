@@ -59,11 +59,8 @@ import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.unit.TestContext
 import io.vertx.ext.unit.junit.VertxUnitRunner
-import io.vertx.kotlin.core.deployVerticleAwait
 import io.vertx.kotlin.core.deploymentOptionsOf
-import io.vertx.kotlin.core.file.createFileAwait
-import io.vertx.kotlin.core.file.mkdirsAwait
-import io.vertx.kotlin.core.file.writeFileAwait
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.delay
 import org.junit.*
 import org.junit.Assert.assertNotNull
@@ -97,7 +94,7 @@ class IMServerTest : AbstractIntegrationTest(vertx, config) {
         IMTcpServerVerticle::class.java,
         IMServletVerticle::class.java
       ).forEach {
-        vertx.deployVerticleAwait(it.name, option)
+        vertx.deployVerticle(it.name, option).await()
       }
     }
 
@@ -254,15 +251,15 @@ class IMServerTest : AbstractIntegrationTest(vertx, config) {
   fun `test messaging history`() = runBlockingUnit {
     val path0 = "${config.getString(DIR)}${separator}zxj2017${separator}yangkui${separator}2000${separator}01$separator"
     val path1 = "${config.getString(DIR)}${separator}yangkui${separator}zxj2017${separator}2000${separator}01$separator"
-    vertx.fileSystem().mkdirsAwait(path0)
-    vertx.fileSystem().mkdirsAwait(path1)
-    vertx.fileSystem().createFileAwait(path0 + "01.jsons")
-    vertx.fileSystem().createFileAwait(path1 + "01.jsons")
+    vertx.fileSystem().mkdirs(path0).await()
+    vertx.fileSystem().mkdirs(path1).await()
+    vertx.fileSystem().createFile(path0 + "01.jsons").await()
+    vertx.fileSystem().createFile(path1 + "01.jsons").await()
     val msg = JsonObject().put(TYPE, MESSAGE).put(SUBTYPE, TEXT)
       .put(ID, "zxj2017").put(TO, "yangkui").put(MESSAGE, "hi")
       .put(DATE, "2000-01-01").put(TIME, "00:00:00")
-    vertx.fileSystem().writeFileAwait(path0 + "01.jsons", msg.toBuffer())
-    vertx.fileSystem().writeFileAwait(path1 + "01.jsons", msg.toBuffer())
+    vertx.fileSystem().writeFile(path0 + "01.jsons", msg.toBuffer()).await()
+    vertx.fileSystem().writeFile(path1 + "01.jsons", msg.toBuffer()).await()
 
     assertFriendHistory(3)
     assertFriendHistory(3, SimpleDateFormat("yyyy-MM-dd").format(Date().inNextYear()))

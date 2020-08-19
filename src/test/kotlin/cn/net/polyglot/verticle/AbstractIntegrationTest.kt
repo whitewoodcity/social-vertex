@@ -12,9 +12,7 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
-import io.vertx.kotlin.core.net.connectAwait
-import io.vertx.kotlin.core.net.endAwait
-import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert
@@ -47,14 +45,14 @@ abstract class AbstractIntegrationTest(val vertx: Vertx, val config: JsonObject)
 
   suspend fun putJson(jsonObject: JsonObject, block: JsonObject.() -> Unit) =
     webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
-      .sendJsonObjectAwait(jsonObject.apply(block))
+      .sendJsonObject(jsonObject.apply(block)).await()
 
   fun HttpResponse<Buffer>.assertResponse(block: JsonObject.() -> Boolean) {
     Assert.assertTrue(block(this.toJsonObject()))
   }
 
   suspend fun writeToSocket(jsonObject: JsonObject, block: JsonObject.() -> Unit) =
-    netClient.connectAwait(config.getInteger(TCP_PORT), config.getString(HOST))
+    netClient.connect(config.getInteger(TCP_PORT), config.getString(HOST)).await()
       .apply { handler { println(JsonObject(it.toString().trim())) } }
-      .endAwait(jsonObject.apply(block).toBuffer())
+      .end(jsonObject.apply(block).toBuffer()).await()
 }

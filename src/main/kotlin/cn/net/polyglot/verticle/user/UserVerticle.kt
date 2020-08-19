@@ -6,8 +6,8 @@ import cn.net.polyglot.module.lowerCaseValue
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.file.*
 import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -58,68 +58,68 @@ class UserVerticle:CoroutineVerticle() {
           if(password != json.getString(PASSWORD2)){
             return result.put(INFO, "两次输入密码不一致")
           }
-          if (vertx.fileSystem().existsAwait(dir)) {
+          if (vertx.fileSystem().exists(dir).await()) {
             return result.put(INFO, "用户已存在")
           }
-          vertx.fileSystem().mkdirsAwait(dir)
-          vertx.fileSystem().createFileAwait(dir + File.separator + "password")
-          vertx.fileSystem().writeFileAwait(dir + File.separator + "password", Buffer.buffer(json.getString(PASSWORD)))
-          vertx.fileSystem().createFileAwait(dir + File.separator + "user.json")
+          vertx.fileSystem().mkdirs(dir).await()
+          vertx.fileSystem().createFile(dir + File.separator + "password").await()
+          vertx.fileSystem().writeFile(dir + File.separator + "password", Buffer.buffer(json.getString(PASSWORD))).await()
+          vertx.fileSystem().createFile(dir + File.separator + "user.json").await()
           json.removeAll { it.key in arrayOf(TYPE, SUBTYPE, PASSWORD, PASSWORD2) }
-          vertx.fileSystem().writeFileAwait(dir + File.separator + "user.json", json.toBuffer())
+          vertx.fileSystem().writeFile(dir + File.separator + "user.json", json.toBuffer()).await()
 
           result.put(subtype, true)
         }
         UPDATE -> {
-          if (!vertx.fileSystem().existsAwait(dir)) {
+          if (!vertx.fileSystem().exists(dir).await()) {
             return result.put(INFO, "用户不存在")
           }
           //检查password文件是否存在，若不存在，则表示密码存在user.json中，将其读出写入
-          if(!vertx.fileSystem().existsAwait(dir + File.separator + "password")){
+          if(!vertx.fileSystem().exists(dir + File.separator + "password").await()){
             try{
-              vertx.fileSystem().createFileAwait(dir + File.separator + "password")
-              val pw = vertx.fileSystem().readFileAwait(dir + File.separator + "user.json").toJsonObject().getString(PASSWORD)
-              vertx.fileSystem().writeFileAwait(dir + File.separator + "password", Buffer.buffer(pw))
+              vertx.fileSystem().createFile(dir + File.separator + "password").await()
+              val pw = vertx.fileSystem().readFile(dir + File.separator + "user.json").await().toJsonObject().getString(PASSWORD)
+              vertx.fileSystem().writeFile(dir + File.separator + "password", Buffer.buffer(pw)).await()
             }catch (e:Throwable){
               e.printStackTrace()
             }
           }
-          vertx.fileSystem().deleteAwait(dir + File.separator + "user.json")
-          vertx.fileSystem().createFileAwait(dir + File.separator + "user.json")
+          vertx.fileSystem().delete(dir + File.separator + "user.json").await()
+          vertx.fileSystem().createFile(dir + File.separator + "user.json").await()
           json.removeAll { it.key in arrayOf(TYPE, SUBTYPE) }
-          vertx.fileSystem().writeFileAwait(dir + File.separator + "user.json", json.toBuffer())
+          vertx.fileSystem().writeFile(dir + File.separator + "user.json", json.toBuffer()).await()
           result.put(subtype, true)
         }
         VERIFY -> {
-          if (!vertx.fileSystem().existsAwait(dir)) {
+          if (!vertx.fileSystem().exists(dir).await()) {
             return result.put(INFO, "用户不存在")
           }
           //检查password文件是否存在，若不存在，则表示密码存在user.json中，将其读出
           val password =
-          if(vertx.fileSystem().existsAwait(dir + File.separator + "password")){
-            vertx.fileSystem().readFileAwait(dir + File.separator + "password").toString()
+          if(vertx.fileSystem().exists(dir + File.separator + "password").await()){
+            vertx.fileSystem().readFile(dir + File.separator + "password").await().toString()
           }else{
-            vertx.fileSystem().readFileAwait(dir + File.separator + "user.json").toJsonObject().getString(PASSWORD)
+            vertx.fileSystem().readFile(dir + File.separator + "user.json").await().toJsonObject().getString(PASSWORD)
           }
           result.put(subtype, json.getString(PASSWORD) == password)
         }
         PROFILE -> {
           try{
-            val jsonObject = vertx.fileSystem().readFileAwait(dir + File.separator + "user.json").toJsonObject()
+            val jsonObject = vertx.fileSystem().readFile(dir + File.separator + "user.json").await().toJsonObject()
 
-            if(vertx.fileSystem().existsAwait(dir + File.separator + "password")) {
-              val password = vertx.fileSystem().readFileAwait(dir + File.separator + "password").toString()
+            if(vertx.fileSystem().exists(dir + File.separator + "password").await()) {
+              val password = vertx.fileSystem().readFile(dir + File.separator + "password").await().toString()
               jsonObject.put(PASSWORD, password)
             }
 
             val fs = vertx.fileSystem()
             val friendList = JsonArray()
-            val friends = fs.readDirAwait(dir)
+            val friends = fs.readDir(dir).await()
             for (friend in friends) {
               val friendId = friend.substringAfterLast(File.separator)
-              if (fs.lpropsAwait(friend).isDirectory && !friendId.startsWith(".")) {
+              if (fs.lprops(friend).await().isDirectory && !friendId.startsWith(".")) {
                 try {
-                  friendList.add(fs.readFileAwait("$friend${File.separator}$friendId.json").toJsonObject())
+                  friendList.add(fs.readFile("$friend${File.separator}$friendId.json").await().toJsonObject())
                 }catch (e:Throwable){
                   val friendJson = JsonObject().put(ID, friendId)
                   friendList.add(friendJson)
@@ -130,13 +130,13 @@ class UserVerticle:CoroutineVerticle() {
             jsonObject.put(FRIENDS, friendList)
 
             val notificationList = JsonArray()
-            if(vertx.fileSystem().existsAwait(dir+File.separator+".receive")){
-              val notifications = vertx.fileSystem().readDirAwait(dir+File.separator+".receive")
+            if(vertx.fileSystem().exists(dir+File.separator+".receive").await()){
+              val notifications = vertx.fileSystem().readDir(dir+File.separator+".receive").await()
 
               for(notification in notifications){
                 try{
                   if(notification.endsWith(".json")){
-                    notificationList.add(vertx.fileSystem().readFileAwait(notification).toJsonObject())
+                    notificationList.add(vertx.fileSystem().readFile(notification).await().toJsonObject())
                   }
                 }catch (e:Throwable){
                   e.printStackTrace()

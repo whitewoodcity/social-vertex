@@ -4,10 +4,7 @@ import cn.net.polyglot.config.*
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.file.existsAwait
-import io.vertx.kotlin.core.file.propsAwait
-import io.vertx.kotlin.core.file.readDirAwait
-import io.vertx.kotlin.core.file.readFileAwait
+import io.vertx.kotlin.coroutines.await
 import java.io.File.separator
 
 class DefaultVerticle : ServletVerticle() {
@@ -21,23 +18,23 @@ class DefaultVerticle : ServletVerticle() {
 
     val dir = config.getString(DIR)
 
-    if (vertx.fileSystem().existsAwait("$dir$separator$COMMUNITY") && vertx.fileSystem().readDirAwait("$dir$separator$COMMUNITY").isNotEmpty()) {
-      val years = vertx.fileSystem().readDirAwait("$dir$separator$COMMUNITY").sortedDescending()
+    if (vertx.fileSystem().exists("$dir$separator$COMMUNITY").await() && vertx.fileSystem().readDir("$dir$separator$COMMUNITY").await().isNotEmpty()) {
+      val years = vertx.fileSystem().readDir("$dir$separator$COMMUNITY").await().sortedDescending()
       loop@ for (year in years) {
-        if (vertx.fileSystem().readDirAwait(year).isNotEmpty()) {
-          val months = vertx.fileSystem().readDirAwait(year).sortedDescending()
+        if (vertx.fileSystem().readDir(year).await().isNotEmpty()) {
+          val months = vertx.fileSystem().readDir(year).await().sortedDescending()
           for (month in months) {
-            if (vertx.fileSystem().propsAwait(month).isDirectory && vertx.fileSystem().readDirAwait(month).isNotEmpty()) {
-              val days = vertx.fileSystem().readDirAwait(month).sortedDescending()
+            if (vertx.fileSystem().props(month).await().isDirectory && vertx.fileSystem().readDir(month).await().isNotEmpty()) {
+              val days = vertx.fileSystem().readDir(month).await().sortedDescending()
               for (day in days) {
-                if (vertx.fileSystem().propsAwait(day).isDirectory && vertx.fileSystem().readDirAwait(day).isNotEmpty()) {
-                  val hours = vertx.fileSystem().readDirAwait(day).sortedDescending()
+                if (vertx.fileSystem().props(day).await().isDirectory && vertx.fileSystem().readDir(day).await().isNotEmpty()) {
+                  val hours = vertx.fileSystem().readDir(day).await().sortedDescending()
                   for (hour in hours) {
-                    if (vertx.fileSystem().propsAwait(hour).isDirectory && vertx.fileSystem().readDirAwait(hour).isNotEmpty()) {
-                      val directories = vertx.fileSystem().readDirAwait(hour)
+                    if (vertx.fileSystem().props(hour).await().isDirectory && vertx.fileSystem().readDir(hour).await().isNotEmpty()) {
+                      val directories = vertx.fileSystem().readDir(hour).await()
                       for (directory in directories) {
-                        if (vertx.fileSystem().existsAwait("$directory${separator}publication.json")) {
-                          val json = vertx.fileSystem().readFileAwait("$directory${separator}publication.json").toJsonObject()
+                        if (vertx.fileSystem().exists("$directory${separator}publication.json").await()) {
+                          val json = vertx.fileSystem().readFile("$directory${separator}publication.json").await().toJsonObject()
                           articles.add(json)
                           if (articles.size() >= 10) break@loop
                         }

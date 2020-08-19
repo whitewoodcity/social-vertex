@@ -9,8 +9,8 @@ import io.vertx.ext.unit.junit.VertxUnitRunner
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.deploymentOptionsOf
 import io.vertx.kotlin.core.json.jsonObjectOf
+import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.dispatcher
-import io.vertx.kotlin.ext.web.client.sendJsonObjectAwait
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.awaitility.Awaitility
@@ -78,7 +78,7 @@ class PostServerTest {
     val async = context.async()
     GlobalScope.launch(vertx.dispatcher()) {
       webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
-        .sendJsonObjectAwait(JsonObject()
+        .sendJsonObject(JsonObject()
           .put(TYPE, USER)
           .put(SUBTYPE, REGISTER)
           .put(ID, "zxj001")
@@ -86,10 +86,10 @@ class PostServerTest {
           .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
           .put(PASSWORD2, "431fe828b9b8e8094235dee515562247")
           .put(VERSION, 0.1)
-        )
+        ).await()
       // create another user
       webClient.put(config.getInteger(HTTP_PORT), "localhost", "/")
-        .sendJsonObjectAwait(JsonObject()
+        .sendJsonObject(JsonObject()
           .put(TYPE, USER)
           .put(SUBTYPE, REGISTER)
           .put(ID, "zxj002")
@@ -97,7 +97,7 @@ class PostServerTest {
           .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
           .put(PASSWORD2, "431fe828b9b8e8094235dee515562247")
           .put(VERSION, 0.1)
-        )
+        ).await()
       async.complete()
     }
   }
@@ -116,12 +116,12 @@ class PostServerTest {
         .put(CONTENT,"新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。新浪声明：新浪网登载此文出于传递更多信息之目的，并不意味着赞同其观点或证实其描述。文章内容仅供参考，不构成投资建议。投资者据此操作，风险自担。")
 
     GlobalScope.launch(vertx.dispatcher()) {
-      val response0 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json0)
+      val response0 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json0).await()
       println(response0.bodyAsJsonObject())
       context.assertTrue(response0.bodyAsJsonObject().getBoolean(PUBLICATION))
       async.countDown()
 
-      val response1 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json1)
+      val response1 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json1).await()
       println(response1.bodyAsJsonObject())
       context.assertTrue(response1.bodyAsJsonObject().getBoolean(PUBLICATION))
       async.countDown()
@@ -135,17 +135,17 @@ class PostServerTest {
       .put(TYPE, PUBLICATION).put(SUBTYPE, USER_BRIEF)
 
     GlobalScope.launch(vertx.dispatcher()) {
-      val failedResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val failedResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       context.assertFalse(failedResponse.bodyAsJsonObject().getBoolean(PUBLICATION))
 
       json.put(UID,"zxj001")
-      val resp1 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val resp1 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       context.assertTrue(resp1.bodyAsJsonObject().getBoolean(PUBLICATION))
       context.assertNotNull(resp1.bodyAsJsonObject().getJsonObject(INFO))
       println(resp1.bodyAsJsonObject().getJsonObject(INFO))
 
       json.put(UID,"zxj002")
-      val resp2 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val resp2 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       context.assertTrue(resp2.bodyAsJsonObject().getBoolean(PUBLICATION))
       context.assertNotNull(resp2.bodyAsJsonObject().getJsonObject(INFO))
       println(resp2.bodyAsJsonObject().getJsonObject(INFO))
@@ -162,14 +162,14 @@ class PostServerTest {
         .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
         .put(FROM, "zxj001")
     GlobalScope.launch(vertx.dispatcher()) {
-      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       println(response.bodyAsJsonObject())
       context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
 
       json.put(DIR, response.bodyAsJsonObject().getJsonArray(HISTORY).getJsonObject(0).getString(DIR))
         .put(SUBTYPE, RETRIEVE)
 
-      val response2 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val response2 = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       println(response2.bodyAsJsonObject())
 
       context.assertTrue(response2.bodyAsJsonObject().getBoolean(PUBLICATION))
@@ -185,7 +185,7 @@ class PostServerTest {
       JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
     GlobalScope.launch(vertx.dispatcher()) {
-      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       println(response.bodyAsJsonObject())
       context.assertTrue(response.bodyAsJsonObject().getBoolean(PUBLICATION))
       async.complete()
@@ -200,7 +200,7 @@ class PostServerTest {
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(TYPE, PUBLICATION)
         .put(SUBTYPE, HISTORY)
-      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObject(json).await()
       val body = response.bodyAsJsonObject()
       context.assertTrue(body.getBoolean(PUBLICATION))
       context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
@@ -211,7 +211,7 @@ class PostServerTest {
       json.put(SUBTYPE, COMMENT)
         .put(DIR, dir)
         .put(CONTENT, "this is a comment: this article is very good and useful for me!")
-      val comment1Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val comment1Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val comment1Respbody = comment1Response.bodyAsJsonObject()
       println(comment1Respbody)
       context.assertTrue(comment1Respbody.getBoolean(PUBLICATION))
@@ -219,7 +219,7 @@ class PostServerTest {
       //---comment list
       json.put(SUBTYPE, COMMENT_LIST)
         .remove(CONTENT)
-      val commentListResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val commentListResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val commentListRespBody = commentListResponse.bodyAsJsonObject()
       println(commentListRespBody)
       context.assertTrue(commentListRespBody.getBoolean(PUBLICATION))
@@ -229,26 +229,26 @@ class PostServerTest {
       val commentDir = aComment.getString(DIR)
       json.put(SUBTYPE, COMMENT).put(DIR,commentDir).put(CONTENT,"this is a comment of a comment")
       //--- comment a comment
-      val comment2Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val comment2Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val comment2RespBody = comment2Response.bodyAsJsonObject()
       context.assertTrue(comment2RespBody.getBoolean(PUBLICATION))
 
       //--- like the comment
       json.put(SUBTYPE, LIKE).put(DIR,commentDir)
-      val likeCommentResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val likeCommentResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val likeCommentBody = likeCommentResponse.bodyAsJsonObject()
       context.assertTrue(likeCommentBody.getBoolean(PUBLICATION))
 
       //--- dislike the comment
       json.put(SUBTYPE, DISLIKE).put(DIR,commentDir)
-      val dislikeCommentResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val dislikeCommentResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val dislikeCommentBody = dislikeCommentResponse.bodyAsJsonObject()
       context.assertTrue(dislikeCommentBody.getBoolean(PUBLICATION))
 
       //-- check like or dislike works
       json.put(SUBTYPE, COMMENT_LIST).put(DIR,dir)
         .remove(CONTENT)
-      val checkCLResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val checkCLResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val checkCLbody = checkCLResponse.bodyAsJsonObject()
       context.assertTrue(checkCLbody.getBoolean(PUBLICATION))
       val checkComments = checkCLbody.getJsonArray(INFO)
@@ -263,7 +263,7 @@ class PostServerTest {
       //get the comment list of the comment
       json.remove(CONTENT)
       json.put(SUBTYPE, COMMENT_LIST).put(DIR,commentDir)
-      val commentList2Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val commentList2Response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val commentList2RespBoody = commentList2Response.bodyAsJsonObject()
       println("comments of a comment: $commentList2RespBoody")
       context.assertTrue(commentList2RespBoody.getBoolean(PUBLICATION))
@@ -274,13 +274,13 @@ class PostServerTest {
       //like the comment of comment
       val cocDir = commentOfComent.getString(DIR)
       json.put(SUBTYPE, LIKE).put(DIR,cocDir)
-      val cocResposne = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val cocResposne = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val cocBody = cocResposne.bodyAsJsonObject()
       context.assertTrue(cocBody.getBoolean(PUBLICATION))
 
       //dislike the comment of comment
       json.put(SUBTYPE, DISLIKE).put(DIR,cocDir)
-      val dislikeCocResposne = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val dislikeCocResposne = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val dislikeCocBody = dislikeCocResposne.bodyAsJsonObject()
       context.assertTrue(dislikeCocBody.getBoolean(PUBLICATION))
 
@@ -296,7 +296,7 @@ class PostServerTest {
         .put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(TYPE, PUBLICATION)
         .put(SUBTYPE, HISTORY)
-      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObject(json).await()
       val body = response.bodyAsJsonObject()
       context.assertTrue(body.getBoolean(PUBLICATION))
       context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
@@ -315,7 +315,7 @@ class PostServerTest {
       .put(TYPE, PUBLICATION)
       .put(SUBTYPE, HISTORY)
     GlobalScope.launch(vertx.dispatcher()) {
-      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val response = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObject(json).await()
       val body = response.bodyAsJsonObject()
       context.assertTrue(body.getBoolean(PUBLICATION))
       context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
@@ -332,27 +332,27 @@ class PostServerTest {
       //like an article
       json.put(SUBTYPE,LIKE)
       json.put(DIR,dir)
-      val likeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val likeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val likeRespBody = likeResponse.bodyAsJsonObject()
       context.assertTrue(likeRespBody.getBoolean(PUBLICATION))
 
       //dislike an article
       json.put(SUBTYPE, DISLIKE)
       json.put(DIR,dir)
-      val disLikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val disLikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val disLikeRespBody = disLikeResponse.bodyAsJsonObject()
       context.assertTrue(disLikeRespBody.getBoolean(PUBLICATION))
 
       //collect an article
       json.put(SUBTYPE, COLLECT)
       json.put(DIR,dir)
-      val collectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val collectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val collectRespBody = collectResponse.bodyAsJsonObject()
       context.assertTrue(collectRespBody.getBoolean(PUBLICATION))
       //--------------------------------
       json.put(SUBTYPE, RETRIEVE)
       json.put(DIR,dir)
-      val retrieveResponse = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val retrieveResponse = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObject(json).await()
       val retrieveRespBody = retrieveResponse.bodyAsJsonObject()
       context.assertTrue(retrieveRespBody.getInteger(LIKE)==1)
       context.assertTrue(retrieveRespBody.getInteger(DISLIKE)==1)
@@ -367,7 +367,7 @@ class PostServerTest {
         .put(TYPE, PUBLICATION)
         .put(SUBTYPE, RETRIEVE)
         .put(DIR,dir)
-      val response2 = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json2)
+      val response2 = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObject(json2).await()
       val body2 = response2.bodyAsJsonObject()
       context.assertTrue(body2.getInteger(LIKE)==1)
       context.assertTrue(body2.getInteger(DISLIKE)==1)
@@ -379,7 +379,7 @@ class PostServerTest {
       //--collect list
       json.put(SUBTYPE, COLLECT_LIST)
       json.remove(DIR)
-      val collectListResponse = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val collectListResponse = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObject(json).await()
       val collectListRespBody = collectListResponse.bodyAsJsonObject()
       context.assertTrue(collectListRespBody.getBoolean(PUBLICATION))
       context.assertTrue(collectListRespBody.getJsonArray(INFO).size() > 0)
@@ -389,27 +389,27 @@ class PostServerTest {
       //cancle like an article
       json.put(SUBTYPE,LIKE)
       json.put(DIR,dir)
-      val unlikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val unlikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val unlikeRespBody = unlikeResponse.bodyAsJsonObject()
       context.assertTrue(unlikeRespBody.getBoolean(PUBLICATION))
 
       //cancle dislike an article
       json.put(SUBTYPE, DISLIKE)
       json.put(DIR,dir)
-      val undisLikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val undisLikeResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val undisLikeRespBody = undisLikeResponse.bodyAsJsonObject()
       context.assertTrue(undisLikeRespBody.getBoolean(PUBLICATION))
 
       //cancle collect an article
 //      json.put(SUBTYPE, COLLECT)
 //      json.put(DIR,dir)
-//      val uncollectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+//      val uncollectResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
 //      val uncollectRespBody = uncollectResponse.bodyAsJsonObject()
 //      context.assertTrue(uncollectRespBody.getBoolean(PUBLICATION))
 
       json.put(SUBTYPE, RETRIEVE)
       json.put(DIR,dir)
-      val retrieveResponse2 = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObjectAwait(json)
+      val retrieveResponse2 = webClient.put(config.getInteger(HTTP_PORT),"localhost","/").sendJsonObject(json).await()
       val retrieveRespBody2 = retrieveResponse2.bodyAsJsonObject()
       context.assertTrue(retrieveRespBody2.getInteger(LIKE)==0)
       context.assertTrue(retrieveRespBody2.getInteger(DISLIKE)==0)
@@ -430,7 +430,7 @@ class PostServerTest {
         .put(TYPE, PUBLICATION).put(SUBTYPE, HISTORY)
 
     GlobalScope.launch(vertx.dispatcher()) {
-      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json)
+      val response = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json).await()
       val body = response.bodyAsJsonObject()
       context.assertTrue(body.getBoolean(PUBLICATION))
       context.assertTrue(body.getJsonArray(HISTORY).size() > 0)
@@ -447,13 +447,14 @@ class PostServerTest {
         "new Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Contentnew Content")
       oneArticle.put(SUBTYPE, UPDATE).put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
 
-      val updateResps = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(oneArticle)
+      val updateResps = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(oneArticle).await()
       context.assertTrue(updateResps.bodyAsJsonObject().getBoolean(PUBLICATION))
 
       val json0 = JsonObject().put(ID, "zxj001").put(PASSWORD, "431fe828b9b8e8094235dee515562247")
         .put(TYPE, PUBLICATION).put(SUBTYPE, RETRIEVE).put(DIR,dir)
 
-      val retrieveResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObjectAwait(json0)
+      val retrieveResponse = webClient.put(config.getInteger(HTTP_PORT), "localhost", "/").sendJsonObject(json0).await()
+
       val newAritcle = retrieveResponse.bodyAsJsonObject()
       val newTitle = newAritcle.getString(TITLE)
       val newContent = newAritcle.getString(CONTENT)

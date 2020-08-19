@@ -11,6 +11,7 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.core.file.*
 import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.launch
 import java.io.File.separator
 import java.text.ParseException
@@ -71,28 +72,28 @@ class MessageVerticle : CoroutineVerticle() {
     var date = "$yyyy-$mm-$dd"
 
     val yyyys = vertx.fileSystem()
-      .readDirAwait("$dir$id$separator$friend","\\d{4}")
+      .readDir("$dir$id$separator$friend","\\d{4}").await()
       .map{it.substringAfterLast(separator)}
       .filter { it <= yyyy }
       .sorted().reversed()
 
     for(year in yyyys){
       val mms = vertx.fileSystem()
-        .readDirAwait("$dir$id$separator$friend$separator$year","\\d{2}")
+        .readDir("$dir$id$separator$friend$separator$year","\\d{2}").await()
         .map{it.substringAfterLast(separator)}
         .filter { year + it <= yyyy + mm }
         .sorted().reversed()
 
       for(month in mms){
         val dds = vertx.fileSystem()
-          .readDirAwait("$dir$id$separator$friend$separator$year$separator$month","\\d{2}.jsons")
+          .readDir("$dir$id$separator$friend$separator$year$separator$month","\\d{2}.jsons").await()
           .map{it.substringAfterLast(separator).substringBefore(".")}
           .filter { year + month + it <= yyyy + mm + dd }
           .sorted().reversed()
 
         for(day in dds){
           val mergedHistory = Buffer.buffer("[")
-            .appendBuffer(vertx.fileSystem().readFileAwait("$dir$id$separator$friend$separator$year$separator$month$separator$day.jsons"))
+            .appendBuffer(vertx.fileSystem().readFile("$dir$id$separator$friend$separator$year$separator$month$separator$day.jsons").await())
             .appendString("]")
             .toJsonArray().addAll(history)
 
@@ -133,17 +134,16 @@ class MessageVerticle : CoroutineVerticle() {
 
     if (!from.contains("@")) {
       val senderDir = "$dir$from$separator$to"
-      if (!fs.existsAwait(senderDir)) {
+      if (!fs.exists(senderDir).await()) {
         return json.put(MESSAGE, false)//错误，该用户没有该好友
       }
       val senderFile = "$senderDir$separator$yyyy$separator$mm$separator$dd.jsons"
-      if (!fs.existsAwait(senderFile)) {
-        if (!fs.existsAwait("$senderDir$separator$yyyy$separator$mm"))
-          fs.mkdirsAwait("$senderDir$separator$yyyy$separator$mm")
-//        fs.createFileAwait(senderFile)
-        fs.writeFileAwait(senderFile, json.toBuffer())
+      if (!fs.exists(senderFile).await()) {
+        if (!fs.exists("$senderDir$separator$yyyy$separator$mm").await())
+          fs.mkdirs("$senderDir$separator$yyyy$separator$mm").await()
+        fs.writeFile(senderFile, json.toBuffer()).await()
       } else {
-        fs.openAwait(senderFile, OpenOptions().setAppend(true))
+        fs.open(senderFile, OpenOptions().setAppend(true)).await()
           .write(Buffer.buffer(",").appendBuffer(json.toBuffer()))
       }
     }
@@ -154,17 +154,16 @@ class MessageVerticle : CoroutineVerticle() {
         .sendJsonObject(json.put(TO, to.substringBeforeLast("@"))) {}
     } else {
       val receiverDir = "$dir$to$separator$from"
-      if (!fs.existsAwait(receiverDir)) {
+      if (!fs.exists(receiverDir).await()) {
         return json.put(MESSAGE, false)//错误，该用户没有该好友
       }
       val receiverFile = "$receiverDir$separator$yyyy$separator$mm$separator$dd.jsons"
-      if (!fs.existsAwait(receiverFile)) {
-        if (!fs.existsAwait("$receiverDir$separator$yyyy$separator$mm"))
-          fs.mkdirsAwait("$receiverDir$separator$yyyy$separator$mm")
-//        fs.createFileAwait(receiverFile)
-        fs.writeFileAwait(receiverFile, json.toBuffer())
+      if (!fs.exists(receiverFile).await()) {
+        if (!fs.exists("$receiverDir$separator$yyyy$separator$mm").await())
+          fs.mkdirs("$receiverDir$separator$yyyy$separator$mm").await()
+        fs.writeFile(receiverFile, json.toBuffer()).await()
       } else {
-        fs.openAwait(receiverFile, OpenOptions().setAppend(true))
+        fs.open(receiverFile, OpenOptions().setAppend(true)).await()
           .write(Buffer.buffer(",").appendBuffer(json.toBuffer()))
       }
 

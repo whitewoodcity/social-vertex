@@ -8,7 +8,7 @@ import cn.net.polyglot.verticle.search.SearchVerticle
 import cn.net.polyglot.verticle.user.UserVerticle
 import cn.net.polyglot.verticle.web.ServletVerticle
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.eventbus.requestAwait
+import io.vertx.kotlin.coroutines.await
 
 class IMServletVerticle:ServletVerticle() {
   override suspend fun doPut(request: HttpServletRequest): HttpServletResponse {
@@ -26,7 +26,7 @@ class IMServletVerticle:ServletVerticle() {
         when(subtype){
           LOGIN -> {
             bodyJson.put(SUBTYPE, PROFILE)
-            val responseMessage = vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, bodyJson)
+            val responseMessage = vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name, bodyJson).await()
             val resultJson = responseMessage.body()
             if(resultJson.containsKey(PROFILE) && resultJson.getBoolean(PROFILE)){
               if(bodyJson.getString(PASSWORD) == resultJson.getJsonObject(JSON_BODY).getString(PASSWORD)){
@@ -41,13 +41,13 @@ class IMServletVerticle:ServletVerticle() {
             }
           }
           else -> {
-            val responseMessage = vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, bodyJson)
+            val responseMessage = vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name, bodyJson).await()
             HttpServletResponse(responseMessage.body())
           }
         }
       }
       SEARCH -> {
-        val responseJson = vertx.eventBus().requestAwait<JsonObject>(SearchVerticle::class.java.name, bodyJson.getString(KEYWORD)?:"")
+        val responseJson = vertx.eventBus().request<JsonObject>(SearchVerticle::class.java.name, bodyJson.getString(KEYWORD)?:"").await()
         HttpServletResponse(responseJson.body())
       }
       FRIEND -> {
@@ -59,13 +59,13 @@ class IMServletVerticle:ServletVerticle() {
       }
       MESSAGE -> {
         if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
-          HttpServletResponse(vertx.eventBus().requestAwait<JsonObject>(MessageVerticle::class.java.name, bodyJson).body())
+          HttpServletResponse(vertx.eventBus().request<JsonObject>(MessageVerticle::class.java.name, bodyJson).await().body())
         }else
           HttpServletResponse(bodyJson.put(MESSAGE, false))
       }
       PUBLICATION -> {
         if(this.verifyIdAndPassword(bodyJson.getString(ID), bodyJson.remove(PASSWORD) as String)){
-          HttpServletResponse(vertx.eventBus().requestAwait<JsonObject>(PublicationVerticle::class.java.name, bodyJson).body())
+          HttpServletResponse(vertx.eventBus().request<JsonObject>(PublicationVerticle::class.java.name, bodyJson).await().body())
         }else
           HttpServletResponse(bodyJson.put(PUBLICATION, false))
       }
@@ -75,7 +75,7 @@ class IMServletVerticle:ServletVerticle() {
 
   private suspend fun verifyIdAndPassword(id:String, password:String):Boolean{
     val json = JsonObject().put(TYPE, USER).put(SUBTYPE, VERIFY).put(ID, id).put(PASSWORD, password)
-    val responseJson = vertx.eventBus().requestAwait<JsonObject>(UserVerticle::class.java.name, json).body()
+    val responseJson = vertx.eventBus().request<JsonObject>(UserVerticle::class.java.name, json).await().body()
     return responseJson.getBoolean(VERIFY)
   }
 }

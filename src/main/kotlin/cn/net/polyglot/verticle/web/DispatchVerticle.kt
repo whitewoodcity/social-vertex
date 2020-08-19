@@ -42,10 +42,8 @@ import io.vertx.ext.web.handler.CorsHandler
 import io.vertx.ext.web.handler.ErrorHandler
 import io.vertx.ext.web.handler.StaticHandler
 import io.vertx.ext.web.templ.thymeleaf.ThymeleafTemplateEngine
-import io.vertx.kotlin.core.eventbus.requestAwait
-import io.vertx.kotlin.core.http.sendFileAwait
 import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.ext.web.common.template.renderAwait
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.launch
 import java.security.SecureRandom
 import kotlin.random.Random
@@ -207,7 +205,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
         val address = getVerticleAddressByPath(httpMethod, path)
 
         val responseJson = if (address != "") {
-          vertx.eventBus().requestAwait<JsonObject>(address, requestJson).body()
+          vertx.eventBus().request<JsonObject>(address, requestJson).await().body()
         } else {
           JsonObject()
         }
@@ -221,13 +219,13 @@ abstract class DispatchVerticle : CoroutineVerticle() {
               else
                 path.substringBeforeLast("/", "") + "/" + templatePath
 //            val templateFileName = "webroot${if(templatePath.startsWith("/")) templatePath else "/$templatePath"}"
-            val buffer = engine.renderAwait(responseJson.getJsonObject(VALUES) ?: JsonObject(), templateFileName)//?:JsonObject()
+            val buffer = engine.render(responseJson.getJsonObject(VALUES) ?: JsonObject(), templateFileName).await()//?:JsonObject()
             routingContext.response().headers()["Content-Type"] = "text/html"
             routingContext.response().end(buffer)
           }
           responseJson.containsKey(FILE_PATH) -> {
             try {
-              routingContext.response().sendFileAwait(responseJson.getString(FILE_PATH))
+              routingContext.response().sendFile(responseJson.getString(FILE_PATH)).await()
             } catch (throwable: Throwable) {
               routingContext.response().headers()["Content-Type"] = "image/jpg"
               routingContext.reroute(HttpMethod.GET, "/img/image_not_available.jpg")

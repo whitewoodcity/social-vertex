@@ -7,10 +7,10 @@ import com.codahale.fastuuid.UUIDGenerator
 import io.netty.util.internal.StringUtil
 import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.kotlin.core.file.*
 import io.vertx.kotlin.core.json.jsonArrayOf
 import io.vertx.kotlin.core.json.jsonObjectOf
 import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.launch
 import java.io.File.separator
 import java.security.SecureRandom
@@ -55,8 +55,8 @@ class PublicationVerticle : CoroutineVerticle() {
     val uid = json.getString(UID) ?: return jsonObjectOf().put(PUBLICATION,false).put(INFO,"uid is required")
     val userDir = "${config.getString(DIR)}$separator$uid$separator${USER}.json"
     val fs = vertx.fileSystem()
-    return if (fs.existsAwait(userDir)) {
-      val userBrief = fs.readFileAwait(userDir).toJsonObject()
+    return if (fs.exists(userDir).await()) {
+      val userBrief = fs.readFile(userDir).await().toJsonObject()
       val responseBody = jsonObjectOf().put(ID,userBrief.getString(ID)).put(NICKNAME,userBrief.getString(NICKNAME)).put(AVATAR,userBrief.getString(AVATAR))
       jsonObjectOf().put(PUBLICATION,true).put(INFO,responseBody)
     }else {
@@ -74,37 +74,37 @@ class PublicationVerticle : CoroutineVerticle() {
     val articleBrief:JsonObject
     val fs = vertx.fileSystem()
     articleBrief = when {
-      fs.existsAwait("$communityArticlePath$separator${BRIEF}.json") -> fs.readFileAwait("$communityArticlePath$separator${BRIEF}.json").toJsonObject()
-      fs.existsAwait("$communityArticlePath$separator${PUBLICATION}.json") -> fs.readFileAwait("$communityArticlePath$separator${PUBLICATION}.json").toJsonObject()
+      fs.exists("$communityArticlePath$separator${BRIEF}.json").await() -> fs.readFile("$communityArticlePath$separator${BRIEF}.json").await().toJsonObject()
+      fs.exists("$communityArticlePath$separator${PUBLICATION}.json").await() -> fs.readFile("$communityArticlePath$separator${PUBLICATION}.json").await().toJsonObject()
       else -> return json.put(PUBLICATION,false).put(INFO,"Article $dir dose not exists!")
     }
 
     //create a .collect/ dir at the root dir for the user and create empty file to index the article
     val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
     val userCollectDir = "$userDir$separator$DOT_COLLECT"
-    if (!fs.existsAwait(userCollectDir)) {
-      fs.mkdirAwait(userCollectDir)
+    if (!fs.exists(userCollectDir).await()) {
+      fs.mkdir(userCollectDir).await()
     }
-    val collectedArticles = fs.readDirAwait(userCollectDir)
+    val collectedArticles = fs.readDir(userCollectDir).await()
     val transferedDir = dir.replace(separator,transferedSeparator)
     if (collectedArticles.contains("$userCollectDir$separator$transferedDir")){
 //      //uncollect case
-      fs.deleteAwait("$userCollectDir$separator$transferedDir")
+      fs.delete("$userCollectDir$separator$transferedDir").await()
     }else{
 //      //collect case
       articleBrief.put(COLLECTED_TIME,System.currentTimeMillis())
-      fs.createFileAwait("$userCollectDir$separator$transferedDir")
-      fs.writeFileAwait("$userCollectDir$separator$transferedDir",articleBrief.toBuffer())
+      fs.createFile("$userCollectDir$separator$transferedDir").await()
+      fs.writeFile("$userCollectDir$separator$transferedDir",articleBrief.toBuffer()).await()
     }
 
     //create a collect.json at the article's dir , aiming to store the userIds/num of collection
     val collectFilePath = "$communityArticlePath$separator${COLLECT}.json"
-    if (!fs.existsAwait(collectFilePath)){
-      fs.createFileAwait(collectFilePath)
+    if (!fs.exists(collectFilePath).await()){
+      fs.createFile(collectFilePath).await()
       val initialContent = jsonObjectOf().put(COUNT,0).put(IDS, JsonArray())
-      fs.writeFileAwait(collectFilePath,initialContent.toBuffer())
+      fs.writeFile(collectFilePath,initialContent.toBuffer()).await()
     }
-    val collectInfo = fs.readFileAwait(collectFilePath).toJsonObject()
+    val collectInfo = fs.readFile(collectFilePath).await().toJsonObject()
     val count = collectInfo.getInteger(COUNT)
     val ids:JsonArray = collectInfo.getJsonArray(IDS)
     if (ids.contains(json.getString(ID))){
@@ -117,7 +117,7 @@ class PublicationVerticle : CoroutineVerticle() {
       collectInfo.put(COUNT, count + 1)
       collectInfo.put(IDS, ids.add(json.getString(ID)))
     }
-    fs.writeFileAwait(collectFilePath,collectInfo.toBuffer())
+    fs.writeFile(collectFilePath,collectInfo.toBuffer()).await()
 
     return jsonObjectOf().put(PUBLICATION,true).put(TYPE, PUBLICATION).put(SUBTYPE, COLLECT)
   }
@@ -129,11 +129,11 @@ class PublicationVerticle : CoroutineVerticle() {
     //current userId
     val id = json.getString(ID)
     val collectPath = "${config.getString(DIR)}$separator$id$separator$DOT_COLLECT"
-    val collectedArticles = fs.readDirAwait(collectPath)
+    val collectedArticles = fs.readDir(collectPath).await()
     val articles = collectedArticles
       .map {
         val simplifiedDir = it.substringAfterLast(separator).replace(transferedSeparator, separator)
-        fs.readFileAwait(it).toJsonObject().put(DIR,simplifiedDir)
+        fs.readFile(it).await().toJsonObject().put(DIR,simplifiedDir)
       }
       .sortedBy { it.getLong(COLLECTED_TIME) }.reversed()
     //todo pageable list
@@ -149,12 +149,12 @@ class PublicationVerticle : CoroutineVerticle() {
     val dir = json.getString(DIR)
     val communityArticlePath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
     //handle community dislike info
-    if (!fs.existsAwait("$communityArticlePath$separator${DISLIKE}.json")){
-      fs.createFileAwait("$communityArticlePath$separator${DISLIKE}.json")
+    if (!fs.exists("$communityArticlePath$separator${DISLIKE}.json").await()){
+      fs.createFile("$communityArticlePath$separator${DISLIKE}.json").await()
       val initialDislike = jsonObjectOf().put(COUNT,0).put(IDS, JsonArray())
-      fs.writeFileAwait("$communityArticlePath$separator${DISLIKE}.json",initialDislike.toBuffer())
+      fs.writeFile("$communityArticlePath$separator${DISLIKE}.json",initialDislike.toBuffer()).await()
     }
-    val articleDislikeInfo = fs.readFileAwait("$communityArticlePath$separator${DISLIKE}.json").toJsonObject()
+    val articleDislikeInfo = fs.readFile("$communityArticlePath$separator${DISLIKE}.json").await().toJsonObject()
     val ids = articleDislikeInfo.getJsonArray(IDS)
     val count = articleDislikeInfo.getInteger(COUNT)
     if (articleDislikeInfo.getJsonArray(IDS).contains(json.getString(ID))){
@@ -166,27 +166,27 @@ class PublicationVerticle : CoroutineVerticle() {
       articleDislikeInfo.put(IDS,ids)
       articleDislikeInfo.put(COUNT,count+1)
     }
-    fs.writeFileAwait("$communityArticlePath$separator${DISLIKE}.json",articleDislikeInfo.toBuffer())
+    fs.writeFile("$communityArticlePath$separator${DISLIKE}.json",articleDislikeInfo.toBuffer()).await()
 
     //-----------------------------------------------------------
     //handle user dislike info
     val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
     val userDislikeJsonDir = "$userDir$separator${DISLIKE}.json"
-    if(!fs.existsAwait(userDislikeJsonDir)) {
-      fs.createFileAwait(userDislikeJsonDir)
-      fs.writeFileAwait(userDislikeJsonDir, JsonArray().toBuffer())
+    if(!fs.exists(userDislikeJsonDir).await()) {
+      fs.createFile(userDislikeJsonDir).await()
+      fs.writeFile(userDislikeJsonDir, JsonArray().toBuffer()).await()
     }
-    val dislikedArticles = fs.readFileAwait(userDislikeJsonDir).toJsonArray()
+    val dislikedArticles = fs.readFile(userDislikeJsonDir).await().toJsonArray()
     when{
       dislikedArticles.contains(dir) -> {
         // if already disliked,cancle it
         dislikedArticles.remove(dir)
-        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+        fs.writeFile(userDislikeJsonDir,dislikedArticles.toBuffer()).await()
       }
       else->{
         //if not disliked, then dislike it
         dislikedArticles.add(dir)
-        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+        fs.writeFile(userDislikeJsonDir,dislikedArticles.toBuffer()).await()
       }
     }
     //-------------
@@ -200,12 +200,12 @@ class PublicationVerticle : CoroutineVerticle() {
     val dir = json.getString(DIR)
     val communityArticlePath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
     //handle community dislike info
-    if (!fs.existsAwait("$communityArticlePath$separator${LIKE}.json")){
-      fs.createFileAwait("$communityArticlePath$separator${LIKE}.json")
+    if (!fs.exists("$communityArticlePath$separator${LIKE}.json").await()){
+      fs.createFile("$communityArticlePath$separator${LIKE}.json").await()
       val initialDislike = jsonObjectOf().put(COUNT,0).put(IDS, JsonArray())
-      fs.writeFileAwait("$communityArticlePath$separator${LIKE}.json",initialDislike.toBuffer())
+      fs.writeFile("$communityArticlePath$separator${LIKE}.json",initialDislike.toBuffer()).await()
     }
-    val articleDislikeInfo = fs.readFileAwait("$communityArticlePath$separator${LIKE}.json").toJsonObject()
+    val articleDislikeInfo = fs.readFile("$communityArticlePath$separator${LIKE}.json").await().toJsonObject()
     val ids = articleDislikeInfo.getJsonArray(IDS)
     val count = articleDislikeInfo.getInteger(COUNT)
     if (articleDislikeInfo.getJsonArray(IDS).contains(json.getString(ID))){
@@ -217,27 +217,27 @@ class PublicationVerticle : CoroutineVerticle() {
       articleDislikeInfo.put(IDS,ids)
       articleDislikeInfo.put(COUNT,count+1)
     }
-    fs.writeFileAwait("$communityArticlePath$separator${LIKE}.json",articleDislikeInfo.toBuffer())
+    fs.writeFile("$communityArticlePath$separator${LIKE}.json",articleDislikeInfo.toBuffer()).await()
 
     //-----------------------------------------------------------
     //handle user dislike info
     val userDir = "${config.getString(DIR)}$separator${json.getString(ID)}"
     val userDislikeJsonDir = "$userDir$separator${LIKE}.json"
-    if(!fs.existsAwait(userDislikeJsonDir)) {
-      fs.createFileAwait(userDislikeJsonDir)
-      fs.writeFileAwait(userDislikeJsonDir, JsonArray().toBuffer())
+    if(!fs.exists(userDislikeJsonDir).await()) {
+      fs.createFile(userDislikeJsonDir).await()
+      fs.writeFile(userDislikeJsonDir, JsonArray().toBuffer()).await()
     }
-    val dislikedArticles = fs.readFileAwait(userDislikeJsonDir).toJsonArray()
+    val dislikedArticles = fs.readFile(userDislikeJsonDir).await().toJsonArray()
     when{
       dislikedArticles.contains(dir) -> {
         // if already disliked,cancle it
         dislikedArticles.remove(dir)
-        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+        fs.writeFile(userDislikeJsonDir,dislikedArticles.toBuffer()).await()
       }
       else->{
         //if not liked, then like it
         dislikedArticles.add(dir)
-        fs.writeFileAwait(userDislikeJsonDir,dislikedArticles.toBuffer())
+        fs.writeFile(userDislikeJsonDir,dislikedArticles.toBuffer()).await()
       }
     }
     //-------------
@@ -253,15 +253,15 @@ class PublicationVerticle : CoroutineVerticle() {
       return json.put(PUBLICATION,false).put(INFO,"Dir field is required!")
     }
     val fs = vertx.fileSystem()
-    if (!fs.existsAwait(atcPath)){
+    if (!fs.exists(atcPath).await()){
       json.put(PUBLICATION,false).put(INFO,"no such dir: $dir")
     }
-    if (!fs.existsAwait(commentsPath)){
+    if (!fs.exists(commentsPath).await()){
       return json.put(PUBLICATION,true).put(INFO, JsonArray())
     }
-    val comments = fs.readDirAwait(commentsPath)
+    val comments = fs.readDir(commentsPath).await()
     val commentsList = comments.map {
-      val aComment = fs.readFileAwait("$it$separator${PUBLICATION}.json").toJsonObject()
+      val aComment = fs.readFile("$it$separator${PUBLICATION}.json").await().toJsonObject()
       handleRelatedInfo(aComment,json.getString(ID))
       aComment
     }.sortedBy { "${it.getString(DATE)}-${it.getString(TIME)}" }
@@ -315,20 +315,20 @@ class PublicationVerticle : CoroutineVerticle() {
     val commentsPath = "$articlePath$separator$COMMENTS"
 
     val fs = vertx.fileSystem()
-    if (!fs.existsAwait(articlePath)){
+    if (!fs.exists(articlePath).await()){
       return json.put(PUBLICATION,false).put(INFO,"no such dir: $dir")
     }
 
-    if (!fs.existsAwait(commentsPath)){
+    if (!fs.exists(commentsPath).await()){
       //if comments dir dose not exists create one
-      fs.mkdirAwait(commentsPath)
+      fs.mkdir(commentsPath).await()
     }
 
     val uuid = generator.generate().toString()
     val newCommentPath = "$commentsPath$separator$uuid"
-    fs.mkdirAwait(newCommentPath)
+    fs.mkdir(newCommentPath).await()
     val commentFilePath = "$newCommentPath$separator${PUBLICATION}.json"
-    fs.createFileAwait(commentFilePath)
+    fs.createFile(commentFilePath).await()
     //-----------------------------------------------------------
     //commented user(被回复的用户id nickname)
     val figuredUid = json.getString(COMMENTED_USER_ID)
@@ -337,7 +337,7 @@ class PublicationVerticle : CoroutineVerticle() {
       json.put(COMMENTED_USER_ID,figuredUid)
     }else {
       //如果没有指定回复的人 则默认是回复articlePath的作者
-      val commentedUserId = fs.readFileAwait("$articlePath$separator${PUBLICATION}.json").toJsonObject().getString(ID)
+      val commentedUserId = fs.readFile("$articlePath$separator${PUBLICATION}.json").await().toJsonObject().getString(ID)
       json.put(COMMENTED_USER_ID,commentedUserId)
     }
 
@@ -351,7 +351,7 @@ class PublicationVerticle : CoroutineVerticle() {
     json.put(DATE, today)
     json.put(TIME, time)
     //---------
-    fs.writeFileAwait(commentFilePath,json.toBuffer())
+    fs.writeFile(commentFilePath,json.toBuffer()).await()
     return jsonObjectOf().put(SUBTYPE, COMMENT).put(PUBLICATION,true)
   }
 
@@ -362,7 +362,7 @@ class PublicationVerticle : CoroutineVerticle() {
 
       val dirPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$dir"
 
-      if(!vertx.fileSystem().existsAwait(dirPath)){
+      if(!vertx.fileSystem().exists(dirPath).await()){
         return jsonObjectOf().put(PUBLICATION, false).put(INFO, "$dirPath doesn't exist")
       }
 
@@ -371,7 +371,7 @@ class PublicationVerticle : CoroutineVerticle() {
 
       val file = generator.generate().toString()
 
-      vertx.fileSystem().writeFileAwait("$dirPath$separator$file.reply.json", json.toBuffer())
+      vertx.fileSystem().writeFile("$dirPath$separator$file.reply.json", json.toBuffer()).await()
 
       json
     }catch (e:Throwable){
@@ -400,20 +400,20 @@ class PublicationVerticle : CoroutineVerticle() {
 
     val communityPath = "${config.getString(DIR)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName"
 
-    fs.mkdirsAwait(communityPath)
-    fs.writeFileAwait("$communityPath${separator}publication.json", json.toBuffer())
+    fs.mkdirs(communityPath).await()
+    fs.writeFile("$communityPath${separator}publication.json", json.toBuffer()).await()
 
     val briefJson = json.copy()
     if(briefJson.containsKey(CONTENT) && briefJson.getValue(CONTENT) !=null &&
       briefJson.getValue(CONTENT) is String && briefJson.getString(CONTENT).length>100){
       val briefContent = briefJson.getString(CONTENT).substring(0,100).plus("...")
       briefJson.put(CONTENT, briefContent)
-      fs.writeFileAwait("$communityPath${separator}brief.json", briefJson.toBuffer())
+      fs.writeFile("$communityPath${separator}brief.json", briefJson.toBuffer()).await()
     }
 
     val linkPath = "${config.getString(DIR)}$separator${json.getString(ID)}$separator$COMMUNITY$separator$yyyy$separator$mm$separator$dd$separator$hh"
-    fs.mkdirsAwait(linkPath)
-    fs.createFileAwait("$linkPath$separator$dirName")
+    fs.mkdirs(linkPath).await()
+    fs.createFile("$linkPath$separator$dirName").await()
 
     return jsonObjectOf().put(PUBLICATION, true).put(DIR, "$separator$yyyy$separator$mm$separator$dd$separator$hh$separator$dirName")
   }
@@ -425,7 +425,7 @@ class PublicationVerticle : CoroutineVerticle() {
 
     return try {
       //--- fill in like/dislike/collect info ---
-      val file = vertx.fileSystem().readFileAwait(path).toJsonObject()
+      val file = vertx.fileSystem().readFile(path).await().toJsonObject()
       file.put(DIR,json.getString(DIR))
       handleRelatedInfo(file,json.getString(ID))
       file.put(PUBLICATION, true)
@@ -444,7 +444,7 @@ class PublicationVerticle : CoroutineVerticle() {
     val newPath = "$dir${separator}publication_new.json"
     try {
       //set the subtype
-      val originalArticle = vertx.fileSystem().readFileAwait(originalPath).toJsonObject()
+      val originalArticle = vertx.fileSystem().readFile(originalPath).await().toJsonObject()
       json.put(SUBTYPE,originalArticle.getString(SUBTYPE))
 
       //handle brief
@@ -453,17 +453,17 @@ class PublicationVerticle : CoroutineVerticle() {
         briefJson.getValue(CONTENT) is String && briefJson.getString(CONTENT).length>100){
         val briefContent = briefJson.getString(CONTENT).substring(0,100).plus("...")
         briefJson.put(CONTENT, briefContent)
-        vertx.fileSystem().writeFileAwait("$dir${separator}brief.json", briefJson.toBuffer())
+        vertx.fileSystem().writeFile("$dir${separator}brief.json", briefJson.toBuffer()).await()
       }
 
       //create publication_new.json
-      vertx.fileSystem().writeFileAwait(newPath, json.toBuffer())
+      vertx.fileSystem().writeFile(newPath, json.toBuffer()).await()
 
       //remove the older file
-      vertx.fileSystem().deleteAwait(originalPath)
+      vertx.fileSystem().delete(originalPath).await()
 
       //rename new file to publication.json
-      vertx.fileSystem().moveAwait(newPath, originalPath)
+      vertx.fileSystem().move(newPath, originalPath).await()
     }catch (e: Throwable){
       e.printStackTrace()
       json.put(PUBLICATION,false).put(INFO,e.message)
@@ -492,60 +492,60 @@ class PublicationVerticle : CoroutineVerticle() {
     val hh = SimpleDateFormat("HH").format(time)
 
     val dir = if (json.containsKey(FROM)) {
-      if (!vertx.fileSystem().existsAwait("${config.getString(DIR)}$separator${json.getString(FROM)}")) {
+      if (!vertx.fileSystem().exists("${config.getString(DIR)}$separator${json.getString(FROM)}").await()) {
         return json.put(PUBLICATION, false).put(INFO, "User doesn't exist")
       }
       "${config.getString(DIR)}$separator${json.getString(FROM)}$separator$COMMUNITY"
     } else {
       "${config.getString(DIR)}$separator$COMMUNITY"
     }
-    if (!vertx.fileSystem().existsAwait(dir)) {
-      vertx.fileSystem().mkdirsAwait(dir)
+    if (!vertx.fileSystem().exists(dir).await()) {
+      vertx.fileSystem().mkdirs(dir).await()
     }
 
     val history = jsonArrayOf()
     var until = "$yyyy-$mm-$dd-$hh"
 
     val yyyys = vertx.fileSystem()
-      .readDirAwait(dir, "\\d{4}")
+      .readDir(dir, "\\d{4}").await()
       .map { it.substringAfterLast(separator) }
       .filter { it <= yyyy }
       .sortedDescending()
 
     loop@ for (year in yyyys) {
       val mms = vertx.fileSystem()
-        .readDirAwait("$dir$separator$year", "\\d{2}")
+        .readDir("$dir$separator$year", "\\d{2}").await()
         .map { it.substringAfterLast(separator) }
         .filter { year + it <= yyyy + mm }
         .sortedDescending()
 
       for (month in mms) {
         val dds = vertx.fileSystem()
-          .readDirAwait("$dir$separator$year$separator$month", "\\d{2}")
+          .readDir("$dir$separator$year$separator$month", "\\d{2}").await()
           .map { it.substringAfterLast(separator) }
           .filter { year + month + it <= yyyy + mm + dd }
           .sortedDescending()
 
         for (day in dds) {
           val hhs = vertx.fileSystem()
-            .readDirAwait("$dir$separator$year$separator$month$separator$day", "\\d{2}")
+            .readDir("$dir$separator$year$separator$month$separator$day", "\\d{2}").await()
             .map { it.substringAfterLast(separator) }
             .filter { year + month + day + it <= yyyy + mm + dd + hh }
             .sortedDescending()
 
           for (hour in hhs) {
             val publicationList = vertx.fileSystem()
-              .readDirAwait("$dir$separator$year$separator$month$separator$day$separator$hour")
+              .readDir("$dir$separator$year$separator$month$separator$day$separator$hour").await()
 
             for (publicationPath in publicationList) {
-              val props = vertx.fileSystem().propsAwait(publicationPath)
+              val props = vertx.fileSystem().props(publicationPath).await()
               val publicationFilePath = if (props.isDirectory) {
                 "$publicationPath$separator" + "publication.json"
               } else {
                 "${config.getString(DIR)}$separator$COMMUNITY$separator$year$separator$month$separator$day$separator$hour$separator${publicationPath.substringAfterLast(separator)}$separator" + "publication.json"
               }
               val briefFilePath = publicationFilePath.replace("publication.json","brief.json")
-              val filePath = if(vertx.fileSystem().existsAwait(briefFilePath))
+              val filePath = if(vertx.fileSystem().exists(briefFilePath).await())
                 briefFilePath
               else
                 publicationFilePath
@@ -553,7 +553,7 @@ class PublicationVerticle : CoroutineVerticle() {
               until = "$year-$month-$day-$hour"
 
               val file = try {
-                vertx.fileSystem().readFileAwait(filePath).toJsonObject()
+                vertx.fileSystem().readFile(filePath).await().toJsonObject()
               }catch (e:Throwable){
                 jsonObjectOf(Pair(INFO, e.message))
               }.put(DIR, publicationFilePath.substringAfterLast(COMMUNITY).substringBeforeLast(separator))
@@ -581,15 +581,15 @@ class PublicationVerticle : CoroutineVerticle() {
    */
   private suspend fun handleRelatedInfo(file: JsonObject,loggedInUserId: String) {
     val basePath = "${config.getString(DIR)}$separator$COMMUNITY$separator${file.getString(DIR)}"
-    if (!vertx.fileSystem().existsAwait("$basePath$separator${LIKE}.json")) {
+    if (!vertx.fileSystem().exists("$basePath$separator${LIKE}.json").await()) {
       //No like.json case means no one has liked before
-      vertx.fileSystem().createFileAwait("$basePath$separator${LIKE}.json")
-      vertx.fileSystem().writeFileAwait("$basePath$separator${LIKE}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer())
+      vertx.fileSystem().createFile("$basePath$separator${LIKE}.json").await()
+      vertx.fileSystem().writeFile("$basePath$separator${LIKE}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer()).await()
       file.put(LIKE, 0)
       //if no one has liked before, that means the current logged in user has not liked this article yet
       file.put(LIKED,false)
     } else {
-      val like = vertx.fileSystem().readFileAwait("$basePath$separator${LIKE}.json").toJsonObject()
+      val like = vertx.fileSystem().readFile("$basePath$separator${LIKE}.json").await().toJsonObject()
       file.put(LIKE, like.getInteger(COUNT))
       // the users that has already liked this article
       val likedIds = like.getJsonArray(IDS)
@@ -598,34 +598,34 @@ class PublicationVerticle : CoroutineVerticle() {
     }
 
     //------ similar as like&liked field, this segment of code handles the dislike info
-    if (!vertx.fileSystem().existsAwait("$basePath$separator${DISLIKE}.json")) {
-      vertx.fileSystem().writeFileAwait("$basePath$separator${DISLIKE}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer())
+    if (!vertx.fileSystem().exists("$basePath$separator${DISLIKE}.json").await()) {
+      vertx.fileSystem().writeFile("$basePath$separator${DISLIKE}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer()).await()
       file.put(DISLIKE, 0)
       file.put(DISLIKED,false)
     } else {
-      val dislike = vertx.fileSystem().readFileAwait("$basePath$separator${DISLIKE}.json").toJsonObject()
+      val dislike = vertx.fileSystem().readFile("$basePath$separator${DISLIKE}.json").await().toJsonObject()
       file.put(DISLIKE, dislike.getInteger(COUNT))
       val dislikedIds = dislike.getJsonArray(IDS)
       file.put(DISLIKED,dislikedIds.contains(loggedInUserId))
     }
 
     //------ similar as like&liked field, this segment of code handles the collect info
-    if (!vertx.fileSystem().existsAwait("$basePath$separator${COLLECT}.json")) {
-      vertx.fileSystem().writeFileAwait("$basePath$separator${COLLECT}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer())
+    if (!vertx.fileSystem().exists("$basePath$separator${COLLECT}.json").await()) {
+      vertx.fileSystem().writeFile("$basePath$separator${COLLECT}.json", jsonObjectOf().put(COUNT,0).put(IDS, jsonArrayOf()).toBuffer()).await()
       file.put(COLLECT, 0)
       file.put(COLLECTED,false)
     } else {
-      val collect = vertx.fileSystem().readFileAwait("$basePath$separator${COLLECT}.json").toJsonObject()
+      val collect = vertx.fileSystem().readFile("$basePath$separator${COLLECT}.json").await().toJsonObject()
       file.put(COLLECT, collect.getInteger(COUNT))
       val collectedIds = collect.getJsonArray(IDS)
       file.put(COLLECTED,collectedIds.contains(loggedInUserId))
     }
 
     //------ handle comment info(primaryly nums of comment) of this article
-    if (!vertx.fileSystem().existsAwait("$basePath$separator$COMMENTS")){
+    if (!vertx.fileSystem().exists("$basePath$separator$COMMENTS").await()){
       file.put(COMMENTED_NUM,0)
     }else{
-      val dirs = vertx.fileSystem().readDirAwait("$basePath$separator$COMMENTS")
+      val dirs = vertx.fileSystem().readDir("$basePath$separator$COMMENTS").await()
       file.put(COMMENTED_NUM,dirs.size)
     }
 
