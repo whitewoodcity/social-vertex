@@ -250,7 +250,7 @@ abstract class DispatchVerticle : CoroutineVerticle() {
     router.post("/*").handler(routingHandler)
     router.put("/*").handler(routingHandler)
 
-    router.route().failureHandler(ErrorHandler.create(true))
+    router.route().failureHandler(ErrorHandler.create(vertx))
     //web end
 
     val httpServer = vertx.createHttpServer()
