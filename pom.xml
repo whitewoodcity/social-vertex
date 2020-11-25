@@ -19,16 +19,16 @@
     <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
     <vertx.version>4.0.0</vertx.version>
     <es4x.version>0.14.0-CR2</es4x.version>
-    <vertx.verticle>cn.net.polyglot.MainVerticle</vertx.verticle>
-<!--    <vertx.verticle>cn/net/polyglot/main-verticle.js</vertx.verticle>-->
+    <!--<vertx.verticle>cn.net.polyglot.MainVerticle</vertx.verticle>-->
+    <vertx.verticle>cn/net/polyglot/main-verticle.js</vertx.verticle>
   </properties>
 
   <dependencies>
-<!--    <dependency>-->
-<!--      <groupId>io.reactiverse</groupId>-->
-<!--      <artifactId>es4x-vertx-stack</artifactId>-->
-<!--      <version>${es4x.version}</version>-->
-<!--    </dependency>-->
+    <dependency>
+      <groupId>io.reactiverse</groupId>
+      <artifactId>es4x-vertx-stack</artifactId>
+      <version>${es4x.version}</version>
+    </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
