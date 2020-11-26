@@ -1,14 +1,69 @@
+// import start
 const File = Java.type('java.io.File');
-const JsonObject = Java.type('io.vertx.core.json.JsonObject');
+const ConfigStoreOptions = Java.type('io.vertx.config.ConfigStoreOptions');
+const ConfigRetrieverOptions = Java.type('io.vertx.config.ConfigRetrieverOptions');
+const ConfigRetriever = Java.type('io.vertx.config.ConfigRetriever');
+const DeploymentOptions = Java.type('io.vertx.core.DeploymentOptions');
+// import end
 
 let currentPath = process.cwd();
 console.log(`Current Path: ${currentPath}`);
 
-const config = new JsonObject()
-  .put('version',0.7)
-  .put('dir', currentPath + File.separator + 'social-vertex')
-  .put('jar-dir', currentPath)
-  .put('host', "localhost")
-  .put('tcp-port', 7373)
-  .put('http-port', 8080)
-  .put('https-port', 80443);
+let config = {
+  'version': 0.7,
+  'dir': currentPath + File.separator + 'social-vertex',
+  'jar-dir': currentPath,
+  'host': 'localhost',
+  'tcp-port': 7373,
+  'http-port': 8080,
+  'https-port': 80443
+}
+
+const fileStore = new ConfigStoreOptions()
+  .setType("file")
+  .setConfig({
+    'path': 'config.json'
+  });
+
+const options = new ConfigRetrieverOptions().addStore(fileStore);
+const retriever = ConfigRetriever.create(vertx, options);
+
+(async () => {
+  try {
+    const conf = await retriever.getConfig();
+    // Illegal type in Json
+    // config = Object.assign(config, conf);
+  } catch (e) {
+    console.log('The configuration file: config.json does not exist or in wrong format, use default config.');
+  } finally {
+    retriever.close();
+  }
+
+  try {
+    if (! await vertx.fileSystem().exists(config['dir'])) {
+      const result = await vertx.fileSystem().mkdir(config['dir']);
+      console.log(`mkdir: ${result}`);
+    }
+
+    const option = new DeploymentOptions().setConfig(config);
+    const verticles = [
+      'kt:cn.net.polyglot.verticle.message.MessageVerticle',
+      'kt:cn.net.polyglot.verticle.friend.FriendVerticle',
+      'kt:cn.net.polyglot.verticle.search.SearchVerticle',
+      'kt:cn.net.polyglot.verticle.user.UserVerticle',
+      'kt:cn.net.polyglot.verticle.publication.PublicationVerticle',
+      'kt:cn.net.polyglot.verticle.im.IMTcpServerVerticle',
+      'kt:cn.net.polyglot.verticle.im.IMServletVerticle',
+      'kt:cn.net.polyglot.verticle.WebServerVerticle',
+      'kt:cn.net.polyglot.verticle.community.DefaultVerticle',
+      'kt:cn.net.polyglot.verticle.community.LoginVerticle',
+      'kt:cn.net.polyglot.verticle.community.CommunityVerticle'
+    ];
+    for (const verticle of verticles) {
+      const result = vertx.deployVerticle(verticle, option);
+      console.log(`class: ${result.getClass().getName()}`);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+})();
