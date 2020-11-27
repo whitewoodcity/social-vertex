@@ -24,11 +24,20 @@
   </properties>
 
   <dependencies>
+    <!-- es4x dependencies start -->
     <dependency>
       <groupId>io.reactiverse</groupId>
       <artifactId>es4x-vertx-stack</artifactId>
       <version>${es4x.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.reactiverse</groupId>
+      <artifactId>es4x-pm</artifactId>
+      <version>${es4x.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- es4x dependencies end -->
+
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-core</artifactId>
@@ -168,6 +177,28 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>generate-asm</id>
+            <phase>process-classes</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>io.reactiverse.es4x.VertxPatch</mainClass>
+          <arguments>
+            <argument>${vertx.version}</argument>
+            <argument>${project.build.outputDirectory}</argument>
+          </arguments>
+          <classpathScope>compile</classpathScope>
+        </configuration>
       </plugin>
     </plugins>
   </build>

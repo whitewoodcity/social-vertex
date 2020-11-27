@@ -31,8 +31,7 @@ const retriever = ConfigRetriever.create(vertx, options);
 (async () => {
   try {
     const conf = await retriever.getConfig();
-    // Illegal type in Json
-    // config = Object.assign(config, conf);
+    config = Object.assign(config, conf);
   } catch (e) {
     console.log('The configuration file: config.json does not exist or in wrong format, use default config.');
   } finally {
@@ -58,10 +57,8 @@ const retriever = ConfigRetriever.create(vertx, options);
       'kt:cn.net.polyglot.verticle.community.DefaultVerticle',
       'kt:cn.net.polyglot.verticle.community.LoginVerticle',
       'kt:cn.net.polyglot.verticle.community.CommunityVerticle'
-    ];
-    for (const verticle of verticles) {
-      const result = vertx.deployVerticle(verticle, option);
-      console.log(`class: ${result.getClass().getName()}`);
+    ].map(verticle => vertx.deployVerticle(verticle, option));
+    for await (const verticle of verticles) {
     }
   } catch (e) {
     console.log(e);
