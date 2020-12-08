@@ -17,7 +17,7 @@
     <kotlin.version>1.4.10</kotlin.version>
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
-    <vertx.version>4.0.0.CR2</vertx.version>
+    <vertx.version>4.0.0</vertx.version>
     <es4x.version>0.14.0-CR2</es4x.version>
     <vertx.verticle>cn.net.polyglot.MainVerticle</vertx.verticle>
 <!--    <vertx.verticle>cn/net/polyglot/main-verticle.js</vertx.verticle>-->
@@ -60,7 +60,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>29.0-jre</version>
+      <version>30.0-jre</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
