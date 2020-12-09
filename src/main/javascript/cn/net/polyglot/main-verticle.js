@@ -15,8 +15,8 @@ let config = {
   'jar-dir': currentPath,
   'host': 'localhost',
   'tcp-port': 7373,
-  'http-port': 8080,
-  'https-port': 80443
+  'http-port': 80,
+  'https-port': 443
 }
 
 const fileStore = new ConfigStoreOptions()
