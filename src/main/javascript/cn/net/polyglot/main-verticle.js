@@ -40,8 +40,7 @@ const retriever = ConfigRetriever.create(vertx, options);
 
   try {
     if (! await vertx.fileSystem().exists(config['dir'])) {
-      const result = await vertx.fileSystem().mkdir(config['dir']);
-      console.log(`mkdir: ${result}`);
+      await vertx.fileSystem().mkdir(config['dir']);
     }
 
     const option = new DeploymentOptions().setConfig(config);
@@ -57,8 +56,9 @@ const retriever = ConfigRetriever.create(vertx, options);
       'kt:cn.net.polyglot.verticle.community.DefaultVerticle',
       'kt:cn.net.polyglot.verticle.community.LoginVerticle',
       'kt:cn.net.polyglot.verticle.community.CommunityVerticle'
-    ].map(verticle => vertx.deployVerticle(verticle, option));
-    for await (const verticle of verticles) {
+    ];
+    for (const verticle of verticles) {
+      await vertx.deployVerticle(verticle, option);
     }
   } catch (e) {
     console.log(e);

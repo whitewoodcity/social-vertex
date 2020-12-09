@@ -18,7 +18,7 @@
     <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
     <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
     <vertx.version>4.0.0</vertx.version>
-    <es4x.version>0.14.0-CR2</es4x.version>
+    <es4x.version>0.14.0</es4x.version>
     <!--<vertx.verticle>cn.net.polyglot.MainVerticle</vertx.verticle>-->
     <vertx.verticle>cn/net/polyglot/main-verticle.js</vertx.verticle>
   </properties>
@@ -139,7 +139,7 @@
         </executions>
         <configuration>
           <redeploy>true</redeploy>
-          <debugSuspend>true</debugSuspend>
+          <!--<debugSuspend>true</debugSuspend>-->
         </configuration>
       </plugin>
 
@@ -185,14 +185,14 @@
         <executions>
           <execution>
             <id>generate-asm</id>
-            <phase>process-classes</phase>
+            <phase>compile</phase>
             <goals>
               <goal>java</goal>
             </goals>
           </execution>
         </executions>
         <configuration>
-          <mainClass>io.reactiverse.es4x.VertxPatch</mainClass>
+          <mainClass>io.reactiverse.es4x.cli.VertxPatch</mainClass>
           <arguments>
             <argument>${vertx.version}</argument>
             <argument>${project.build.outputDirectory}</argument>
@@ -202,4 +202,11 @@
       </plugin>
     </plugins>
   </build>
+
+  <repositories>
+    <repository>
+      <id>es4x</id>
+      <url>https://oss.sonatype.org/content/repositories/ioreactiverse-1147/</url>
+    </repository>
+  </repositories>
 </project>
