@@ -203,10 +203,4 @@
     </plugins>
   </build>
 
-  <repositories>
-    <repository>
-      <id>es4x</id>
-      <url>https://oss.sonatype.org/content/repositories/ioreactiverse-1147/</url>
-    </repository>
-  </repositories>
 </project>
