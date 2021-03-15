@@ -23,7 +23,7 @@ public class MainVerticle extends AbstractVerticle {
       .put("jar-dir", currentPath)
       .put("host", "localhost")
       .put("tcp-port", 7373)
-      .put("http-port",80)
+      .put("http-port", 80)
       .put("https-port",443);
 
     ConfigStoreOptions fileStore = new ConfigStoreOptions()
