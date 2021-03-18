@@ -56,13 +56,12 @@ class IMTcpServerVerticle : CoroutineVerticle() {
       //因为是bimap，不能重复存入null，会抛异常，所以临时先放一个字符串，等用户登陆之后便会替换该字符串，以用户名取代
       socketMap[socket] = socket.writeHandlerID()
 
-      socket.handler {
-        RecordParser
-          .newDelimited(END) { launch { processJsonString(it.toString(), socket) } }
-          .maxRecordSize(10240)//max is 10KB
-          .exceptionHandler { socket.close() }
-          .handle(it)
-      }
+      val parser = RecordParser
+        .newDelimited(END) { launch { processJsonString(it.toString(), socket) } }
+        .maxRecordSize(10240)//max is 10KB
+        .exceptionHandler { socket.close() }
+
+      socket.handler(parser::handle)
 
       socket.closeHandler {
         socketMap.remove(socket)
