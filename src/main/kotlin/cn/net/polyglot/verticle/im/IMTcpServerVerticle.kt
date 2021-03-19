@@ -61,7 +61,7 @@ class IMTcpServerVerticle : CoroutineVerticle() {
         .maxRecordSize(10240)//max is 10KB
         .exceptionHandler { socket.close() }
 
-      socket.handler(parser::handle)
+      socket.handler(parser)
 
       socket.closeHandler {
         socketMap.remove(socket)
